@@ -29,39 +29,48 @@ class UserController {
                 message:'Usuario no encontrado',
             })
         }else if(user && user.tokenTotp===code){
-            const client = new ClientsModel({
-                firstName: user.firstName,
-                middleName: user.middleName,
-                lastName: user.lastName,
-                birthday: user.birthday,
-                phoneNumber: user.phoneNumber
-            });
-
-            const saveuser = new UsersModel({
-                username: user.phoneNumber,
-                password: user.password,
-                email: user.email,
-                clientId: user._id
-            });
-    
-            try {
-                //almacenando los datos y devolviendo respuesta
-                const savedClient = await client.save();
-                const savedUser = await saveuser.save();
-
-                await user.remove();
-
-                res.status(200).json({
-                    savedClient,
-                    savedUser,
-                    status: 200
+            //comprobar que el telefono no exista en la bd
+            const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: user.phoneNumber });
+            if (isTelefonoExist) {
+                return res.status(400).json({
+                        error: 'El numero telefonico ya esta registrado',
+                        status: 208
+                    });
+            }else{
+                const client = new ClientsModel({
+                    firstName: user.firstName,
+                    middleName: user.middleName,
+                    lastName: user.lastName,
+                    birthday: user.birthday,
+                    phoneNumber: user.phoneNumber
                 });
 
-            } catch (error) {
-                res.status(400).json({
-                    error,
-                    status: 400
+                const saveuser = new UsersModel({
+                    username: user.phoneNumber,
+                    password: user.password,
+                    email: user.email,
+                    clientId: user._id
                 });
+        
+                try {
+                    //almacenando los datos y devolviendo respuesta
+                    const savedClient = await client.save();
+                    const savedUser = await saveuser.save();
+
+                    await user.remove();
+
+                    res.status(200).json({
+                        savedClient,
+                        savedUser,
+                        status: 200
+                    });
+
+                } catch (error) {
+                    res.status(400).json({
+                        error,
+                        status: 400
+                    });
+                }
             }
 
         }else{
