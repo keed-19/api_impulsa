@@ -29,48 +29,39 @@ class UserController {
                 message:'Usuario no encontrado',
             })
         }else if(user && user.tokenTotp===code){
-            //comprobar que el telefono no exista en la bd
-            const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: user.phoneNumber });
-            if (isTelefonoExist) {
-                return res.status(400).json({
-                        error: 'El numero telefonico ya esta registrado',
-                        status: 208
-                    });
-            }else{
-                const client = new ClientsModel({
-                    firstName: user.firstName,
-                    middleName: user.middleName,
-                    lastName: user.lastName,
-                    birthday: user.birthday,
-                    phoneNumber: user.phoneNumber
+            const client = new ClientsModel({
+                firstName: user.firstName,
+                middleName: user.middleName,
+                lastName: user.lastName,
+                birthday: user.birthday,
+                phoneNumber: user.phoneNumber
+            });
+
+            const saveuser = new UsersModel({
+                username: user.phoneNumber,
+                password: user.password,
+                email: user.email,
+                clientId: user._id
+            });
+    
+            try {
+                //almacenando los datos y devolviendo respuesta
+                const savedClient = await client.save();
+                const savedUser = await saveuser.save();
+
+                await user.remove();
+
+                res.status(200).json({
+                    savedClient,
+                    savedUser,
+                    status: 200
                 });
 
-                const saveuser = new UsersModel({
-                    username: user.phoneNumber,
-                    password: user.password,
-                    email: user.email,
-                    clientId: user._id
+            } catch (error) {
+                res.status(400).json({
+                    error,
+                    status: 400
                 });
-        
-                try {
-                    //almacenando los datos y devolviendo respuesta
-                    const savedClient = await client.save();
-                    const savedUser = await saveuser.save();
-
-                    await user.remove();
-
-                    res.status(200).json({
-                        savedClient,
-                        savedUser,
-                        status: 200
-                    });
-
-                } catch (error) {
-                    res.status(400).json({
-                        error,
-                        status: 400
-                    });
-                }
             }
 
         }else{
@@ -79,44 +70,44 @@ class UserController {
     }
 
     public register = async(_req: Request, res: Response) =>{
-        const isTelefonoExist = await RegisterRequestModel.findOne({ phoneNumber: _req.body.phoneNumber });
+        const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
         if (isTelefonoExist) {
             return res.status(400).json({
                     error: 'El numero telefonico ya esta registrado',
                     status: 208
                 });
-        }
+        }else{
+            ramdom(_req.body.phoneNumber as Number);
 
-        ramdom(_req.body.phoneNumber as Number);
-
-        //instancia del modelo en espera
-        const user = new RegisterRequestModel({
-            firstName: _req.body.firstName,
-            middleName: _req.body.middleName,
-            lastName: _req.body.lastName,
-            birthday: _req.body.birthday,
-            phoneNumber: _req.body.phoneNumber,
-            password: _req.body.password,
-            email: _req.body.email,
-            tokenTotp:cadena
-        });
-
-        try {
-
-            //almacenando los datos y devolviendo respuesta
-            const savedUser = await user.save();
-            // ramdom(JSON.stringify(savedUser._id));
-
-            res.json({
-                message: 'usuario registrado',
-                status: 200,
-                data: savedUser._id
+            //instancia del modelo en espera
+            const user = new RegisterRequestModel({
+                firstName: _req.body.firstName,
+                middleName: _req.body.middleName,
+                lastName: _req.body.lastName,
+                birthday: _req.body.birthday,
+                phoneNumber: _req.body.phoneNumber,
+                password: _req.body.password,
+                email: _req.body.email,
+                tokenTotp:cadena
             });
-        } catch (error) {
-            res.status(400).json({
-                error,
-                status: 400
-            });
+
+            try {
+
+                //almacenando los datos y devolviendo respuesta
+                const savedUser = await user.save();
+                // ramdom(JSON.stringify(savedUser._id));
+
+                res.json({
+                    message: 'usuario registrado',
+                    status: 200,
+                    data: savedUser._id
+                });
+            } catch (error) {
+                res.status(400).json({
+                    error,
+                    status: 400
+                });
+            }
         }
     }
 

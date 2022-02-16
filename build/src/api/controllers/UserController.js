@@ -27,45 +27,35 @@ class UserController {
                 });
             }
             else if (user && user.tokenTotp === code) {
-                //comprobar que el telefono no exista en la bd
-                const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: user.phoneNumber });
-                if (isTelefonoExist) {
-                    return res.status(400).json({
-                        error: 'El numero telefonico ya esta registrado',
-                        status: 208
+                const client = new Client_1.ClientsModel({
+                    firstName: user.firstName,
+                    middleName: user.middleName,
+                    lastName: user.lastName,
+                    birthday: user.birthday,
+                    phoneNumber: user.phoneNumber
+                });
+                const saveuser = new User_1.UsersModel({
+                    username: user.phoneNumber,
+                    password: user.password,
+                    email: user.email,
+                    clientId: user._id
+                });
+                try {
+                    //almacenando los datos y devolviendo respuesta
+                    const savedClient = yield client.save();
+                    const savedUser = yield saveuser.save();
+                    yield user.remove();
+                    res.status(200).json({
+                        savedClient,
+                        savedUser,
+                        status: 200
                     });
                 }
-                else {
-                    const client = new Client_1.ClientsModel({
-                        firstName: user.firstName,
-                        middleName: user.middleName,
-                        lastName: user.lastName,
-                        birthday: user.birthday,
-                        phoneNumber: user.phoneNumber
+                catch (error) {
+                    res.status(400).json({
+                        error,
+                        status: 400
                     });
-                    const saveuser = new User_1.UsersModel({
-                        username: user.phoneNumber,
-                        password: user.password,
-                        email: user.email,
-                        clientId: user._id
-                    });
-                    try {
-                        //almacenando los datos y devolviendo respuesta
-                        const savedClient = yield client.save();
-                        const savedUser = yield saveuser.save();
-                        yield user.remove();
-                        res.status(200).json({
-                            savedClient,
-                            savedUser,
-                            status: 200
-                        });
-                    }
-                    catch (error) {
-                        res.status(400).json({
-                            error,
-                            status: 400
-                        });
-                    }
                 }
             }
             else {
@@ -73,40 +63,42 @@ class UserController {
             }
         });
         this.register = (_req, res) => __awaiter(this, void 0, void 0, function* () {
-            const isTelefonoExist = yield RegisterRequest_1.RegisterRequestModel.findOne({ phoneNumber: _req.body.phoneNumber });
+            const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
             if (isTelefonoExist) {
                 return res.status(400).json({
                     error: 'El numero telefonico ya esta registrado',
                     status: 208
                 });
             }
-            ramdom(_req.body.phoneNumber);
-            //instancia del modelo en espera
-            const user = new RegisterRequest_1.RegisterRequestModel({
-                firstName: _req.body.firstName,
-                middleName: _req.body.middleName,
-                lastName: _req.body.lastName,
-                birthday: _req.body.birthday,
-                phoneNumber: _req.body.phoneNumber,
-                password: _req.body.password,
-                email: _req.body.email,
-                tokenTotp: cadena
-            });
-            try {
-                //almacenando los datos y devolviendo respuesta
-                const savedUser = yield user.save();
-                // ramdom(JSON.stringify(savedUser._id));
-                res.json({
-                    message: 'usuario registrado',
-                    status: 200,
-                    data: savedUser._id
+            else {
+                ramdom(_req.body.phoneNumber);
+                //instancia del modelo en espera
+                const user = new RegisterRequest_1.RegisterRequestModel({
+                    firstName: _req.body.firstName,
+                    middleName: _req.body.middleName,
+                    lastName: _req.body.lastName,
+                    birthday: _req.body.birthday,
+                    phoneNumber: _req.body.phoneNumber,
+                    password: _req.body.password,
+                    email: _req.body.email,
+                    tokenTotp: cadena
                 });
-            }
-            catch (error) {
-                res.status(400).json({
-                    error,
-                    status: 400
-                });
+                try {
+                    //almacenando los datos y devolviendo respuesta
+                    const savedUser = yield user.save();
+                    // ramdom(JSON.stringify(savedUser._id));
+                    res.json({
+                        message: 'usuario registrado',
+                        status: 200,
+                        data: savedUser._id
+                    });
+                }
+                catch (error) {
+                    res.status(400).json({
+                        error,
+                        status: 400
+                    });
+                }
             }
         });
         this.login = (_req, res) => __awaiter(this, void 0, void 0, function* () {
