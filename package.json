@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "desarrollo": "nodemon",
-    "start": "node"
+    "start": "nodemon"
   },
   "repository": {
     "type": "git",
