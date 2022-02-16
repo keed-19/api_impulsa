@@ -1,4 +1,4 @@
-import 'dotenv/config';
+
 import express from 'express';
 
 /** Import Routes */
