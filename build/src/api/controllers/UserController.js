@@ -11,7 +11,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = require("jsonwebtoken");
 const twilio_1 = require("twilio");
-const RegisterRequest_1 = require("./api/models/RegisterRequest");
+const Client_1 = require("../models/Client");
+const RegisterRequest_1 = require("../models/RegisterRequest");
+const User_1 = require("../models/User");
 let cadena = '';
 class UserController {
     constructor() {
@@ -25,7 +27,36 @@ class UserController {
                 });
             }
             else if (user && user.tokenTotp === code) {
-                res.json({ messaje: 'Hola' });
+                const client = new Client_1.ClientsModel({
+                    firstName: user.firstName,
+                    middleName: user.middleName,
+                    lastName: user.lastName,
+                    birthday: user.birthday,
+                    phoneNumber: user.phoneNumber
+                });
+                const saveuser = new User_1.UsersModel({
+                    username: user.phoneNumber,
+                    password: user.password,
+                    email: user.email,
+                    clientId: user._id
+                });
+                try {
+                    //almacenando los datos y devolviendo respuesta
+                    const savedClient = yield client.save();
+                    const savedUser = yield saveuser.save();
+                    yield user.remove();
+                    res.status(200).json({
+                        savedClient,
+                        savedUser,
+                        status: 200
+                    });
+                }
+                catch (error) {
+                    res.status(400).json({
+                        error,
+                        status: 400
+                    });
+                }
             }
             else {
                 res.json({ messaje: 'Verifica tu código' });

@@ -10,7 +10,7 @@ interface RegisterRequest {
     birthday        :       String,
     email           :       String,
     password        :       String,
-    tokenTotp       :       string;
+    tokenTotp       :       String;
 }
 
 const shema = new Schema<RegisterRequest>({

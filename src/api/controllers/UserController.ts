@@ -1,8 +1,9 @@
-import { PhoneNumber } from './../../../node_modules/twilio/lib/interfaces.d';
 import { Request, Response } from 'express';
 import {sign} from 'jsonwebtoken';
 import { Twilio } from "twilio";
+import { ClientsModel } from '../models/Client';
 import { RegisterRequestModel } from '../models/RegisterRequest';
+import { UsersModel } from '../models/User';
 
 
 let cadena='';
@@ -28,7 +29,40 @@ class UserController {
                 message:'Usuario no encontrado',
             })
         }else if(user && user.tokenTotp===code){
-            res.json({messaje:'Hola'});
+            const client = new ClientsModel({
+                firstName: user.firstName,
+                middleName: user.middleName,
+                lastName: user.lastName,
+                birthday: user.birthday,
+                phoneNumber: user.phoneNumber
+            });
+
+            const saveuser = new UsersModel({
+                username: user.phoneNumber,
+                password: user.password,
+                email: user.email,
+                clientId: user._id
+            });
+    
+            try {
+                //almacenando los datos y devolviendo respuesta
+                const savedClient = await client.save();
+                const savedUser = await saveuser.save();
+
+                await user.remove();
+
+                res.status(200).json({
+                    savedClient,
+                    savedUser,
+                    status: 200
+                });
+
+            } catch (error) {
+                res.status(400).json({
+                    error,
+                    status: 400
+                });
+            }
 
         }else{
             res.json({messaje:'Verifica tu código'});
