@@ -5,9 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "desarrollo": "node ",
-    "start": "node src/index.ts",
-    "postinstall": "ng build --prod",
-    "build": "tsc"
+    "start": "node src/index.ts"
   },
   "repository": {
     "type": "git",
