@@ -7,7 +7,7 @@ interface Clients {
     middleName  :    String;
     lastName    :    String;
     phoneNumber :    String;
-    birthday    :    Date;
+    birthday    :    String;
     externalId  :    Number;
 }
 
@@ -16,7 +16,7 @@ const shema = new Schema<Clients>({
     middleName      :       {type:String, required:true},
     lastName        :       {type:String, required:true},
     phoneNumber     :       {type:String, required:true},
-    birthday        :       {type:Date, required:true},
+    birthday        :       {type:String, required:true},
     externalId      :       {type:Number, required:false},
 })
 
