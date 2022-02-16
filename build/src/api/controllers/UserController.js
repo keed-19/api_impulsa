@@ -105,7 +105,7 @@ class UserController {
             const pass = _req.body.password;
             const numuser = _req.body.phoneNumber;
             // Validaciond e existencia
-            const user = yield RegisterRequest_1.RegisterRequestModel.findOne({ phoneNumber: numuser });
+            const user = yield User_1.UsersModel.findOne({ username: numuser });
             if (!user) {
                 return res.status(400).json({
                     error: 'Usuario no encontrado',
@@ -113,6 +113,8 @@ class UserController {
                 });
             }
             else if (user.password === pass) {
+                const _id = user.clientId;
+                const searchclient = yield Client_1.ClientsModel.findById({ _id });
                 // Creando token
                 const token = (0, jsonwebtoken_1.sign)({
                     user
@@ -123,9 +125,9 @@ class UserController {
                 const client = new twilio_1.Twilio(accountSid, authToken);
                 yield client.messages
                     .create({
-                    body: `Hola ${user.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
+                    body: `Hola ${searchclient === null || searchclient === void 0 ? void 0 : searchclient.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
                     from: '+19378602978',
-                    to: `+52${user.phoneNumber}`
+                    to: `+52${user.username}`
                 })
                     .then(message => console.log(message.sid));
                 yield res.send({

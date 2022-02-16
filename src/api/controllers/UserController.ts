@@ -116,13 +116,17 @@ class UserController {
         const numuser = _req.body.phoneNumber;
         
         // Validaciond e existencia
-        const user = await RegisterRequestModel.findOne({phoneNumber: numuser})
+        const user = await UsersModel.findOne({username: numuser})
         if(!user) {
             return res.status(400).json({
             error: 'Usuario no encontrado',
             status: 204
             })
         }else if(user.password === pass){
+
+            const _id = user.clientId;
+
+            const searchclient =await ClientsModel.findById({_id})
             
             // Creando token
             const token = sign({
@@ -137,9 +141,9 @@ class UserController {
 
             await client.messages
             .create({
-                body: `Hola ${user.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
+                body: `Hola ${searchclient?.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
                 from: '+19378602978',
-                to: `+52${user.phoneNumber}`
+                to: `+52${user.username}`
             })
             .then(message => console.log(message.sid));
             
