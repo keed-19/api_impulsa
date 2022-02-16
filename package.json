@@ -1,0 +1,39 @@
+{
+  "name": "impulsa-to-go-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "desarrollo" : "nodemon",
+    "start": "node src/index.ts",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/nestor_ronal09/impulsa-to-go-api.git"
+  },
+  "keywords": [],
+  "author": "Arista Network",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/nestor_ronal09/impulsa-to-go-api/issues"
+  },
+  "homepage": "https://gitlab.com/nestor_ronal09/impulsa-to-go-api#readme",
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/jsonwebtoken": "^8.5.8",
+    "@types/jwt-simple": "^0.5.33",
+    "@types/twilio": "^3.19.3",
+    "nodemon": "^2.0.15",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "@types/mongoose": "^5.11.97",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.2",
+    "jsonwebtoken": "^8.5.1",
+    "jwt-simple": "^0.5.6",
+    "mongoose": "^6.2.0"
+  }
+}
