@@ -124,9 +124,7 @@ class UserController {
             })
         }else if(user.password === pass){
 
-            const _id = user.clientId;
-
-            const searchclient =await ClientsModel.findById({_id})
+            const searchclient = await ClientsModel.findOne({phoneNumber : numuser});
             
             // Creando token
             const token = sign({

@@ -113,8 +113,7 @@ class UserController {
                 });
             }
             else if (user.password === pass) {
-                const _id = user.clientId;
-                const searchclient = yield Client_1.ClientsModel.findById({ _id });
+                const searchclient = yield Client_1.ClientsModel.findOne({ phoneNumber: numuser });
                 // Creando token
                 const token = (0, jsonwebtoken_1.sign)({
                     user
