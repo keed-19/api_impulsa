@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = require("jsonwebtoken");
 const twilio_1 = require("twilio");
-const RegisterRequest_1 = require("../models/RegisterRequest");
+const RegisterRequest_1 = require("models/RegisterRequest");
 let cadena = '';
 class UserController {
     constructor() {
