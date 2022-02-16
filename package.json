@@ -2,10 +2,10 @@
   "name": "impulsa-to-go-api",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "index.js",
   "scripts": {
     "desarrollo": "nodemon",
-    "start": "nodemon"
+    "start": "node dist/index.js"
   },
   "repository": {
     "type": "git",
