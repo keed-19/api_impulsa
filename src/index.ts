@@ -6,7 +6,13 @@ import cors from 'cors';
 import UserRoute from './api/routes/UserRoute';
 
 /** Initializations */
+
+const options: cors.CorsOptions = {
+    origin: '*'
+};
+
 const app = express();
+app.use(cors(options));
 import './config/database';
 
 /** Settings */
