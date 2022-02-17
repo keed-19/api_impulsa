@@ -23,9 +23,7 @@ class UserController {
             const code = _req.body.Code;
             const user = yield RegisterRequest_1.RegisterRequestModel.findOne({ _id });
             if (!user) {
-                res.json({
-                    message: 'Usuario no encontrado',
-                });
+                res.status(404).json({ message: 'Usuario no encontrado' });
             }
             else if (user && user.tokenTotp === code) {
                 const client = new Client_1.ClientsModel({
@@ -53,21 +51,21 @@ class UserController {
                     });
                 }
                 catch (error) {
-                    res.status(400).json({
+                    res.status(404).json({
                         error,
-                        status: 400
+                        status: 404
                     });
                 }
             }
             else {
-                res.json({ messaje: 'Verifica tu código' });
+                res.status(203).json({ messaje: 'Verifica tu código' });
             }
         });
         this.register = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
             if (isTelefonoExist) {
-                return res.status(400).json({
+                return res.status(208).json({
                     error: 'El numero telefonico ya esta registrado',
                     status: 208
                 });
@@ -89,16 +87,16 @@ class UserController {
                     //almacenando los datos y devolviendo respuesta
                     const savedUser = yield user.save();
                     // ramdom(JSON.stringify(savedUser._id));
-                    res.json({
+                    res.status(200).json({
                         message: 'usuario registrado',
                         status: 200,
                         data: savedUser._id
                     });
                 }
                 catch (error) {
-                    res.status(400).json({
+                    res.status(404).json({
                         error,
-                        status: 400
+                        status: 404
                     });
                 }
             }
@@ -110,9 +108,9 @@ class UserController {
             // Validaciond e existencia
             const user = yield User_1.UsersModel.findOne({ username: numuser });
             if (!user) {
-                return res.status(400).json({
+                return res.status(404).json({
                     error: 'Usuario no encontrado',
-                    status: 204
+                    status: 404
                 });
             }
             else if (user.password === pass) {
@@ -132,14 +130,14 @@ class UserController {
                     to: `+52${user.username}`
                 })
                     .then(message => console.log(message.sid));
-                yield res.send({
+                yield res.status(200).json({
                     status: 200,
                     data: { token },
                     message: 'Bienvenido'
                 });
             }
             else {
-                return res.status(400).json({
+                return res.status(203).json({
                     error: 'Constraseña invalida',
                     status: 203
                 });
@@ -153,7 +151,7 @@ class UserController {
                 return res.status(500).send({ message: `Error al hacer la petición: ${err}` });
             if (!users)
                 return res.status(404).send({ message: `Aún no existen usuarios en la base de datos` });
-            res.json({ users: users });
+            res.status(200).json({ users: users });
         });
     }
 }

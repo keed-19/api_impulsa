@@ -15,7 +15,7 @@ class UserController {
             if(err) return res.status(500).send({ message: `Error al hacer la petición: ${err}`})
             if(!users) return res.status(404).send({ message: `Aún no existen usuarios en la base de datos`})
     
-            res.json({users:users})
+            res.status(200).json({users:users})
         })
     }
 
@@ -24,14 +24,9 @@ class UserController {
         const _id = _req.body.id;
         const code = _req.body.Code;
 
-        console.log(_req.body)
-
         const user = await RegisterRequestModel.findOne({_id})
         if(!user){
-            
-            res.json({
-                message:'Usuario no encontrado',
-            })
+            res.status(404).json({message:'Usuario no encontrado'})
         }else if(user && user.tokenTotp===code){
             const client = new ClientsModel({
                 firstName: user.firstName,
@@ -62,14 +57,14 @@ class UserController {
                 });
 
             } catch (error) {
-                res.status(400).json({
+                res.status(404).json({
                     error,
-                    status: 400
+                    status: 404
                 });
             }
 
         }else{
-            res.json({messaje:'Verifica tu código'});
+            res.status(203).json({messaje:'Verifica tu código'});
         }
     }
 
@@ -77,7 +72,7 @@ class UserController {
         res.set('Access-Control-Allow-Origin', '*');
         const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
         if (isTelefonoExist) {
-            return res.status(400).json({
+            return res.status(208).json({
                     error: 'El numero telefonico ya esta registrado',
                     status: 208
                 });
@@ -102,15 +97,15 @@ class UserController {
                 const savedUser = await user.save();
                 // ramdom(JSON.stringify(savedUser._id));
 
-                res.json({
+                res.status(200).json({
                     message: 'usuario registrado',
                     status: 200,
                     data: savedUser._id
                 });
             } catch (error) {
-                res.status(400).json({
+                res.status(404).json({
                     error,
-                    status: 400
+                    status: 404
                 });
             }
         }
@@ -124,10 +119,11 @@ class UserController {
         // Validaciond e existencia
         const user = await UsersModel.findOne({username: numuser})
         if(!user) {
-            return res.status(400).json({
-            error: 'Usuario no encontrado',
-            status: 204
-            })
+
+            return res.status(404).json({
+                error: 'Usuario no encontrado',
+                status: 404
+            });
         }else if(user.password === pass){
 
             const searchclient = await ClientsModel.findOne({phoneNumber : numuser});
@@ -151,7 +147,7 @@ class UserController {
             })
             .then(message => console.log(message.sid));
             
-            await res.send({
+            await res.status(200).json({
                 status:200,
                 data: { token },
                 message: 'Bienvenido'
@@ -159,7 +155,7 @@ class UserController {
             
         }else{
         
-            return res.status(400).json({
+            return res.status(203).json({
                 error: 'Constraseña invalida',
                 status: 203
             })
