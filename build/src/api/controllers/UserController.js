@@ -18,6 +18,7 @@ let cadena = '';
 class UserController {
     constructor() {
         this.ComprobarCod = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
             const _id = _req.body.id;
             const code = _req.body.Code;
             const user = yield RegisterRequest_1.RegisterRequestModel.findById({ _id });
@@ -63,6 +64,7 @@ class UserController {
             }
         });
         this.register = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
             const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
             if (isTelefonoExist) {
                 return res.status(400).json({
@@ -102,6 +104,7 @@ class UserController {
             }
         });
         this.login = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
             const pass = _req.body.password;
             const numuser = _req.body.phoneNumber;
             // Validaciond e existencia
@@ -145,6 +148,7 @@ class UserController {
     }
     index(_, res) {
         RegisterRequest_1.RegisterRequestModel.find({}, (err, users) => {
+            res.set('Access-Control-Allow-Origin', '*');
             if (err)
                 return res.status(500).send({ message: `Error al hacer la petición: ${err}` });
             if (!users)
@@ -164,7 +168,7 @@ function ramdom(phone) {
     const client = new twilio_1.Twilio(accountSid, authToken);
     client.messages
         .create({
-        body: `Código de verificación: ${cadena}`,
+        body: `Tu código de verificación es: ${cadena}`,
         from: '+19378602978',
         to: `+52${phone}`
     })
