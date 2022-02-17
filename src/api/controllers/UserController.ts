@@ -24,7 +24,7 @@ class UserController {
         const _id = _req.body.id;
         const code = _req.body.Code;
 
-        const user = await RegisterRequestModel.findById({_id})
+        const user = await RegisterRequestModel.findOne({_id})
         if(!user){
             
             res.json({

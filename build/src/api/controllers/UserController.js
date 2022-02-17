@@ -21,7 +21,7 @@ class UserController {
             res.set('Access-Control-Allow-Origin', '*');
             const _id = _req.body.id;
             const code = _req.body.Code;
-            const user = yield RegisterRequest_1.RegisterRequestModel.findById({ _id });
+            const user = yield RegisterRequest_1.RegisterRequestModel.findOne({ _id });
             if (!user) {
                 res.json({
                     message: 'Usuario no encontrado',
