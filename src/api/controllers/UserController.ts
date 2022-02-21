@@ -240,7 +240,6 @@ class UserController {
                     //send request exit
                     res.status(200).json({
                         message: 'Poliza registrada',
-                        status: 200,
                     });
                 } catch (error) {
                     res.status(404).json({
