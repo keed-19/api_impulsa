@@ -35,10 +35,10 @@ const UserRoute: Router = Router();
 /**
     // UserRoute.get('/', UserController.index);
  */
-UserRoute.get('/',function(req,res){
-    res.sendFile(__dirname + '/index.html');
+// UserRoute.get('/',function(req,res){
+//     res.sendFile(__dirname + '/index.html');
     
-});
+// });
 
 UserRoute.post('/users', UserController.register);
 
@@ -47,14 +47,18 @@ UserRoute.post('/login', UserController.login);
 //implementacion del middleware
 UserRoute.post('/veryfic', UserMiddleware.veryfy);
 
+//verificando el codigo de sms
+UserRoute.post('/verificar', UserController.ComprobarCod);
+
 
 //TODOs: estas funciones ya estan listas pero hay que separar el codigo de route con el controlador.
 // hay que implemetar la ñlogica del modelo de impuls
-//verificando el codigo de sms
-UserRoute.post('/verificar', UserController.ComprobarCod);
 //upload.single('myFile')
 //provando la ruta con middleware y controlador
 UserRoute.post('/uploadfile', upload.single('myFile'), UserController.Savefiles);
+
+//obteniendo los PDF
+UserRoute.get('/', UserController.ViewFile);
 
 
 export default UserRoute;

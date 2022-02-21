@@ -191,7 +191,7 @@ class UserController {
                 data: { token },
                 name: searchclient?.firstName,
                 id: searchclient?._id,
-                message: 'Bienvenido'
+                phoneNumber : user.username
             })
             
         }else{
@@ -254,6 +254,25 @@ class UserController {
                     status: 400,
                 });
             }
+        }
+    }
+
+    //ver pdf de un cliente
+
+    public ViewFile = async(_req : Request, res : Response)=>{
+        var filename = _req.params.id;
+
+        const isUserExist = await InsurancePoliciesModel.findOne({ clientId: filename });
+
+        if(!isUserExist){
+            res.contentType('file/pdf');
+            res.status(200).json({
+                PDF: isUserExist
+            })
+        }else{
+            res.json({
+                message : 'Aún no tiene Polizas'
+            })
         }
     }
 
