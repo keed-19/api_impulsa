@@ -1,55 +1,78 @@
+/** Imports models and pluggins */
 import { Request, Response } from 'express';
 import {sign} from 'jsonwebtoken';
 import { Twilio } from "twilio";
 import { ClientsModel } from '../models/Client';
 import { RegisterRequestModel } from '../models/RegisterRequest';
 import { UsersModel } from '../models/User';
+import multer from "multer";
+import mimeTypes from 'mime-types';
+import { now } from 'mongoose';
+import { InsurancePoliciesModel } from '../models/InsurancePolicy';
+import fs from 'fs';
 
-
+/** Variable for verification code */
 let cadena='';
+
+/** My class of user controller */
 class UserController {
     
+    /** 
+        * Function to get users from database 
+    */
     public index(_: Request, res: Response) {
         RegisterRequestModel.find({}, (err, users) => {
             res.set('Access-Control-Allow-Origin', '*');
-            if(err) return res.status(500).send({ message: `Error al hacer la petición: ${err}`})
-            if(!users) return res.status(404).send({ message: `Aún no existen usuarios en la base de datos`})
+            if(err) return res.status(500).send({ message: `Error al hacer la petición: ${err}`});
+            if(!users) return res.status(404).send({ message: `Aún no existen usuarios en la base de datos`});
     
-            res.status(200).json({users:users})
+            res.status(200).json({users:users});
         })
     }
 
+    /** 
+        * Function to post id user and verific code of RegisterRequestModel 
+        * This function accept two parameters
+        * The parameter id is type string
+        * The parameter Code is type string 
+    */
     public ComprobarCod = async(_req:Request ,res:Response)=>{
+        /** frond end acces origin */
         res.set('Access-Control-Allow-Origin', '*');
         const _id = _req.body.id;
         const code = _req.body.Code;
 
-        const user = await RegisterRequestModel.findOne({_id})
+        /** Search RegisterRequest with id parameter */
+        const user = await RegisterRequestModel.findOne({_id});
         if(!user){
-            res.status(404).json({message:'Usuario no encontrado'})
+            res.status(404).json({message:'Usuario no encontrado'});
         }else if(user && user.tokenTotp===code){
+
+            // instantiating the models
             const client = new ClientsModel({
-                firstName: user.firstName,
-                middleName: user.middleName,
-                lastName: user.lastName,
-                birthday: user.birthday,
-                phoneNumber: user.phoneNumber
+                firstName       :    user.firstName,
+                middleName      :    user.middleName,
+                lastName        :    user.lastName,
+                birthday        :    user.birthday,
+                phoneNumber     :    user.phoneNumber
             });
 
             const saveuser = new UsersModel({
-                username: user.phoneNumber,
-                password: user.password,
-                email: user.email,
-                clientId: user._id
+                username       :     user.phoneNumber,
+                password       :     user.password,
+                email          :     user.email,
+                clientId       :     user._id
             });
     
             try {
-                //almacenando los datos y devolviendo respuesta
+                //save models with data of RegisterRequestModel
                 const savedClient = await client.save();
                 const savedUser = await saveuser.save();
 
+                //delete RegisterRequestModel 
                 await user.remove();
 
+                //send request
                 res.status(200).json({
                     savedClient,
                     savedUser,
@@ -68,18 +91,26 @@ class UserController {
         }
     }
 
+
+    /** 
+        * Function to create RegisterRequestModel on database and save verific code SMS
+        * This function accepts the personal data of the users 
+    */
     public register = async(_req: Request, res: Response) =>{
         res.set('Access-Control-Allow-Origin', '*');
+        /** search Number phone in the data base */
         const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
+
         if (isTelefonoExist) {
             return res.status(208).json({
                     error: 'El numero telefonico ya esta registrado',
                     status: 208
                 });
         }else{
+            //send verification code to number phone of the user
             ramdom(_req.body.phoneNumber as Number);
 
-            //instancia del modelo en espera
+            //instantiating the model for save data
             const user = new RegisterRequestModel({
                 firstName: _req.body.firstName,
                 middleName: _req.body.middleName,
@@ -93,10 +124,10 @@ class UserController {
 
             try {
 
-                //almacenando los datos y devolviendo respuesta
+                //save data
                 const savedUser = await user.save();
-                // ramdom(JSON.stringify(savedUser._id));
 
+                //send request exit
                 res.status(200).json({
                     message: 'usuario registrado',
                     status: 200,
@@ -111,34 +142,41 @@ class UserController {
         }
     }
 
+   /**
+    * function to login of the application
+    * @param {String} _req this parameter receives two values the phone number and the password 
+    * @param {Json} res is response function in json format
+    * @returns {Json}
+    */
     public login = async(_req: Request, res: Response) =>{
         res.set('Access-Control-Allow-Origin', '*');
         const pass = _req.body.password;
         const numuser = _req.body.phoneNumber;
         
-        // Validaciond e existencia
-        const user = await UsersModel.findOne({username: numuser})
+        // search user
+        const user = await UsersModel.findOne({username: numuser});
         if(!user) {
-
             return res.status(404).json({
                 error: 'Usuario no encontrado',
                 status: 404
             });
         }else if(user.password === pass){
 
+            //search user in model clients
             const searchclient = await ClientsModel.findOne({phoneNumber : numuser});
             
-            // Creando token
+            // creating  token
             const token = sign({
                 user
             }, process.env.TOKEN_SECRET as string);
 
-            //creando el mensage de bienvenida
+            //creating message Twilio
             const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
             const authToken = process.env.TWILIO_AUTH_TOKEN as string;
 
             const client = new Twilio(accountSid, authToken);
 
+            //sent SMS of twilio
             await client.messages
             .create({
                 body: `Hola ${searchclient?.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
@@ -147,9 +185,12 @@ class UserController {
             })
             .then(message => console.log(message.sid));
             
+            //send request
             await res.status(200).json({
                 status:200,
                 data: { token },
+                name: searchclient?.firstName,
+                id: searchclient?._id,
                 message: 'Bienvenido'
             })
             
@@ -162,21 +203,86 @@ class UserController {
         } 
     }
 
+
+    //probando la subida de archivos pdf
+
+    public Savefiles = async(_req: Request, res : Response)=>{
+
+        res.set('Access-Control-Allow-Origin', '*');
+        const file = _req.file
+
+        if (!file) {
+            const error = new Error('Please upload a file');
+            return error;
+        }else{
+
+            /** search Number phone in the data base */
+            const isUserExist = await UsersModel.findOne({ username: _req.body.phoneNumber });
+
+            if (isUserExist) {
+                //instantiating the model for save data
+                const user = new InsurancePoliciesModel({
+                    insurerName: _req.body.insurerName,
+                    policyNumber: _req.body.policyNumber,
+                    policyType: _req.body.policyType,
+                    effectiveDate: Date.now(),
+                    expirationDate: Date.now(),
+                    status: _req.body.status,
+                    fileUrl: `${file.destination}/${file.filename}`,
+                    clientId:isUserExist._id
+                });
+
+                try {
+
+                    //save data
+                    const savedUser = await user.save();
+
+                    //send request exit
+                    res.status(200).json({
+                        message: 'Poliza registrada',
+                        status: 200,
+                    });
+                } catch (error) {
+                    res.status(404).json({
+                        error,
+                        status: 404
+                    });
+                }
+            }else{
+                fs.unlinkSync(`${file.destination}/${file.filename}`);
+                res.status(400).json({
+                    message: 'Usuario no encontrado',
+                    status: 400,
+                });
+            }
+        }
+    }
+
 }
 
+/**
+ * function to generate a number code with for digits and send message SMS
+ * @param {Number} phone Number phone User to send verification code
+ * @returns {String} this value is the code verification
+ */
 function ramdom(phone:Number){
+    //generating 4 random numbers
     let val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
     let val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
     let val3 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
     let val4 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
 
+    //save code in variable to save with user data
     cadena=`${val1}${val2}${val3}${val4}`;
 
     const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
+        //token twilio
         const authToken = process.env.TWILIO_AUTH_TOKEN as string;
 
+        // instantiating twilio
         const client = new Twilio(accountSid, authToken);
 
+        //send code verification
         client.messages
         .create({
             body: `Tu código de verificación es: ${cadena}`,

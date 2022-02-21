@@ -5,12 +5,12 @@ import cors from 'cors';
 /** Import Routes */
 import UserRoute from './api/routes/UserRoute';
 
-/** Initializations */
-
+/** Accept connection of frontend */
 const options: cors.CorsOptions = {
     origin: '*'
 };
 
+/** Initializations */
 const app = express();
 app.use(cors(options));
 import './config/database';

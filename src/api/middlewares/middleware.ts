@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import {sign, verify} from 'jsonwebtoken';
+import multer from "multer";
+import mimeTypes from 'mime-types';
 
 class UserMiddleware {
 
@@ -22,6 +24,21 @@ class UserMiddleware {
         } catch (error){
             res.status(400).json({error: 'Token no valido, acceso denegado'})
         }
+    }
+
+    public saveFile = (_req: Request, res: Response, next:any)=>{
+        var storage = multer.diskStorage({
+            destination: function (req, file, cb) {
+              cb(null, 'src/uploads')
+            },
+            filename: function (req, file, cb) {
+              cb(null, file.fieldname + '-' + Date.now()+ "." + mimeTypes.extension(file.mimetype))
+            }
+          })
+           
+        var upload = multer({ storage: storage });
+        next();
+        return upload;
     }
 }
 
