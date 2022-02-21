@@ -7,7 +7,7 @@ interface RegisterRequest {
     middleName      :       String,
     lastName        :       String,
     phoneNumber     :       Number,
-    birthday        :       String,
+    birthday        :       Date,
     email           :       String,
     password        :       String,
     tokenTotp       :       String;
@@ -18,7 +18,7 @@ const shema = new Schema<RegisterRequest>({
     middleName      :       {type:String, required:true},
     lastName        :       {type:String, required:true},
     phoneNumber     :       {type:Number, required:true},
-    birthday        :       {type:String, required:true},
+    birthday        :       {type:Date, required:true},
     email           :       {type:String, required:true},
     password        :       {type:String, required:true},
     tokenTotp       :       {type:String, required:true},
