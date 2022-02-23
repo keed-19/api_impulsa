@@ -58,7 +58,7 @@ UserRoute.post('/verificar', UserController.ComprobarCod);
 UserRoute.post('/uploadfile', upload.array('myFile',12), UserController.Savefiles);
 
 //obteniendo los PDF
-UserRoute.get('/', UserController.ViewFile);
+UserRoute.post('/viewFile', UserController.ViewFile);
 
 
 export default UserRoute;

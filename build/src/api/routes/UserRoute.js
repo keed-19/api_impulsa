@@ -46,5 +46,5 @@ UserRoute.post('/verificar', UserController_1.default.ComprobarCod);
 //provando la ruta con middleware y controlador
 UserRoute.post('/uploadfile', upload.array('myFile', 12), UserController_1.default.Savefiles);
 //obteniendo los PDF
-UserRoute.get('/', UserController_1.default.ViewFile);
+UserRoute.post('/viewFile', UserController_1.default.ViewFile);
 exports.default = UserRoute;
