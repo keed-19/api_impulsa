@@ -8,10 +8,11 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 /** Import Routes */
 const UserRoute_1 = __importDefault(require("./api/routes/UserRoute"));
-/** Initializations */
+/** Accept connection of frontend */
 const options = {
     origin: '*'
 };
+/** Initializations */
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)(options));
 require("./config/database");

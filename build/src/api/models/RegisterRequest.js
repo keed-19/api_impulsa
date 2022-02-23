@@ -7,7 +7,7 @@ const shema = new mongoose_1.Schema({
     middleName: { type: String, required: true },
     lastName: { type: String, required: true },
     phoneNumber: { type: Number, required: true },
-    birthday: { type: String, required: true },
+    birthday: { type: Date, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
     tokenTotp: { type: String, required: true },

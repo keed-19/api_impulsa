@@ -7,7 +7,7 @@ const shema = new mongoose_1.Schema({
     middleName: { type: String, required: true },
     lastName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
-    birthday: { type: String, required: true },
+    birthday: { type: Date, required: true },
     externalId: { type: Number, required: false },
 });
 const ClientsModel = (0, mongoose_1.model)('Clients', shema);
