@@ -283,8 +283,9 @@ class UserController {
                 isUserExist
             })
         }else if(isUserExist){
-            res.json({
-                PDF : isUserExist.fileUrl
+            const url = isUserExist.fileUrl;
+            res.status(200).json({
+                url
             })
         }else{
             res.json({
