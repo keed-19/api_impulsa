@@ -9,7 +9,7 @@ interface InsurancePolicies {
     effectiveDate   :     Date; // Fecha de inicio de vigencia
     expirationDate  :     Date; // Fecha fin de vigencia
     status          :     String; // Estatus 
-    fileUrl         :     String; // Ruta del PDF
+    fileUrl         :     Object; // Ruta del PDF
     clientId        :     String; // Id del usuario al que pertenece la poliza
 }
 
@@ -20,7 +20,7 @@ const shema = new Schema<InsurancePolicies>({
     effectiveDate     :       {type:Date, required:true},
     expirationDate    :       {type:Date, required:true},
     status            :       {type:String, required:true},
-    fileUrl           :       {type:String, required:true},
+    fileUrl           :       {type:Object, required:true},
     clientId          :       {type:String, required:true},
 })
 

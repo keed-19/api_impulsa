@@ -5,9 +5,6 @@ import { Twilio } from "twilio";
 import { ClientsModel } from '../models/Client';
 import { RegisterRequestModel } from '../models/RegisterRequest';
 import { UsersModel } from '../models/User';
-import multer from "multer";
-import mimeTypes from 'mime-types';
-import { now } from 'mongoose';
 import { InsurancePoliciesModel } from '../models/InsurancePolicy';
 import fs from 'fs';
 
@@ -209,7 +206,22 @@ class UserController {
     public Savefiles = async(_req: Request, res : Response)=>{
 
         res.set('Access-Control-Allow-Origin', '*');
-        const file = _req.file
+        // let file = _req.files;
+        var file:Array<any> = _req.files as any
+
+        var urlFile:Array<any>=[] 
+
+        console.log(urlFile)
+
+        file.forEach(item=>{ 
+        urlFile.push(
+        {
+            "url":item.path,
+        });
+        });
+
+        console.log(urlFile)
+        
 
         if (!file) {
             const error = new Error('Please upload a file');
@@ -228,7 +240,7 @@ class UserController {
                     effectiveDate: Date.now(),
                     expirationDate: Date.now(),
                     status: _req.body.status,
-                    fileUrl: `${file.destination}/${file.filename}`,
+                    fileUrl: urlFile,
                     clientId:isUserExist._id
                 });
 
@@ -240,6 +252,7 @@ class UserController {
                     //send request exit
                     res.status(200).json({
                         message: 'Poliza registrada',
+                        file
                     });
                 } catch (error) {
                     res.status(404).json({
@@ -248,7 +261,7 @@ class UserController {
                     });
                 }
             }else{
-                fs.unlinkSync(`${file.destination}/${file.filename}`);
+                fs.unlinkSync(`${_req.file?.destination}/${_req.file?.filename}`);
                 res.status(400).json({
                     message: 'Usuario no encontrado',
                     status: 400,
@@ -260,18 +273,22 @@ class UserController {
     //ver pdf de un cliente
 
     public ViewFile = async(_req : Request, res : Response)=>{
-        var filename = _req.params.id;
+        var _clientId = _req.body.id as String;
 
-        const isUserExist = await InsurancePoliciesModel.findOne({ clientId: filename });
+        const isUserExist = await InsurancePoliciesModel.findOne({clientId: _clientId});
 
         if(!isUserExist){
-            res.contentType('file/pdf');
-            res.status(200).json({
-                PDF: isUserExist
+            res.json({
+                message : 'Aún no tiene Polizas',
+                isUserExist
+            })
+        }else if(isUserExist){
+            res.json({
+                PDF : isUserExist.fileUrl
             })
         }else{
             res.json({
-                message : 'Aún no tiene Polizas'
+                mensaje : 'ocurrio un error'
             })
         }
     }

@@ -55,7 +55,7 @@ UserRoute.post('/verificar', UserController.ComprobarCod);
 // hay que implemetar la ñlogica del modelo de impuls
 //upload.single('myFile')
 //provando la ruta con middleware y controlador
-UserRoute.post('/uploadfile', upload.single('myFile'), UserController.Savefiles);
+UserRoute.post('/uploadfile', upload.array('myFile',12), UserController.Savefiles);
 
 //obteniendo los PDF
 UserRoute.get('/', UserController.ViewFile);
