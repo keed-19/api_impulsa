@@ -207,20 +207,21 @@ class UserController {
 
         res.set('Access-Control-Allow-Origin', '*');
         // let file = _req.files;
-        var file:Array<any> = _req.files as any
+        // var file:Array<any> = _req.files as any
 
-        var urlFile:Array<any>=[] 
+        // var urlFile:Array<any>=[] 
 
-        console.log(urlFile)
+        // console.log(urlFile)
 
-        file.forEach(item=>{ 
-        urlFile.push(
-        {
-            "url":item.path,
-        });
-        });
+        // file.forEach(item=>{ 
+        // urlFile.push(
+        // {
+        //     "url":item.path,
+        // });
+        // });
 
-        console.log(urlFile)
+        // console.log(urlFile)
+        var file = _req.file;
         
 
         if (!file) {
@@ -229,7 +230,7 @@ class UserController {
         }else{
 
             /** search Number phone in the data base */
-            const isUserExist = await UsersModel.findOne({ username: _req.body.phoneNumber });
+            const isUserExist = await UsersModel.findOne({ username: _req.params.phoneNumber });
 
             if (isUserExist) {
                 //instantiating the model for save data
@@ -240,7 +241,7 @@ class UserController {
                     effectiveDate: Date.now(),
                     expirationDate: Date.now(),
                     status: _req.body.status,
-                    fileUrl: urlFile,
+                    fileUrl: file.path,
                     clientId:isUserExist.clientId
                 });
 
@@ -261,7 +262,7 @@ class UserController {
                     });
                 }
             }else{
-                fs.unlinkSync(`${_req.file?.destination}/${_req.file?.filename}`);
+                fs.unlinkSync(`${_req.file?.path}`);
                 res.status(400).json({
                     message: 'Usuario no encontrado',
                     status: 400,
@@ -273,9 +274,9 @@ class UserController {
     //ver pdf de un cliente
 
     public ViewFile = async(_req : Request, res : Response)=>{
-        var _clientId = _req.body.id as String;
+        var _clientId = _req.params.id;
 
-        const isUserExist = await InsurancePoliciesModel.findOne({clientId: _clientId});
+        const isUserExist = await InsurancePoliciesModel.find({clientId: _clientId});
 
         if(!isUserExist){
             res.json({
@@ -283,9 +284,9 @@ class UserController {
                 isUserExist
             })
         }else if(isUserExist){
-            const url = isUserExist.fileUrl;
+            // const url = isUserExist;
             res.status(200).json({
-                url
+                isUserExist
             })
         }else{
             res.json({

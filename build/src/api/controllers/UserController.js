@@ -180,25 +180,27 @@ class UserController {
         });
         //probando la subida de archivos pdf
         this.Savefiles = (_req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _a;
             res.set('Access-Control-Allow-Origin', '*');
             // let file = _req.files;
-            var file = _req.files;
-            var urlFile = [];
-            console.log(urlFile);
-            file.forEach(item => {
-                urlFile.push({
-                    "url": item.path,
-                });
-            });
-            console.log(urlFile);
+            // var file:Array<any> = _req.files as any
+            // var urlFile:Array<any>=[] 
+            // console.log(urlFile)
+            // file.forEach(item=>{ 
+            // urlFile.push(
+            // {
+            //     "url":item.path,
+            // });
+            // });
+            // console.log(urlFile)
+            var file = _req.file;
             if (!file) {
                 const error = new Error('Please upload a file');
                 return error;
             }
             else {
                 /** search Number phone in the data base */
-                const isUserExist = yield User_1.UsersModel.findOne({ username: _req.body.phoneNumber });
+                const isUserExist = yield User_1.UsersModel.findOne({ username: _req.params.phoneNumber });
                 if (isUserExist) {
                     //instantiating the model for save data
                     const user = new InsurancePolicy_1.InsurancePoliciesModel({
@@ -208,7 +210,7 @@ class UserController {
                         effectiveDate: Date.now(),
                         expirationDate: Date.now(),
                         status: _req.body.status,
-                        fileUrl: urlFile,
+                        fileUrl: file.path,
                         clientId: isUserExist.clientId
                     });
                     try {
@@ -228,7 +230,7 @@ class UserController {
                     }
                 }
                 else {
-                    fs_1.default.unlinkSync(`${(_a = _req.file) === null || _a === void 0 ? void 0 : _a.destination}/${(_b = _req.file) === null || _b === void 0 ? void 0 : _b.filename}`);
+                    fs_1.default.unlinkSync(`${(_a = _req.file) === null || _a === void 0 ? void 0 : _a.path}`);
                     res.status(400).json({
                         message: 'Usuario no encontrado',
                         status: 400,
@@ -238,8 +240,8 @@ class UserController {
         });
         //ver pdf de un cliente
         this.ViewFile = (_req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _clientId = _req.body.id;
-            const isUserExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ clientId: _clientId });
+            var _clientId = _req.params.id;
+            const isUserExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ clientId: _clientId });
             if (!isUserExist) {
                 res.json({
                     message: 'Aún no tiene Polizas',
@@ -247,9 +249,9 @@ class UserController {
                 });
             }
             else if (isUserExist) {
-                const url = isUserExist.fileUrl;
+                // const url = isUserExist;
                 res.status(200).json({
-                    url
+                    isUserExist
                 });
             }
             else {

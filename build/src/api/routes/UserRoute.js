@@ -23,7 +23,13 @@ var storage = multer_1.default.diskStorage({
         cb(null, 'src/uploads');
     },
     filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now() + "." + mime_types_1.default.extension(file.mimetype));
+        if (file.mimetype === 'application/pdf') {
+            cb(null, file.fieldname + '-' + Date.now() + "." + mime_types_1.default.extension(file.mimetype));
+        }
+        else {
+            console.log('No es un archivo PDF');
+            return;
+        }
     }
 });
 var upload = (0, multer_1.default)({ storage: storage });
@@ -44,7 +50,7 @@ UserRoute.post('/verificar', UserController_1.default.ComprobarCod);
 // hay que implemetar la ñlogica del modelo de impuls
 //upload.single('myFile')
 //provando la ruta con middleware y controlador
-UserRoute.post('/uploadfile', upload.array('myFile', 12), UserController_1.default.Savefiles);
+UserRoute.post('/uploadfile/:phoneNumber', upload.single('myFile'), UserController_1.default.Savefiles);
 //obteniendo los PDF
-UserRoute.post('/viewFile', UserController_1.default.ViewFile);
+UserRoute.get('/viewFile/:id', UserController_1.default.ViewFile);
 exports.default = UserRoute;

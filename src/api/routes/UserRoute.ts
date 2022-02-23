@@ -4,6 +4,7 @@ import UserMiddleware from '../middlewares/middleware';
 import multer from "multer";
 import mimeTypes from 'mime-types';
 import { Request, Response } from 'express';
+import { isEmptyBindingElement } from 'typescript';
 
 // const sf = multer.diskStorage({
 //     destination:'../files/',
@@ -22,7 +23,12 @@ var storage = multer.diskStorage({
       cb(null, 'src/uploads')
     },
     filename: function (req, file, cb) {
-      cb(null, file.fieldname + '-' + Date.now()+ "." + mimeTypes.extension(file.mimetype));
+      if(file.mimetype==='application/pdf'){
+        cb(null, file.fieldname + '-' + Date.now()+ "." + mimeTypes.extension(file.mimetype));
+      }else{
+        console.log('No es un archivo PDF');
+        return
+      }
     }
   })
    
@@ -55,10 +61,10 @@ UserRoute.post('/verificar', UserController.ComprobarCod);
 // hay que implemetar la ñlogica del modelo de impuls
 //upload.single('myFile')
 //provando la ruta con middleware y controlador
-UserRoute.post('/uploadfile', upload.array('myFile',12), UserController.Savefiles);
+UserRoute.post('/uploadfile/:phoneNumber', upload.single('myFile'), UserController.Savefiles);
 
 //obteniendo los PDF
-UserRoute.post('/viewFile', UserController.ViewFile);
+UserRoute.get('/viewFile/:id', UserController.ViewFile);
 
 
 export default UserRoute;
