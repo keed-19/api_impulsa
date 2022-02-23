@@ -241,7 +241,7 @@ class UserController {
                     expirationDate: Date.now(),
                     status: _req.body.status,
                     fileUrl: urlFile,
-                    clientId:isUserExist._id
+                    clientId:isUserExist.clientId
                 });
 
                 try {
