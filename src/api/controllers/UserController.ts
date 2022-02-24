@@ -77,12 +77,12 @@ class UserController {
             } catch (error) {
                 res.status(404).json({
                     error,
-                    status: 404
+                    status: 404,
                 });
             }
 
         }else{
-            res.status(203).json({messaje:'Verifica tu código'});
+            res.status(203).json({messaje:'Verifica tu código',status: 203});
         }
     }
 

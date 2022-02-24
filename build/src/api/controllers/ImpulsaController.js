@@ -93,11 +93,17 @@ class ImpulsaController {
             const isUserExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ clientId: _clientId });
             if (!isUserExist) {
                 res.json({
-                    message: 'Aún no tiene Polizas'
+                    message: 'No estas asociado a ninguna poliza aún'
                 });
             }
             else if (isUserExist) {
                 // const url = isUserExist;
+                const validator = isObjEmpty(isUserExist);
+                if (validator === true) {
+                    return res.status(400).json({
+                        message: 'Aún no tiene Polizas'
+                    });
+                }
                 res.status(200).json({
                     isUserExist
                 });
@@ -107,6 +113,17 @@ class ImpulsaController {
                     mensaje: 'ocurrio un error'
                 });
             }
+        });
+        //visualizar pdf
+        this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            var name = _req.params.name;
+            var file = fs_1.default.createReadStream(`${name}`);
+            var stat = fs_1.default.statSync(`${name}`);
+            res.setHeader('Content-Length', stat.size);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
+            file.pipe(res);
         });
         //guardar cliente
         this.SaveClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -159,6 +176,26 @@ class ImpulsaController {
                 res.status(200).json({ message: 'El cliente se elimino correctamente' });
             }
         });
+        //actualizar cliente
+        this.UpdateClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            let phoneNumber = _req.params.phoneNumber;
+            const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: phoneNumber });
+            if (!isTelefonoExist) {
+                return res.status(500).json({ message: 'El cliente no se encuentra en la base de datos' });
+            }
+            else {
+                isTelefonoExist.remove();
+                res.status(200).json({ message: 'El cliente se elimino correctamente' });
+            }
+        });
     }
+}
+function isObjEmpty(obj) {
+    for (var prop in obj) {
+        if (obj.hasOwnProperty(prop))
+            return false;
+    }
+    return true;
 }
 exports.default = new ImpulsaController();

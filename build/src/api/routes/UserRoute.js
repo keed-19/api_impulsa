@@ -28,10 +28,13 @@ UserRoute.post('/verificar', UserController_1.default.ComprobarCod);
 //TODOs: Rutas para las acciones de impulsa en desarrollo
 //obteniendo los PDF
 UserRoute.get('/viewFile/:id', ImpulsaController_1.default.ViewFile);
+//vizualisar un pdf en web
+UserRoute.get('/viewPDF/:name', ImpulsaController_1.default.ViewPDF);
 //guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
 UserRoute.post('/uploadfile/:phoneNumber', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.Savefiles);
 //guardando clientes desde impulsa
 UserRoute.post('/saveclient', ImpulsaController_1.default.SaveClient);
 //eliminando clientes
 UserRoute.post('/deleteclient/:phoneNumber', ImpulsaController_1.default.DeleteClient);
+//actualizar cliente
 exports.default = UserRoute;

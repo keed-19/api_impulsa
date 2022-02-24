@@ -34,6 +34,9 @@ UserRoute.post('/verificar', UserController.ComprobarCod);
 //obteniendo los PDF
 UserRoute.get('/viewFile/:id', ImpulsaController.ViewFile);
 
+//vizualisar un pdf en web
+UserRoute.get('/viewPDF/:name', ImpulsaController.ViewPDF);
+
 //guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
 UserRoute.post('/uploadfile/:phoneNumber', Upload.single('myFile'), ImpulsaController.Savefiles);
 

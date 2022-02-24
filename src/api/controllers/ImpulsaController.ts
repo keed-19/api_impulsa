@@ -86,16 +86,24 @@ class ImpulsaController {
 
     public ViewFile = async(_req : Request, res : Response)=>{
         res.set('Access-Control-Allow-Origin', '*');
+
         var _clientId = _req.params.id;
 
         const isUserExist = await InsurancePoliciesModel.find({clientId: _clientId});
 
         if(!isUserExist){
             res.json({
-                message : 'Aún no tiene Polizas'
+                message : 'No estas asociado a ninguna poliza aún'
             })
         }else if(isUserExist){
             // const url = isUserExist;
+            const validator = isObjEmpty(isUserExist as object);
+
+            if(validator===true){
+                return res.status(400).json({
+                    message : 'Aún no tiene Polizas'
+                })
+            }
             res.status(200).json({
                 isUserExist
             })
@@ -104,6 +112,19 @@ class ImpulsaController {
                 mensaje : 'ocurrio un error'
             })
         }
+    }
+
+    //visualizar pdf
+    public ViewPDF = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
+
+        var name = _req.params.name;
+        var file = fs.createReadStream(`${name}`);
+        var stat = fs.statSync(`${name}`);
+        res.setHeader('Content-Length', stat.size);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
+        file.pipe(res);
     }
 
     //guardar cliente
@@ -179,5 +200,13 @@ class ImpulsaController {
         }
     }
 }
+
+function isObjEmpty(obj:Object) {
+    for (var prop in obj) {
+      if (obj.hasOwnProperty(prop)) return false;
+    }
+  
+    return true;
+  }
 
 export default new ImpulsaController();
