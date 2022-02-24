@@ -4,6 +4,7 @@ import { UsersModel } from '../models/User';
 import { InsurancePoliciesModel } from '../models/InsurancePolicy';
 import fs from 'fs';
 import { ClientsModel } from '../models/Client';
+var path = require('path'); 
 
 /** My class of user controller */
 class ImpulsaController {
@@ -46,7 +47,7 @@ class ImpulsaController {
                     effectiveDate: Date.now(),
                     expirationDate: Date.now(),
                     status: _req.body.status,
-                    fileUrl: file.path,
+                    fileUrl: file.filename,
                     clientId:isUserExist.clientId
                 });
 
@@ -126,6 +127,30 @@ class ImpulsaController {
         var data =fs.readFileSync('src\\uploads\\'+name);
         res.contentType("application/pdf");
         res.send(data);
+    }
+
+    public DownloadPDF = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
+
+        var name = _req.params.name;
+        // var file = fs.createReadStream(`${name}`);
+        // var stat = fs.statSync(`../../uploads/${name}`);
+        // res.setHeader('Content-Length', stat.size);
+        // res.setHeader('Content-Type', 'application/pdf');
+        // res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
+        // file.pipe(res);
+        // var data =fs.readFileSync('src\\uploads\\'+name);
+        var file = path.join('src\\uploads\\'+name);    
+        res.download(file, function (err) {
+            if (err) {
+                console.log("Error");
+                console.log(err);
+                res.json(err)
+            } else {
+                console.log("Success")
+                res.json("success")
+            }    
+        });
     }
 
     //guardar cliente
