@@ -104,9 +104,7 @@ class ImpulsaController {
                         message: 'Aún no tiene Polizas'
                     });
                 }
-                res.status(200).json({
-                    isUserExist
-                });
+                res.status(200).json(isUserExist);
             }
             else {
                 res.json({
@@ -118,12 +116,15 @@ class ImpulsaController {
         this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             var name = _req.params.name;
-            var file = fs_1.default.createReadStream(`../../uploads/${name}`);
-            var stat = fs_1.default.statSync(`../../uploads/${name}`);
-            res.setHeader('Content-Length', stat.size);
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
-            file.pipe(res);
+            // var file = fs.createReadStream(`${name}`);
+            // var stat = fs.statSync(`../../uploads/${name}`);
+            // res.setHeader('Content-Length', stat.size);
+            // res.setHeader('Content-Type', 'application/pdf');
+            // res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
+            // file.pipe(res);
+            var data = fs_1.default.readFileSync(__dirname + `/../../uploads/${name}`);
+            res.contentType("application/pdf");
+            res.send(data);
         });
         //guardar cliente
         this.SaveClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {

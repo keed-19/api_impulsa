@@ -104,9 +104,7 @@ class ImpulsaController {
                     message : 'Aún no tiene Polizas'
                 })
             }
-            res.status(200).json({
-                isUserExist
-            })
+            res.status(200).json(isUserExist)
         }else{
             res.json({
                 mensaje : 'ocurrio un error'
@@ -119,12 +117,15 @@ class ImpulsaController {
         res.set('Access-Control-Allow-Origin', '*');
 
         var name = _req.params.name;
-        var file = fs.createReadStream(`../../uploads/${name}`);
-        var stat = fs.statSync(`../../uploads/${name}`);
-        res.setHeader('Content-Length', stat.size);
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
-        file.pipe(res);
+        // var file = fs.createReadStream(`${name}`);
+        // var stat = fs.statSync(`../../uploads/${name}`);
+        // res.setHeader('Content-Length', stat.size);
+        // res.setHeader('Content-Type', 'application/pdf');
+        // res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
+        // file.pipe(res);
+        var data =fs.readFileSync(__dirname+`/../../uploads/${name}`);
+        res.contentType("application/pdf");
+        res.send(data);
     }
 
     //guardar cliente
