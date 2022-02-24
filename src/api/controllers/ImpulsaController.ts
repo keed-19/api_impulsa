@@ -119,8 +119,8 @@ class ImpulsaController {
         res.set('Access-Control-Allow-Origin', '*');
 
         var name = _req.params.name;
-        var file = fs.createReadStream(`${name}`);
-        var stat = fs.statSync(`${name}`);
+        var file = fs.createReadStream(`../../uploads/${name}`);
+        var stat = fs.statSync(`../../uploads/${name}`);
         res.setHeader('Content-Length', stat.size);
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
