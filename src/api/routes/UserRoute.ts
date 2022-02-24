@@ -1,40 +1,8 @@
 import { Router } from 'express';
+import ImpulsaController from '../controllers/ImpulsaController';
 import UserController from '../controllers/UserController';
 import UserMiddleware from '../middlewares/middleware';
-import multer from "multer";
-import mimeTypes from 'mime-types';
-import { Request, Response } from 'express';
-import { isEmptyBindingElement } from 'typescript';
-
-// const sf = multer.diskStorage({
-//     destination:'../files/',
-//     filename:function(req,file,cb){
-//         cb(null,Date.now + "." + mimeTypes.extension(file.mimetype));
-//     }
-// })
-
-// const files = multer({
-//     storage : sf
-// });
-
-// SET STORAGE
-var storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'src/uploads')
-    },
-    filename: function (req, file, cb) {
-      if(file.mimetype==='application/pdf'){
-        cb(null, file.fieldname + '-' + Date.now()+ "." + mimeTypes.extension(file.mimetype));
-      }else{
-        console.log('No es un archivo PDF');
-        return
-      }
-    }
-  })
-   
-var upload = multer({ storage: storage });
-
-
+import { Upload } from '../services/saveFile';
 
 
 const UserRoute: Router = Router();
@@ -57,14 +25,14 @@ UserRoute.post('/veryfic', UserMiddleware.veryfy);
 UserRoute.post('/verificar', UserController.ComprobarCod);
 
 
-//TODOs: estas funciones ya estan listas pero hay que separar el codigo de route con el controlador.
-// hay que implemetar la ñlogica del modelo de impuls
-//upload.single('myFile')
-//provando la ruta con middleware y controlador
-UserRoute.post('/uploadfile/:phoneNumber', upload.single('myFile'), UserController.Savefiles);
+//TODOs: Rutas para las acciones de impulsa en desarrollo
+//guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
+UserRoute.post('/uploadfile/:phoneNumber', Upload.single('myFile'), ImpulsaController.Savefiles);
+
+//guardando 
 
 //obteniendo los PDF
-UserRoute.get('/viewFile/:id', UserController.ViewFile);
+UserRoute.get('/viewFile/:id', ImpulsaController.ViewFile);
 
 
 export default UserRoute;

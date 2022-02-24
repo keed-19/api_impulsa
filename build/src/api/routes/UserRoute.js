@@ -4,35 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const ImpulsaController_1 = __importDefault(require("../controllers/ImpulsaController"));
 const UserController_1 = __importDefault(require("../controllers/UserController"));
 const middleware_1 = __importDefault(require("../middlewares/middleware"));
-const multer_1 = __importDefault(require("multer"));
-const mime_types_1 = __importDefault(require("mime-types"));
-// const sf = multer.diskStorage({
-//     destination:'../files/',
-//     filename:function(req,file,cb){
-//         cb(null,Date.now + "." + mimeTypes.extension(file.mimetype));
-//     }
-// })
-// const files = multer({
-//     storage : sf
-// });
-// SET STORAGE
-var storage = multer_1.default.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'src/uploads');
-    },
-    filename: function (req, file, cb) {
-        if (file.mimetype === 'application/pdf') {
-            cb(null, file.fieldname + '-' + Date.now() + "." + mime_types_1.default.extension(file.mimetype));
-        }
-        else {
-            console.log('No es un archivo PDF');
-            return;
-        }
-    }
-});
-var upload = (0, multer_1.default)({ storage: storage });
+const saveFile_1 = require("../services/saveFile");
 const UserRoute = (0, express_1.Router)();
 /**
     // UserRoute.get('/', UserController.index);
@@ -46,11 +21,10 @@ UserRoute.post('/login', UserController_1.default.login);
 UserRoute.post('/veryfic', middleware_1.default.veryfy);
 //verificando el codigo de sms
 UserRoute.post('/verificar', UserController_1.default.ComprobarCod);
-//TODOs: estas funciones ya estan listas pero hay que separar el codigo de route con el controlador.
-// hay que implemetar la ñlogica del modelo de impuls
-//upload.single('myFile')
-//provando la ruta con middleware y controlador
-UserRoute.post('/uploadfile/:phoneNumber', upload.single('myFile'), UserController_1.default.Savefiles);
+//TODOs: Rutas para las acciones de impulsa en desarrollo
+//guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
+UserRoute.post('/uploadfile/:phoneNumber', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.Savefiles);
+//guardando 
 //obteniendo los PDF
-UserRoute.get('/viewFile/:id', UserController_1.default.ViewFile);
+UserRoute.get('/viewFile/:id', ImpulsaController_1.default.ViewFile);
 exports.default = UserRoute;
