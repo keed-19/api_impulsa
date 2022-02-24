@@ -1,7 +1,6 @@
-import { Schema, model, connect } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
 // create an interface representing a document in MongoDB
-
 interface Clients {
     firstName   :    String; 
     middleName  :    String;

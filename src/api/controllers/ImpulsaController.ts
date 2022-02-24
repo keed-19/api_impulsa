@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { UsersModel } from '../models/User';
 import { InsurancePoliciesModel } from '../models/InsurancePolicy';
 import fs from 'fs';
+import { ClientsModel } from '../models/Client';
 
 /** My class of user controller */
 class ImpulsaController {
@@ -84,14 +85,14 @@ class ImpulsaController {
     //ver pdf de un cliente
 
     public ViewFile = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
         var _clientId = _req.params.id;
 
         const isUserExist = await InsurancePoliciesModel.find({clientId: _clientId});
 
         if(!isUserExist){
             res.json({
-                message : 'Aún no tiene Polizas',
-                isUserExist
+                message : 'Aún no tiene Polizas'
             })
         }else if(isUserExist){
             // const url = isUserExist;
@@ -105,6 +106,78 @@ class ImpulsaController {
         }
     }
 
+    //guardar cliente
+    public SaveClient = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
+        //TODOs:: falta validar los imputs que son necesarios como el external id
+
+        const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
+
+        if (isTelefonoExist) {
+            return res.status(208).json({
+                    error: 'El numero telefonico ya se encuentra registrado en la base de datos',
+                    status: 208
+                });
+        }else{
+
+            //instantiating the model for save data
+            const client = new ClientsModel({
+                firstName: _req.body.firstName,
+                middleName: _req.body.middleName,
+                lastName: _req.body.lastName,
+                birthday: _req.body.birthday,
+                phoneNumber: _req.body.phoneNumber,
+                externalId: _req.body.externalId,
+            });
+
+            try {
+
+                //save data
+                await client.save();
+
+                //send request exit
+                res.status(200).json({
+                    message: 'cliente registrado',
+                    status: 200,
+                });
+            } catch (error) {
+                res.status(404).json({
+                    error,
+                    status: 404
+                });
+            }
+        }
+    }
+
+    //eliminar cliente
+    public DeleteClient = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
+        let phoneNumber  =   _req.params.phoneNumber;
+
+        const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
+
+        if(!isTelefonoExist){
+            return res.status(500).json({ message: 'El cliente no se encuentra en la base de datos' });
+        }else{
+            isTelefonoExist.remove();
+            res.status(200).json({ message: 'El cliente se elimino correctamente' });
+        }
+    }
+
+    //actualizar cliente
+    public UpdateClient = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
+        let phoneNumber  =   _req.params.phoneNumber;
+
+        const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
+
+        if(!isTelefonoExist){
+            return res.status(500).json({ message: 'El cliente no se encuentra en la base de datos' });
+        }else{
+            isTelefonoExist.remove();
+            res.status(200).json({ message: 'El cliente se elimino correctamente' });
+        }
+    }
 }
 
 export default new ImpulsaController();

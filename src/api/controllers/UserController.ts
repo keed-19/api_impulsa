@@ -5,8 +5,6 @@ import { Twilio } from "twilio";
 import { ClientsModel } from '../models/Client';
 import { RegisterRequestModel } from '../models/RegisterRequest';
 import { UsersModel } from '../models/User';
-import { InsurancePoliciesModel } from '../models/InsurancePolicy';
-import fs from 'fs';
 
 /** Variable for verification code */
 let cadena='';

@@ -21,10 +21,17 @@ UserRoute.post('/login', UserController_1.default.login);
 UserRoute.post('/veryfic', middleware_1.default.veryfy);
 //verificando el codigo de sms
 UserRoute.post('/verificar', UserController_1.default.ComprobarCod);
+/**
+    * funcionalidades de Impulsa, con su respectivo controlador
+    * en desarrollo
+*/
 //TODOs: Rutas para las acciones de impulsa en desarrollo
-//guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
-UserRoute.post('/uploadfile/:phoneNumber', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.Savefiles);
-//guardando 
 //obteniendo los PDF
 UserRoute.get('/viewFile/:id', ImpulsaController_1.default.ViewFile);
+//guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
+UserRoute.post('/uploadfile/:phoneNumber', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.Savefiles);
+//guardando clientes desde impulsa
+UserRoute.post('/saveclient', ImpulsaController_1.default.SaveClient);
+//eliminando clientes
+UserRoute.post('/deleteclient/:phoneNumber', ImpulsaController_1.default.DeleteClient);
 exports.default = UserRoute;
