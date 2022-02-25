@@ -185,7 +185,7 @@ class UserController {
             //send request
             await res.status(200).json({
                 status:200,
-                data: token,
+                data: { token },
                 name: searchclient?.firstName,
                 id: searchclient?._id,
                 phoneNumber : user.username
