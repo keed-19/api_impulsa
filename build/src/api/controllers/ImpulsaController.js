@@ -206,13 +206,14 @@ class ImpulsaController {
             let _id = _req.params.clientId;
             let update = _req.body;
             // const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
-            const updateClient = yield Client_1.ClientsModel.findByIdAndUpdate({ _id, update });
-            res.status(200).send({ message: 'Cliente actualizado' });
-            // if(!updateClient){
-            //     return res.status(500).send({ message: `Error al actualizar el usuario`});
-            // }else{
-            //     // updateClient.update(update);
-            // }
+            const updateClient = yield Client_1.ClientsModel.findByIdAndUpdate(_id, update);
+            if (!updateClient) {
+                return res.status(400).send({ message: `Error al actualizar el usuario` });
+            }
+            else {
+                // updateClient.update(update);
+                res.status(200).send({ message: 'Cliente actualizado' });
+            }
         });
     }
 }

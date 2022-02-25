@@ -213,19 +213,19 @@ class ImpulsaController {
     //actualizar cliente
     public UpdateClient = async(_req : Request, res : Response)=>{
         res.set('Access-Control-Allow-Origin', '*');
-        let _id =   _req.params.clientId;
+        let _id =   _req.params.clientId as Object;
         let update  =   _req.body;
 
         // const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
 
-        const updateClient = await ClientsModel.findByIdAndUpdate({_id, update});
-        res.status(200).send({message : 'Cliente actualizado'});
-
-        // if(!updateClient){
-        //     return res.status(500).send({ message: `Error al actualizar el usuario`});
-        // }else{
-        //     // updateClient.update(update);
-        // }
+        const updateClient = await ClientsModel.findByIdAndUpdate(_id, update);
+        
+        if(!updateClient){
+            return res.status(400).send({ message: `Error al actualizar el usuario`});
+        }else{
+            // updateClient.update(update);
+            res.status(200).send({message : 'Cliente actualizado'});
+        }
     }
 }
 

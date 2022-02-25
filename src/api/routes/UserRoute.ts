@@ -47,7 +47,7 @@ UserRoute.post('/uploadfile/:phoneNumber', Upload.single('myFile'), ImpulsaContr
 UserRoute.post('/saveclient', ImpulsaController.SaveClient);
 
 //eliminando clientes
-UserRoute.post('/deleteclient/:phoneNumber', ImpulsaController.DeleteClient);
+UserRoute.delete('/deleteclient/:phoneNumber', ImpulsaController.DeleteClient);
 
 //actualizar cliente
 UserRoute.put('/saveclient/:clientId', ImpulsaController.UpdateClient);

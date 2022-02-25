@@ -51,18 +51,21 @@ class UserController {
                 birthday        :    user.birthday,
                 phoneNumber     :    user.phoneNumber
             });
-
-            const saveuser = new UsersModel({
-                username       :     user.phoneNumber,
-                password       :     user.password,
-                email          :     user.email,
-                clientId       :     user._id
-            });
     
             try {
                 //save models with data of RegisterRequestModel
                 const savedClient = await client.save();
-                const savedUser = await saveuser.save();
+
+                if (savedClient){
+                    const saveuser = new UsersModel({
+                        username       :     user.phoneNumber,
+                        password       :     user.password,
+                        email          :     user.email,
+                        clientId       :     savedClient._id
+                    });
+
+                    await saveuser.save();
+                }
 
                 //delete RegisterRequestModel 
                 await user.remove();
@@ -70,7 +73,6 @@ class UserController {
                 //send request
                 res.status(200).json({
                     savedClient,
-                    savedUser,
                     status: 200
                 });
 
@@ -183,7 +185,7 @@ class UserController {
             //send request
             await res.status(200).json({
                 status:200,
-                data: { token },
+                data: token,
                 name: searchclient?.firstName,
                 id: searchclient?._id,
                 phoneNumber : user.username

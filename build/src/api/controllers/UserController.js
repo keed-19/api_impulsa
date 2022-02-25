@@ -44,22 +44,23 @@ class UserController {
                     birthday: user.birthday,
                     phoneNumber: user.phoneNumber
                 });
-                const saveuser = new User_1.UsersModel({
-                    username: user.phoneNumber,
-                    password: user.password,
-                    email: user.email,
-                    clientId: user._id
-                });
                 try {
                     //save models with data of RegisterRequestModel
                     const savedClient = yield client.save();
-                    const savedUser = yield saveuser.save();
+                    if (savedClient) {
+                        const saveuser = new User_1.UsersModel({
+                            username: user.phoneNumber,
+                            password: user.password,
+                            email: user.email,
+                            clientId: savedClient._id
+                        });
+                        yield saveuser.save();
+                    }
                     //delete RegisterRequestModel 
                     yield user.remove();
                     //send request
                     res.status(200).json({
                         savedClient,
-                        savedUser,
                         status: 200
                     });
                 }
@@ -160,7 +161,7 @@ class UserController {
                 //send request
                 yield res.status(200).json({
                     status: 200,
-                    data: { token },
+                    data: token,
                     name: searchclient === null || searchclient === void 0 ? void 0 : searchclient.firstName,
                     id: searchclient === null || searchclient === void 0 ? void 0 : searchclient._id,
                     phoneNumber: user.username
