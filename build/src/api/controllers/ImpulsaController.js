@@ -119,11 +119,10 @@ class ImpulsaController {
             var name = _req.params.name;
             // var file = fs.createReadStream(`${name}`);
             // var stat = fs.statSync(`../../uploads/${name}`);
-            // res.setHeader('Content-Length', stat.size);
-            // res.setHeader('Content-Type', 'application/pdf');
             // res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
             // file.pipe(res);
             var data = fs_1.default.readFileSync('src\\uploads\\' + name);
+            res.setHeader('Content-Type', 'application/pdf');
             res.contentType("application/pdf");
             res.send(data);
         });
@@ -204,15 +203,16 @@ class ImpulsaController {
         //actualizar cliente
         this.UpdateClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            let phoneNumber = _req.params.phoneNumber;
-            const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: phoneNumber });
-            if (!isTelefonoExist) {
-                return res.status(500).json({ message: 'El cliente no se encuentra en la base de datos' });
-            }
-            else {
-                isTelefonoExist.remove();
-                res.status(200).json({ message: 'El cliente se elimino correctamente' });
-            }
+            let _id = _req.params.clientId;
+            let update = _req.body;
+            // const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
+            const updateClient = yield Client_1.ClientsModel.findByIdAndUpdate({ _id, update });
+            res.status(200).send({ message: 'Cliente actualizado' });
+            // if(!updateClient){
+            //     return res.status(500).send({ message: `Error al actualizar el usuario`});
+            // }else{
+            //     // updateClient.update(update);
+            // }
         });
     }
 }

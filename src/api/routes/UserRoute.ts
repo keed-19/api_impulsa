@@ -50,5 +50,6 @@ UserRoute.post('/saveclient', ImpulsaController.SaveClient);
 UserRoute.post('/deleteclient/:phoneNumber', ImpulsaController.DeleteClient);
 
 //actualizar cliente
+UserRoute.put('/saveclient/:clientId', ImpulsaController.UpdateClient);
 
 export default UserRoute;
