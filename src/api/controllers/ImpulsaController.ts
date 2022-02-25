@@ -122,7 +122,7 @@ class ImpulsaController {
         // var stat = fs.statSync(`../../uploads/${name}`);
         // res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
         // file.pipe(res);
-        var data =fs.readFileSync('src\\uploads\\'+name);
+        var data =fs.readFileSync('src/uploads/'+name);
         res.setHeader('Content-Type', 'application/pdf');
         res.contentType("application/pdf");
         res.send(data);
