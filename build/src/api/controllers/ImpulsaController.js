@@ -50,10 +50,6 @@ class ImpulsaController {
         this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             var name = _req.params.name;
-            // var file = fs.createReadStream(`${name}`);
-            // var stat = fs.statSync(`../../uploads/${name}`);
-            // res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
-            // file.pipe(res);
             var data = fs_1.default.readFileSync('src/uploads/' + name);
             res.setHeader('Content-Type', 'application/pdf');
             res.contentType("application/pdf");

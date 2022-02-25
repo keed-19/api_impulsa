@@ -44,10 +44,6 @@ class ImpulsaController {
         res.set('Access-Control-Allow-Origin', '*');
 
         var name = _req.params.name;
-        // var file = fs.createReadStream(`${name}`);
-        // var stat = fs.statSync(`../../uploads/${name}`);
-        // res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
-        // file.pipe(res);
         var data =fs.readFileSync('src/uploads/'+name);
         res.setHeader('Content-Type', 'application/pdf');
         res.contentType("application/pdf");
@@ -77,7 +73,7 @@ class ImpulsaController {
             }    
         });
     }
-    
+
     //probando la subida de archivos pdf
     public Savefiles = async(_req: Request, res : Response)=>{
 
