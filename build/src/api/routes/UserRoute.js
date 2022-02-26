@@ -22,22 +22,31 @@ UserRoute.post('/veryfic', middleware_1.default.veryfy);
 //verificando el codigo de sms
 UserRoute.post('/verificar', UserController_1.default.ComprobarCod);
 /**
-    * funcionalidades de Impulsa, con su respectivo controlador
-    * en desarrollo
+ * CRUD DE POLIZAS
 */
-//TODOs: Rutas para las acciones de impulsa en desarrollo
 //obteniendo los PDF
 UserRoute.get('/viewFile/:id', ImpulsaController_1.default.ViewFile);
 //vizualisar un pdf en web
 UserRoute.get('/viewPDF/:name', ImpulsaController_1.default.ViewPDF);
-//descargar pdf
-UserRoute.get('/download/:name', ImpulsaController_1.default.DownloadPDF);
 //guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
 UserRoute.post('/uploadfile/:phoneNumber', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.Savefiles);
+//descargar pdf
+// UserRoute.get('/download/:name', ImpulsaController.DownloadPDF);
+//eliminar pdf con el numero de poliza
+UserRoute.delete('/deletePolicy/:policyNumber', ImpulsaController_1.default.DeletePDF);
+//actualizar polizas
+UserRoute.put('/updatePoliza/:policeId', ImpulsaController_1.default.UpdatePoliza);
+/**
+ * CRUD DE CLIENTES
+*/
+//visualizar PDF's
+UserRoute.get('/clients', ImpulsaController_1.default.ViewClients);
+//vizualisar cliente por numero de telefono
+UserRoute.get('/client/:phoneNumber', ImpulsaController_1.default.ViewClient);
 //guardando clientes desde impulsa
 UserRoute.post('/saveclient', ImpulsaController_1.default.SaveClient);
 //eliminando clientes
 UserRoute.delete('/deleteclient/:phoneNumber', ImpulsaController_1.default.DeleteClient);
 //actualizar cliente
-UserRoute.put('/saveclient/:clientId', ImpulsaController_1.default.UpdateClient);
+UserRoute.put('/updateClient/:clientId', ImpulsaController_1.default.UpdateClient);
 exports.default = UserRoute;

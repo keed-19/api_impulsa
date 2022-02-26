@@ -6,11 +6,10 @@ import fs from 'fs';
 import { ClientsModel } from '../models/Client';
 var path = require('path'); 
 
-/** My class of user controller */
+/** My class of Impulsa controller */
 class ImpulsaController {
 
     //ver pdf de un cliente
-
     public ViewFile = async(_req : Request, res : Response)=>{
         res.set('Access-Control-Allow-Origin', '*');
 
@@ -46,35 +45,38 @@ class ImpulsaController {
         var name = _req.params.name;
         var data =fs.readFileSync('src/uploads/'+name);
         res.setHeader('Content-Type', 'application/pdf');
-        res.contentType("application/pdf");
+        // res.contentType("application/pdf");
         res.send(data);
     }
 
-    public DownloadPDF = async(_req : Request, res : Response)=>{
-        res.set('Access-Control-Allow-Origin', '*');
+    // public DownloadPDF = async(_req : Request, res : Response)=>{
+    //     res.set('Access-Control-Allow-Origin', '*');
 
-        var name = _req.params.name;
-        // var file = fs.createReadStream(`${name}`);
-        // var stat = fs.statSync(`../../uploads/${name}`);
-        // res.setHeader('Content-Length', stat.size);
-        // res.setHeader('Content-Type', 'application/pdf');
-        // res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
-        // file.pipe(res);
-        // var data =fs.readFileSync('src\\uploads\\'+name);
-        var file = path.join('src\\uploads\\'+name);    
-        res.download(file, function (err) {
-            if (err) {
-                console.log("Error");
-                console.log(err);
-                res.json(err)
-            } else {
-                console.log("Success")
-                res.json("success")
-            }    
-        });
-    }
+    //     var name = _req.params.name;
+    //     // var file = fs.createReadStream(`${name}`);
+    //     // var stat = fs.statSync(`../../uploads/${name}`);
+    //     // res.setHeader('Content-Length', stat.size);
+    //     // res.setHeader('Content-Type', 'application/pdf');
+    //     // res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
+    //     // file.pipe(res);
+    //     // var data =fs.readFileSync('src\\uploads\\'+name);
+    //     var file = path.join('src\\uploads\\'+name);    
+    //     res.download(file, function (err) {
+    //         if (err) {
+    //             console.log("Error");
+    //             console.log(err);
+    //             res.json(err)
+    //         } else {
+    //             console.log("Success")
+    //             res.json("success")
+    //         }    
+    //     });
+    // }
 
     //probando la subida de archivos pdf
+    
+    //guardar polizas
+    
     public Savefiles = async(_req: Request, res : Response)=>{
 
         res.set('Access-Control-Allow-Origin', '*');
@@ -148,6 +150,48 @@ class ImpulsaController {
         }
     }
 
+    //vizualisar clientes
+    public ViewClients = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
+
+        // var phone = _req.params.phoneNumber;
+
+        const isClientExist = await ClientsModel.find({});
+
+        if(!isClientExist){
+            res.json({
+                message : 'No hay clientes registrados'
+            })
+        }else if(isClientExist){
+            res.status(200).json(isClientExist)
+        }else{
+            res.json({
+                mensaje : 'ocurrio un error'
+            })
+        }
+    }
+
+    //visaualizar cliente por telefono
+    public ViewClient = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
+
+        var phone = _req.params.phoneNumber;
+
+        const isClientExist = await ClientsModel.findOne({phoneNumber : phone});
+
+        if(!isClientExist){
+            res.json({
+                message : 'No existe el cliente'
+            })
+        }else if(isClientExist){
+            res.status(200).json(isClientExist)
+        }else{
+            res.json({
+                mensaje : 'ocurrio un error'
+            })
+        }
+    }
+
     //guardar cliente
     public SaveClient = async(_req : Request, res : Response)=>{
         res.set('Access-Control-Allow-Origin', '*');
@@ -206,6 +250,21 @@ class ImpulsaController {
         }
     }
 
+    //eliminar poliza
+    public DeletePDF = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
+        let policyNumber  =   _req.params.policyNumber;
+
+        const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
+
+        if(!isPolicyExist){
+            return res.status(500).json({ message: 'El numero de poliza no se encuentra en la base de datos' });
+        }else{
+            isPolicyExist.remove();
+            res.status(200).json({ message: 'La poliza se elimino correctamente' });
+        }
+    }
+
     //actualizar cliente
     public UpdateClient = async(_req : Request, res : Response)=>{
         res.set('Access-Control-Allow-Origin', '*');
@@ -221,6 +280,24 @@ class ImpulsaController {
         }else{
             // updateClient.update(update);
             res.status(200).send({message : 'Cliente actualizado'});
+        }
+    }
+
+    //actualizar poliza
+    public UpdatePoliza = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
+        let _id =   _req.params.policeId as Object;
+        let update  =   _req.body;
+
+        // const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
+
+        const updatePolice = await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
+        
+        if(!updatePolice){
+            return res.status(400).send({ message: `Error al actualizar l apoliza`});
+        }else{
+            // updateClient.update(update);
+            res.status(200).send({message : 'poliza actualizada'});
         }
     }
 }

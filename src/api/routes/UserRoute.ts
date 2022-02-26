@@ -26,10 +26,8 @@ UserRoute.post('/verificar', UserController.ComprobarCod);
 
 
 /**
-    * funcionalidades de Impulsa, con su respectivo controlador
-    * en desarrollo
+ * CRUD DE POLIZAS
 */
-//TODOs: Rutas para las acciones de impulsa en desarrollo
 
 //obteniendo los PDF
 UserRoute.get('/viewFile/:id', ImpulsaController.ViewFile);
@@ -37,11 +35,30 @@ UserRoute.get('/viewFile/:id', ImpulsaController.ViewFile);
 //vizualisar un pdf en web
 UserRoute.get('/viewPDF/:name', ImpulsaController.ViewPDF);
 
-//descargar pdf
-UserRoute.get('/download/:name', ImpulsaController.DownloadPDF);
-
 //guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
 UserRoute.post('/uploadfile/:phoneNumber', Upload.single('myFile'), ImpulsaController.Savefiles);
+
+//descargar pdf
+// UserRoute.get('/download/:name', ImpulsaController.DownloadPDF);
+
+//eliminar pdf con el numero de poliza
+UserRoute.delete('/deletePolicy/:policyNumber', ImpulsaController.DeletePDF);
+
+//actualizar polizas
+UserRoute.put('/updatePoliza/:policeId', ImpulsaController.UpdatePoliza);
+
+
+
+/**
+ * CRUD DE CLIENTES
+*/
+
+//visualizar PDF's
+UserRoute.get('/clients', ImpulsaController.ViewClients);
+
+//vizualisar cliente por numero de telefono
+
+UserRoute.get('/client/:phoneNumber', ImpulsaController.ViewClient);
 
 //guardando clientes desde impulsa
 UserRoute.post('/saveclient', ImpulsaController.SaveClient);
@@ -50,6 +67,6 @@ UserRoute.post('/saveclient', ImpulsaController.SaveClient);
 UserRoute.delete('/deleteclient/:phoneNumber', ImpulsaController.DeleteClient);
 
 //actualizar cliente
-UserRoute.put('/saveclient/:clientId', ImpulsaController.UpdateClient);
+UserRoute.put('/updateClient/:clientId', ImpulsaController.UpdateClient);
 
 export default UserRoute;
