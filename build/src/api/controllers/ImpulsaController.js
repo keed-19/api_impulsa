@@ -12,7 +12,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const User_1 = require("../models/User");
 const InsurancePolicy_1 = require("../models/InsurancePolicy");
 const fs_1 = __importDefault(require("fs"));
 const Client_1 = require("../models/Client");
@@ -82,17 +81,6 @@ class ImpulsaController {
         this.Savefiles = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b;
             res.set('Access-Control-Allow-Origin', '*');
-            // let file = _req.files;
-            // var file:Array<any> = _req.files as any
-            // var urlFile:Array<any>=[] 
-            // console.log(urlFile)
-            // file.forEach(item=>{ 
-            // urlFile.push(
-            // {
-            //     "url":item.path,
-            // });
-            // });
-            // console.log(urlFile)
             var file = _req.file;
             if (!file) {
                 const error = new Error('Please upload a file');
@@ -100,18 +88,18 @@ class ImpulsaController {
             }
             else if (file.mimetype === 'application/pdf') {
                 /** search Number phone in the data base */
-                const isUserExist = yield User_1.UsersModel.findOne({ username: _req.params.phoneNumber });
+                const isUserExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.params.phoneNumber });
                 if (isUserExist) {
                     //instantiating the model for save data
                     const user = new InsurancePolicy_1.InsurancePoliciesModel({
                         insurerName: _req.body.insurerName,
                         policyNumber: _req.body.policyNumber,
                         policyType: _req.body.policyType,
-                        effectiveDate: Date.now(),
-                        expirationDate: Date.now(),
+                        effectiveDate: _req.body.effectiveDate,
+                        expirationDate: _req.body.expirationDate,
                         status: _req.body.status,
                         fileUrl: file.filename,
-                        clientId: isUserExist.clientId
+                        clientId: isUserExist._id
                     });
                     try {
                         //save data
@@ -119,7 +107,15 @@ class ImpulsaController {
                         //send request exit
                         res.status(200).json({
                             message: 'Poliza registrada',
-                            file
+                            UserPolicy: [
+                                `InsurerName : ${user.insurerName}`,
+                                `PolicyNumber : ${user.policyNumber}`,
+                                `PolicyType : ${user.policyType}`,
+                                `EffectiveDate : ${user.effectiveDate}`,
+                                `ExpirationDate : ${user.expirationDate}`,
+                                `Status : ${user.status}`,
+                                `FileName : ${user.fileUrl}`
+                            ]
                         });
                     }
                     catch (error) {
@@ -210,6 +206,7 @@ class ImpulsaController {
                     //send request exit
                     res.status(200).json({
                         message: 'cliente registrado',
+                        Client: client,
                         status: 200,
                     });
                 }

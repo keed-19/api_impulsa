@@ -80,21 +80,6 @@ class ImpulsaController {
     public Savefiles = async(_req: Request, res : Response)=>{
 
         res.set('Access-Control-Allow-Origin', '*');
-        // let file = _req.files;
-        // var file:Array<any> = _req.files as any
-
-        // var urlFile:Array<any>=[] 
-
-        // console.log(urlFile)
-
-        // file.forEach(item=>{ 
-        // urlFile.push(
-        // {
-        //     "url":item.path,
-        // });
-        // });
-
-        // console.log(urlFile)
         var file = _req.file;
         
 
@@ -103,19 +88,19 @@ class ImpulsaController {
             return error;
         }else if(file.mimetype === 'application/pdf'){
             /** search Number phone in the data base */
-            const isUserExist = await UsersModel.findOne({ username: _req.params.phoneNumber });
+            const isUserExist = await ClientsModel.findOne({ phoneNumber: _req.params.phoneNumber });
 
             if (isUserExist) {
                 //instantiating the model for save data
                 const user = new InsurancePoliciesModel({
-                    insurerName: _req.body.insurerName,
-                    policyNumber: _req.body.policyNumber,
-                    policyType: _req.body.policyType,
-                    effectiveDate: Date.now(),
-                    expirationDate: Date.now(),
-                    status: _req.body.status,
-                    fileUrl: file.filename,
-                    clientId:isUserExist.clientId
+                    insurerName         :        _req.body.insurerName,
+                    policyNumber        :        _req.body.policyNumber,
+                    policyType          :        _req.body.policyType,
+                    effectiveDate       :        _req.body.effectiveDate,
+                    expirationDate      :        _req.body.expirationDate,
+                    status              :        _req.body.status,
+                    fileUrl             :        file.filename,
+                    clientId            :        isUserExist._id
                 });
 
                 try {
@@ -126,7 +111,15 @@ class ImpulsaController {
                     //send request exit
                     res.status(200).json({
                         message: 'Poliza registrada',
-                        file
+                        UserPolicy: [
+                            `InsurerName : ${user.insurerName}`,
+                            `PolicyNumber : ${user.policyNumber}`,
+                            `PolicyType : ${user.policyType}`,
+                            `EffectiveDate : ${user.effectiveDate}`,
+                            `ExpirationDate : ${user.expirationDate}`,
+                            `Status : ${user.status}`,
+                            `FileName : ${user.fileUrl}`
+                        ]
                     });
                 } catch (error) {
                     res.status(404).json({
@@ -224,6 +217,7 @@ class ImpulsaController {
                 //send request exit
                 res.status(200).json({
                     message: 'cliente registrado',
+                    Client : client,
                     status: 200,
                 });
             } catch (error) {
