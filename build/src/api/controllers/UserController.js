@@ -72,7 +72,7 @@ class UserController {
                 }
             }
             else {
-                res.status(203).json({ messaje: 'Verifica tu código', status: 203 });
+                res.status(203).json({ message: 'Verifica tu código', status: 203 });
             }
         });
         /**
