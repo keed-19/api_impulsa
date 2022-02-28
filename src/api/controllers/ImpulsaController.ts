@@ -272,17 +272,17 @@ class ImpulsaController {
 
         // const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
 
-        const updateClient = await ClientsModel.findByIdAndUpdate(_id, update);
-        const updateClientNow = await ClientsModel.findById(_id);
-        
-        if(!updateClient){
-            return res.status(400).send({ message: `Error al actualizar el usuario`});
-        }else{
-            // updateClient.update(update);
-            res.status(200).send({
+        await ClientsModel.findByIdAndUpdate(_id, update);
+
+        try {
+            const updateClientNow = await ClientsModel.findById(_id);
+
+            res.status(200).json({
                 message : 'Cliente actualizado',
                 updateClientNow
             });
+        } catch (error) {
+            return res.status(400).json({ message: `Error al actualizar el usuario`, error});
         }
     }
 
@@ -294,13 +294,13 @@ class ImpulsaController {
 
         // const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
 
-        const updatePolice = await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
-        
-        if(!updatePolice){
-            return res.status(400).send({ message: `Error al actualizar l apoliza`});
-        }else{
-            // updateClient.update(update);
-            res.status(200).send({message : 'poliza actualizada'});
+        await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
+        const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
+
+        try {
+            res.status(200).send({message : 'poliza actualizada', updatePoliceNow});
+        } catch (error) {
+            return res.status(400).send({ message: `Error al actualizar l apoliza: ${error}`});
         }
     }
 }
