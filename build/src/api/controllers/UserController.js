@@ -134,9 +134,9 @@ class UserController {
             // search user
             const user = yield User_1.UsersModel.findOne({ username: numuser });
             if (!user) {
-                return res.status(203).send({
+                return res.status(404).send({
                     error: 'Usuario no encontrado',
-                    status: 203
+                    status: 404
                 });
             }
             else if (user.password === pass) {
