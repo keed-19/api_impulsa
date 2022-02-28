@@ -42,11 +42,16 @@ class ImpulsaController {
     public ViewPDF = async(_req : Request, res : Response)=>{
         res.set('Access-Control-Allow-Origin', '*');
 
-        var name = _req.params.name;
+        var name = _req.params.name as String;
         var data =fs.readFileSync('src/uploads/'+name);
-        res.setHeader('Content-Type', 'application/pdf');
-        // res.contentType("application/pdf");
-        res.send(data);
+
+        try {
+            res.setHeader('Content-Type', 'application/pdf');
+            // res.contentType("application/pdf");
+            res.send(data);
+        } catch (error) {
+            res.status(404).send('No se encuentra la poliza: '+error);
+        }
     }
 
     // public DownloadPDF = async(_req : Request, res : Response)=>{
@@ -268,12 +273,16 @@ class ImpulsaController {
         // const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
 
         const updateClient = await ClientsModel.findByIdAndUpdate(_id, update);
+        const updateClientNow = await ClientsModel.findById(_id);
         
         if(!updateClient){
             return res.status(400).send({ message: `Error al actualizar el usuario`});
         }else{
             // updateClient.update(update);
-            res.status(200).send({message : 'Cliente actualizado'});
+            res.status(200).send({
+                message : 'Cliente actualizado',
+                updateClientNow
+            });
         }
     }
 
