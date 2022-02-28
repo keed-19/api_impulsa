@@ -135,7 +135,7 @@ class UserController {
             const user = yield User_1.UsersModel.findOne({ username: numuser });
             if (!user) {
                 return res.status(203).send({
-                    error: 'credenciales incorrectas',
+                    error: 'Credenciales incorrectas',
                     status: 203
                 });
             }
@@ -169,7 +169,7 @@ class UserController {
             }
             else {
                 return res.status(203).json({
-                    error: 'credenciales incorrectas',
+                    error: 'Credenciales incorrectas',
                     status: 203
                 });
             }

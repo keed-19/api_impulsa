@@ -154,7 +154,7 @@ class UserController {
         const user = await UsersModel.findOne({username: numuser});
         if(!user) {
             return res.status(203).send({
-                error: 'credenciales incorrectas',
+                error: 'Credenciales incorrectas',
                 status: 203
             });
         }else if(user.password === pass){
@@ -194,7 +194,7 @@ class UserController {
         }else{
         
             return res.status(203).json({
-                error: 'credenciales incorrectas',
+                error: 'Credenciales incorrectas',
                 status: 203
             })
         } 
