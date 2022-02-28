@@ -103,8 +103,11 @@ class UserController {
             let update = {tokenTotp : cadenaReenvio}
             
             await RegisterRequestModel.updateOne(_id, update)
-            const updateRequestNow = await RegisterRequestModel.findOne(_id);
-            res.json({updateRequest, updateRequestNow});
+            // const updateRequestNow = await RegisterRequestModel.findOne(_id);
+            res.status(200).json({
+                message : 'El código se reenvió con éxito',
+                status : 200
+            });
             
         } catch (error) {
             

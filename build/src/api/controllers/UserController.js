@@ -85,8 +85,11 @@ class UserController {
                 console.log(cadenaReenvio);
                 let update = { tokenTotp: cadenaReenvio };
                 yield RegisterRequest_1.RegisterRequestModel.updateOne(_id, update);
-                const updateRequestNow = yield RegisterRequest_1.RegisterRequestModel.findOne(_id);
-                res.json({ updateRequest, updateRequestNow });
+                // const updateRequestNow = await RegisterRequestModel.findOne(_id);
+                res.status(200).json({
+                    message: 'El código se reenvió con éxito',
+                    status: 200
+                });
             }
             catch (error) {
             }
