@@ -134,9 +134,9 @@ class UserController {
             // search user
             const user = yield User_1.UsersModel.findOne({ username: numuser });
             if (!user) {
-                return res.status(404).send({
-                    error: 'Usuario no encontrado',
-                    status: 404
+                return res.status(203).send({
+                    error: 'credenciales incorrectas',
+                    status: 203
                 });
             }
             else if (user.password === pass) {
@@ -169,7 +169,7 @@ class UserController {
             }
             else {
                 return res.status(203).json({
-                    error: 'Constraseña invalida',
+                    error: 'credenciales incorrectas',
                     status: 203
                 });
             }
