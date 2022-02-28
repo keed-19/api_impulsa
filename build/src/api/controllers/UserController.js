@@ -85,7 +85,7 @@ class UserController {
             const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
             if (isTelefonoExist) {
                 return res.status(208).json({
-                    error: 'El numero telefonico ya esta registrado',
+                    message: 'El número de teléfono ya está registrado',
                     status: 208
                 });
             }
@@ -114,9 +114,9 @@ class UserController {
                     });
                 }
                 catch (error) {
-                    res.status(404).json({
-                        error,
-                        status: 404
+                    res.status(400).json({
+                        message: error,
+                        status: 400
                     });
                 }
             }
@@ -135,7 +135,7 @@ class UserController {
             const user = yield User_1.UsersModel.findOne({ username: numuser });
             if (!user) {
                 return res.status(203).send({
-                    error: 'Credenciales incorrectas',
+                    message: 'Credenciales incorrectas',
                     status: 203
                 });
             }
@@ -169,7 +169,7 @@ class UserController {
             }
             else {
                 return res.status(203).json({
-                    error: 'Credenciales incorrectas',
+                    message: 'Credenciales incorrectas',
                     status: 203
                 });
             }

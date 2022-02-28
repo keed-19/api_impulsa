@@ -100,7 +100,7 @@ class UserController {
 
         if (isTelefonoExist) {
             return res.status(208).json({
-                    error: 'El numero telefonico ya esta registrado',
+                    message: 'El número de teléfono ya está registrado',
                     status: 208
                 });
         }else{
@@ -131,9 +131,9 @@ class UserController {
                     data: savedUser._id
                 });
             } catch (error) {
-                res.status(404).json({
-                    error,
-                    status: 404
+                res.status(400).json({
+                    message : error,
+                    status: 400
                 });
             }
         }
@@ -154,7 +154,7 @@ class UserController {
         const user = await UsersModel.findOne({username: numuser});
         if(!user) {
             return res.status(203).send({
-                error: 'Credenciales incorrectas',
+                message: 'Credenciales incorrectas',
                 status: 203
             });
         }else if(user.password === pass){
@@ -194,7 +194,7 @@ class UserController {
         }else{
         
             return res.status(203).json({
-                error: 'Credenciales incorrectas',
+                message: 'Credenciales incorrectas',
                 status: 203
             })
         } 
