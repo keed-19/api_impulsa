@@ -24,6 +24,9 @@ UserRoute.post('/veryfic', UserMiddleware.veryfy);
 //verificando el codigo de sms
 UserRoute.post('/verificar', UserController.ComprobarCod);
 
+//reenviar codigo de verificacion
+UserRoute.get('/codigoR/:phoneNumber', UserController.ReenvioConfirmacion);
+
 
 /**
  * CRUD DE POLIZAS

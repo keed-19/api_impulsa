@@ -16,6 +16,7 @@ const RegisterRequest_1 = require("../models/RegisterRequest");
 const User_1 = require("../models/User");
 /** Variable for verification code */
 let cadena = '';
+let cadenaReenvio = '';
 /** My class of user controller */
 class UserController {
     constructor() {
@@ -73,6 +74,21 @@ class UserController {
             }
             else {
                 res.status(203).json({ message: 'Verifica tu código', status: 203 });
+            }
+        });
+        //reenvio de codigo de verificacion
+        this.ReenvioConfirmacion = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            let _id = _req.params._id;
+            const updateRequest = yield RegisterRequest_1.RegisterRequestModel.findOne(_id);
+            try {
+                ramdomReenvio(updateRequest === null || updateRequest === void 0 ? void 0 : updateRequest.phoneNumber);
+                console.log(cadenaReenvio);
+                let update = { tokenTotp: cadenaReenvio };
+                yield RegisterRequest_1.RegisterRequestModel.updateOne(_id, update);
+                const updateRequestNow = yield RegisterRequest_1.RegisterRequestModel.findOne(_id);
+                res.json({ updateRequest, updateRequestNow });
+            }
+            catch (error) {
             }
         });
         /**
@@ -216,5 +232,28 @@ function ramdom(phone) {
     })
         .then(message => console.log(message.sid));
     return (cadena);
+}
+function ramdomReenvio(phone) {
+    //generating 4 random numbers
+    let val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    let val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    let val3 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    let val4 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    //save code in variable to save with user data
+    cadenaReenvio = `${val1}${val2}${val3}${val4}`;
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    //token twilio
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    // instantiating twilio
+    const client = new twilio_1.Twilio(accountSid, authToken);
+    //send code verification
+    client.messages
+        .create({
+        body: `Tu código de verificación es: ${cadenaReenvio}`,
+        from: '+19378602978',
+        to: `+52${phone}`
+    })
+        .then(message => console.log(message.sid));
+    return (cadenaReenvio);
 }
 exports.default = new UserController();

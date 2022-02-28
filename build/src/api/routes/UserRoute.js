@@ -21,6 +21,8 @@ UserRoute.post('/login', UserController_1.default.login);
 UserRoute.post('/veryfic', middleware_1.default.veryfy);
 //verificando el codigo de sms
 UserRoute.post('/verificar', UserController_1.default.ComprobarCod);
+//reenviar codigo de verificacion
+UserRoute.get('/codigoR/:phoneNumber', UserController_1.default.ReenvioConfirmacion);
 /**
  * CRUD DE POLIZAS
 */

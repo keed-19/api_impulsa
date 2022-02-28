@@ -8,6 +8,7 @@ import { UsersModel } from '../models/User';
 
 /** Variable for verification code */
 let cadena='';
+let cadenaReenvio='';
 
 /** My class of user controller */
 class UserController {
@@ -85,6 +86,28 @@ class UserController {
 
         }else{
             res.status(203).json({message:'Verifica tu código',status: 203});
+        }
+    }
+
+    //reenvio de codigo de verificacion
+    public ReenvioConfirmacion = async(_req:Request, res:Response)=>{
+        let _id = _req.params._id as Object;
+
+        const updateRequest = await RegisterRequestModel.findOne(_id);
+        
+        try {
+            
+            ramdomReenvio(updateRequest?.phoneNumber as Number);
+            console.log(cadenaReenvio);
+
+            let update = {tokenTotp : cadenaReenvio}
+            
+            await RegisterRequestModel.updateOne(_id, update)
+            const updateRequestNow = await RegisterRequestModel.findOne(_id);
+            res.json({updateRequest, updateRequestNow});
+            
+        } catch (error) {
+            
         }
     }
 
@@ -233,6 +256,35 @@ function ramdom(phone:Number){
         .then(message => console.log(message.sid));
     
     return(cadena);
+}
+
+function ramdomReenvio(phone:Number){
+    //generating 4 random numbers
+    let val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    let val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    let val3 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    let val4 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+
+    //save code in variable to save with user data
+    cadenaReenvio=`${val1}${val2}${val3}${val4}`;
+
+    const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
+        //token twilio
+        const authToken = process.env.TWILIO_AUTH_TOKEN as string;
+
+        // instantiating twilio
+        const client = new Twilio(accountSid, authToken);
+
+        //send code verification
+        client.messages
+        .create({
+            body: `Tu código de verificación es: ${cadenaReenvio}`,
+            from: '+19378602978',
+            to: `+52${phone}`
+        })
+        .then(message => console.log(message.sid));
+    
+    return(cadenaReenvio);
 }
 
 export default new UserController();
