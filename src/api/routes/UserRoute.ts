@@ -20,6 +20,14 @@ UserRoute.post('/verificar', UserController.ComprobarCod);
 //reenviar codigo de verificacion
 UserRoute.get('/codigoR/:phoneNumber', UserController.ReenvioConfirmacion);
 
+//lista de polizas para un cliente
+UserRoute.get('/app/policies/:id', UserController.ViewPolicies);
+
+//vizualisar un pdf en especifico
+UserRoute.get('/app/policie/:name', UserController.ViewPDF);
+
+
+
 
 /**
  * CRUD DE POLIZAS
@@ -38,7 +46,7 @@ UserRoute.post('/sync/policies', Upload.single('myFile'), ImpulsaController.Save
 UserRoute.delete('/sync/policies/:policyNumber', ImpulsaController.DeletePolice);
 
 //actualizar polizas
-UserRoute.put('/sync/policies/:policeId', ImpulsaController.UpdatePoliza);
+UserRoute.put('/sync/policies/:policeId', Upload.single('myFile'), ImpulsaController.UpdatePoliza);
 
 
 

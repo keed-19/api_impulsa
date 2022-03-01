@@ -8,12 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = require("jsonwebtoken");
 const twilio_1 = require("twilio");
 const Client_1 = require("../models/Client");
+const InsurancePolicy_1 = require("../models/InsurancePolicy");
 const RegisterRequest_1 = require("../models/RegisterRequest");
 const User_1 = require("../models/User");
+const fs_1 = __importDefault(require("fs"));
 /** Variable for verification code */
 let cadena = '';
 let cadenaReenvio = '';
@@ -182,7 +187,7 @@ class UserController {
                     status: 200,
                     data: { token },
                     name: searchclient === null || searchclient === void 0 ? void 0 : searchclient.firstName,
-                    id: searchclient === null || searchclient === void 0 ? void 0 : searchclient._id,
+                    id: searchclient === null || searchclient === void 0 ? void 0 : searchclient.externalId,
                     phoneNumber: user.username
                 });
             }
@@ -191,6 +196,47 @@ class UserController {
                     message: 'Credenciales incorrectas',
                     status: 203
                 });
+            }
+        });
+        //ver polizas de un cliente
+        this.ViewPolicies = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            var _id = _req.params.id;
+            const error = [];
+            const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalId: _id });
+            if (!isPoliceExist) {
+                res.json({
+                    message: 'No estas asociado a ninguna poliza aún'
+                });
+            }
+            else if (isPoliceExist) {
+                // const url = isUserExist;
+                const validator = isObjEmpty(isPoliceExist);
+                if (validator === true) {
+                    return res.status(400).json({
+                        error
+                    });
+                }
+                res.status(200).json(isPoliceExist);
+            }
+            else {
+                res.json({
+                    mensaje: 'ocurrio un error'
+                });
+            }
+        });
+        //ver pdf de un cliente
+        this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            var name = _req.params.name;
+            var data = fs_1.default.readFileSync('src/uploads/' + name);
+            try {
+                res.setHeader('Content-Type', 'application/pdf');
+                // res.contentType("application/pdf");
+                res.send(data);
+            }
+            catch (error) {
+                res.status(404).send('No se encuentra la poliza: ' + error);
             }
         });
     }
@@ -258,5 +304,12 @@ function ramdomReenvio(phone) {
     })
         .then(message => console.log(message.sid));
     return (cadenaReenvio);
+}
+function isObjEmpty(obj) {
+    for (var prop in obj) {
+        if (obj.hasOwnProperty(prop))
+            return false;
+    }
+    return true;
 }
 exports.default = new UserController();

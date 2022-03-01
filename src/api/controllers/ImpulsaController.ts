@@ -14,8 +14,6 @@ class ImpulsaController {
 
         var externalId = _req.params.externalId;
 
-        const error : any=[];
-
         const isPoliceExist = await InsurancePoliciesModel.find({externalId: externalId});
 
         if(!isPoliceExist){
@@ -28,7 +26,7 @@ class ImpulsaController {
 
             if(validator===true){
                 return res.status(400).json({
-                    error
+                    message : 'Aún no tiene Polizas'
                 })
             }
             res.status(200).json(isPoliceExist)
@@ -272,18 +270,35 @@ class ImpulsaController {
     //actualizar poliza
     public UpdatePoliza = async(_req : Request, res : Response)=>{
         res.set('Access-Control-Allow-Origin', '*');
+        var file = _req.file;
         let _id =   _req.params.policeId as Object;
         let update  =   _req.body;
 
-        // const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
+        const data ={
+            fileUrl : file?.filename
+        }
 
-        await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
-        const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
+        if (!file) {
+            const error = new Error('Se necesita el archivo para realizar la actualización');
+            return error;
+        }else if(file.mimetype === 'application/pdf'){
+            /** search Number phone in the data base */
+            await InsurancePoliciesModel.findByIdAndUpdate(_id, data);
+            await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
+            const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
 
-        try {
-            res.status(200).send({message : 'poliza actualizada', updatePoliceNow});
-        } catch (error) {
-            return res.status(400).send({ message: `Error al actualizar l apoliza: ${error}`});
+            try {
+                res.status(200).send({message : 'poliza actualizada', updatePoliceNow});
+            } catch (error) {
+                fs.unlinkSync(`${_req.file?.path}`);
+                return res.status(400).send({ message: `Error al actualizar l apoliza: ${error}`});
+            }
+        }else{
+            fs.unlinkSync(`${_req.file?.path}`);
+            res.status(400).json({
+                message: 'no es un archivo pdf',
+                status: 400,
+            });
         }
     }
 }

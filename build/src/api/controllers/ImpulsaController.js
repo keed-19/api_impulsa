@@ -22,7 +22,6 @@ class ImpulsaController {
         this.ViewPolicies = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             var externalId = _req.params.externalId;
-            const error = [];
             const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalId: externalId });
             if (!isPoliceExist) {
                 res.json({
@@ -34,7 +33,7 @@ class ImpulsaController {
                 const validator = isObjEmpty(isPoliceExist);
                 if (validator === true) {
                     return res.status(400).json({
-                        error
+                        message: 'Aún no tiene Polizas'
                     });
                 }
                 res.status(200).json(isPoliceExist);
@@ -252,17 +251,37 @@ class ImpulsaController {
         });
         //actualizar poliza
         this.UpdatePoliza = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _c, _d;
             res.set('Access-Control-Allow-Origin', '*');
+            var file = _req.file;
             let _id = _req.params.policeId;
             let update = _req.body;
-            // const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
-            yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, update);
-            const updatePoliceNow = yield InsurancePolicy_1.InsurancePoliciesModel.findById(_id);
-            try {
-                res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
+            const data = {
+                fileUrl: file === null || file === void 0 ? void 0 : file.filename
+            };
+            if (!file) {
+                const error = new Error('Se necesita el archivo para realizar la actualización');
+                return error;
             }
-            catch (error) {
-                return res.status(400).send({ message: `Error al actualizar l apoliza: ${error}` });
+            else if (file.mimetype === 'application/pdf') {
+                /** search Number phone in the data base */
+                yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, data);
+                yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, update);
+                const updatePoliceNow = yield InsurancePolicy_1.InsurancePoliciesModel.findById(_id);
+                try {
+                    res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
+                }
+                catch (error) {
+                    fs_1.default.unlinkSync(`${(_c = _req.file) === null || _c === void 0 ? void 0 : _c.path}`);
+                    return res.status(400).send({ message: `Error al actualizar l apoliza: ${error}` });
+                }
+            }
+            else {
+                fs_1.default.unlinkSync(`${(_d = _req.file) === null || _d === void 0 ? void 0 : _d.path}`);
+                res.status(400).json({
+                    message: 'no es un archivo pdf',
+                    status: 400,
+                });
             }
         });
     }

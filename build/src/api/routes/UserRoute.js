@@ -17,6 +17,10 @@ UserRoute.post('/veryfic', middleware_1.default.veryfy);
 UserRoute.post('/verificar', UserController_1.default.ComprobarCod);
 //reenviar codigo de verificacion
 UserRoute.get('/codigoR/:phoneNumber', UserController_1.default.ReenvioConfirmacion);
+//lista de polizas para un cliente
+UserRoute.get('/app/policies/:id', UserController_1.default.ViewPolicies);
+//vizualisar un pdf en especifico
+UserRoute.get('/app/policie/:name', UserController_1.default.ViewPDF);
 /**
  * CRUD DE POLIZAS
 */
@@ -29,7 +33,7 @@ UserRoute.post('/sync/policies', saveFile_1.Upload.single('myFile'), ImpulsaCont
 //eliminar pdf con el numero de poliza
 UserRoute.delete('/sync/policies/:policyNumber', ImpulsaController_1.default.DeletePolice);
 //actualizar polizas
-UserRoute.put('/sync/policies/:policeId', ImpulsaController_1.default.UpdatePoliza);
+UserRoute.put('/sync/policies/:policeId', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.UpdatePoliza);
 /**
  * FUNCIONALIDADES IMPULSA
  * CRUD DE CLIENTES

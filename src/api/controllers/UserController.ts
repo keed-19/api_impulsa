@@ -3,8 +3,10 @@ import { Request, Response } from 'express';
 import {sign} from 'jsonwebtoken';
 import { Twilio } from "twilio";
 import { ClientsModel } from '../models/Client';
+import { InsurancePoliciesModel } from '../models/InsurancePolicy';
 import { RegisterRequestModel } from '../models/RegisterRequest';
 import { UsersModel } from '../models/User';
+import fs from 'fs';
 
 /** Variable for verification code */
 let cadena='';
@@ -212,7 +214,7 @@ class UserController {
                 status:200,
                 data: { token },
                 name: searchclient?.firstName,
-                id: searchclient?._id,
+                id: searchclient?.externalId,
                 phoneNumber : user.username
             })
             
@@ -223,6 +225,53 @@ class UserController {
                 status: 203
             })
         } 
+    }
+
+    //ver polizas de un cliente
+    public ViewPolicies = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
+
+        var _id = _req.params.id;
+
+        const error : any=[];
+
+        const isPoliceExist = await InsurancePoliciesModel.find({externalId:_id});
+
+        if(!isPoliceExist){
+            res.json({
+                message : 'No estas asociado a ninguna poliza aún'
+            })
+        }else if(isPoliceExist){
+            // const url = isUserExist;
+            const validator = isObjEmpty(isPoliceExist as object);
+
+            if(validator===true){
+                return res.status(400).json({
+                    error
+                })
+            }
+            res.status(200).json(isPoliceExist)
+        }else{
+            res.json({
+                mensaje : 'ocurrio un error'
+            })
+        }
+    }
+
+    //ver pdf de un cliente
+    public ViewPDF = async(_req : Request, res : Response)=>{
+        res.set('Access-Control-Allow-Origin', '*');
+
+        var name = _req.params.name as String;
+        var data =fs.readFileSync('src/uploads/'+name);
+
+        try {
+            res.setHeader('Content-Type', 'application/pdf');
+            // res.contentType("application/pdf");
+            res.send(data);
+        } catch (error) {
+            res.status(404).send('No se encuentra la poliza: '+error);
+        }
     }
 }
 
@@ -288,5 +337,13 @@ function ramdomReenvio(phone:Number){
     
     return(cadenaReenvio);
 }
+
+function isObjEmpty(obj:Object) {
+    for (var prop in obj) {
+      if (obj.hasOwnProperty(prop)) return false;
+    }
+  
+    return true;
+  }
 
 export default new UserController();
