@@ -166,17 +166,17 @@ class UserController {
                     user
                 }, process.env.TOKEN_SECRET);
                 //creating message Twilio
-                const accountSid = process.env.TWILIO_ACCOUNT_SID;
-                const authToken = process.env.TWILIO_AUTH_TOKEN;
-                const client = new twilio_1.Twilio(accountSid, authToken);
+                // const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
+                // const authToken = process.env.TWILIO_AUTH_TOKEN as string;
+                // const client = new Twilio(accountSid, authToken);
                 //sent SMS of twilio
-                yield client.messages
-                    .create({
-                    body: `Hola ${searchclient === null || searchclient === void 0 ? void 0 : searchclient.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
-                    from: '+19378602978',
-                    to: `+52${user.username}`
-                })
-                    .then(message => console.log(message.sid));
+                // await client.messages
+                // .create({
+                //     body: `Hola ${searchclient?.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
+                //     from: '+19378602978',
+                //     to: `+52${user.username}`
+                // })
+                // .then(message => console.log(message.sid));
                 //send request
                 yield res.status(200).json({
                     status: 200,

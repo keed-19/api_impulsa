@@ -114,7 +114,6 @@ class UserController {
         }
     }
 
-
     /** 
         * Function to create RegisterRequestModel on database and save verific code SMS
         * This function accepts the personal data of the users 
@@ -194,19 +193,19 @@ class UserController {
             }, process.env.TOKEN_SECRET as string);
 
             //creating message Twilio
-            const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
-            const authToken = process.env.TWILIO_AUTH_TOKEN as string;
+            // const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
+            // const authToken = process.env.TWILIO_AUTH_TOKEN as string;
 
-            const client = new Twilio(accountSid, authToken);
+            // const client = new Twilio(accountSid, authToken);
 
             //sent SMS of twilio
-            await client.messages
-            .create({
-                body: `Hola ${searchclient?.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
-                from: '+19378602978',
-                to: `+52${user.username}`
-            })
-            .then(message => console.log(message.sid));
+            // await client.messages
+            // .create({
+            //     body: `Hola ${searchclient?.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
+            //     from: '+19378602978',
+            //     to: `+52${user.username}`
+            // })
+            // .then(message => console.log(message.sid));
             
             //send request
             await res.status(200).json({
