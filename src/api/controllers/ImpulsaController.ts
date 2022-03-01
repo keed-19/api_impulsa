@@ -53,7 +53,7 @@ class ImpulsaController {
         }
     }
 
-    //TODO: guardar polizas ya conlas nuevas correciones
+    //guardar poliza
     public SavePolice = async(_req: Request, res : Response)=>{
 
         res.set('Access-Control-Allow-Origin', '*');
@@ -291,12 +291,15 @@ class ImpulsaController {
                 res.status(200).send({message : 'poliza actualizada', updatePoliceNow});
             } catch (error) {
                 fs.unlinkSync(`${_req.file?.path}`);
-                return res.status(400).send({ message: `Error al actualizar l apoliza: ${error}`});
+                return res.status(400).send({ 
+                    message: `Error al actualizar l apoliza: ${error}`,
+                    status: 400
+                });
             }
         }else{
             fs.unlinkSync(`${_req.file?.path}`);
             res.status(400).json({
-                message: 'no es un archivo pdf',
+                message: 'No se cargo ningún archivo o no es un PDF',
                 status: 400,
             });
         }

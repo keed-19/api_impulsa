@@ -58,7 +58,7 @@ class ImpulsaController {
                 res.status(404).send('No se encuentra la poliza: ' + error);
             }
         });
-        //TODO: guardar polizas ya conlas nuevas correciones
+        //guardar poliza
         this.SavePolice = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b;
             res.set('Access-Control-Allow-Origin', '*');
@@ -273,13 +273,16 @@ class ImpulsaController {
                 }
                 catch (error) {
                     fs_1.default.unlinkSync(`${(_c = _req.file) === null || _c === void 0 ? void 0 : _c.path}`);
-                    return res.status(400).send({ message: `Error al actualizar l apoliza: ${error}` });
+                    return res.status(400).send({
+                        message: `Error al actualizar l apoliza: ${error}`,
+                        status: 400
+                    });
                 }
             }
             else {
                 fs_1.default.unlinkSync(`${(_d = _req.file) === null || _d === void 0 ? void 0 : _d.path}`);
                 res.status(400).json({
-                    message: 'no es un archivo pdf',
+                    message: 'No se cargo ningún archivo o no es un PDF',
                     status: 400,
                 });
             }
