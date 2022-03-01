@@ -60,13 +60,13 @@ UserRoute.get('/sync/clients', ImpulsaController.ViewClients);
 
 //vizualisar cliente por numero de telefono
 
-UserRoute.get('/sync/clients/:phoneNumber', ImpulsaController.ViewClient);
+UserRoute.get('/sync/clients/:externalId', ImpulsaController.ViewClient);
 
 //guardando clientes desde impulsa
 UserRoute.post('/sync/clients', ImpulsaController.SaveClient);
 
 //eliminando clientes
-UserRoute.delete('/sync/clients/:phoneNumber', ImpulsaController.DeleteClient);
+UserRoute.delete('/sync/clients/:externalId', ImpulsaController.DeleteClient);
 
 //actualizar cliente
 UserRoute.put('/sync/clients/:clientId', ImpulsaController.UpdateClient);

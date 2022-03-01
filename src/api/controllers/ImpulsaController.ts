@@ -154,9 +154,9 @@ class ImpulsaController {
     public ViewClient = async(_req : Request, res : Response)=>{
         res.set('Access-Control-Allow-Origin', '*');
 
-        var phone = _req.params.phoneNumber;
+        var externalId = _req.params.externalId;
 
-        const isClientExist = await ClientsModel.findOne({phoneNumber : phone});
+        const isClientExist = await ClientsModel.findOne({externalId : externalId});
 
         if(!isClientExist){
             res.json({
@@ -218,9 +218,9 @@ class ImpulsaController {
     //eliminar cliente
     public DeleteClient = async(_req : Request, res : Response)=>{
         res.set('Access-Control-Allow-Origin', '*');
-        let phoneNumber  =   _req.params.phoneNumber;
+        let externalId  =   _req.params.externalId;
 
-        const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
+        const isTelefonoExist = await ClientsModel.findOne({ externalId: externalId });
 
         if(!isTelefonoExist){
             return res.status(500).json({ message: 'El cliente no se encuentra en la base de datos' });

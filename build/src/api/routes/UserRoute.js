@@ -41,11 +41,11 @@ UserRoute.put('/sync/policies/:policeId', saveFile_1.Upload.single('myFile'), Im
 //visualizar Clientes
 UserRoute.get('/sync/clients', ImpulsaController_1.default.ViewClients);
 //vizualisar cliente por numero de telefono
-UserRoute.get('/sync/clients/:phoneNumber', ImpulsaController_1.default.ViewClient);
+UserRoute.get('/sync/clients/:externalId', ImpulsaController_1.default.ViewClient);
 //guardando clientes desde impulsa
 UserRoute.post('/sync/clients', ImpulsaController_1.default.SaveClient);
 //eliminando clientes
-UserRoute.delete('/sync/clients/:phoneNumber', ImpulsaController_1.default.DeleteClient);
+UserRoute.delete('/sync/clients/:externalId', ImpulsaController_1.default.DeleteClient);
 //actualizar cliente
 UserRoute.put('/sync/clients/:clientId', ImpulsaController_1.default.UpdateClient);
 exports.default = UserRoute;

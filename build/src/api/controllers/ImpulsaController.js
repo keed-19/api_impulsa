@@ -150,8 +150,8 @@ class ImpulsaController {
         //visaualizar cliente por telefono
         this.ViewClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            var phone = _req.params.phoneNumber;
-            const isClientExist = yield Client_1.ClientsModel.findOne({ phoneNumber: phone });
+            var externalId = _req.params.externalId;
+            const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalId });
             if (!isClientExist) {
                 res.json({
                     message: 'No existe el cliente'
@@ -208,8 +208,8 @@ class ImpulsaController {
         //eliminar cliente
         this.DeleteClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            let phoneNumber = _req.params.phoneNumber;
-            const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: phoneNumber });
+            let externalId = _req.params.externalId;
+            const isTelefonoExist = yield Client_1.ClientsModel.findOne({ externalId: externalId });
             if (!isTelefonoExist) {
                 return res.status(500).json({ message: 'El cliente no se encuentra en la base de datos' });
             }
