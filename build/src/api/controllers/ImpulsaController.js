@@ -15,29 +15,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const InsurancePolicy_1 = require("../models/InsurancePolicy");
 const fs_1 = __importDefault(require("fs"));
 const Client_1 = require("../models/Client");
-var path = require('path');
 /** My class of Impulsa controller */
 class ImpulsaController {
     constructor() {
         //ver pdf de un cliente
-        this.ViewFile = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.ViewPolicies = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            var _clientId = _req.params.id;
-            const isUserExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ clientId: _clientId });
-            if (!isUserExist) {
+            var externalId = _req.params.externalId;
+            const error = [];
+            const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalId: externalId });
+            if (!isPoliceExist) {
                 res.json({
                     message: 'No estas asociado a ninguna poliza aún'
                 });
             }
-            else if (isUserExist) {
+            else if (isPoliceExist) {
                 // const url = isUserExist;
-                const validator = isObjEmpty(isUserExist);
+                const validator = isObjEmpty(isPoliceExist);
                 if (validator === true) {
                     return res.status(400).json({
-                        message: 'Aún no tiene Polizas'
+                        error
                     });
                 }
-                res.status(200).json(isUserExist);
+                res.status(200).json(isPoliceExist);
             }
             else {
                 res.json({
@@ -59,31 +59,8 @@ class ImpulsaController {
                 res.status(404).send('No se encuentra la poliza: ' + error);
             }
         });
-        // public DownloadPDF = async(_req : Request, res : Response)=>{
-        //     res.set('Access-Control-Allow-Origin', '*');
-        //     var name = _req.params.name;
-        //     // var file = fs.createReadStream(`${name}`);
-        //     // var stat = fs.statSync(`../../uploads/${name}`);
-        //     // res.setHeader('Content-Length', stat.size);
-        //     // res.setHeader('Content-Type', 'application/pdf');
-        //     // res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
-        //     // file.pipe(res);
-        //     // var data =fs.readFileSync('src\\uploads\\'+name);
-        //     var file = path.join('src\\uploads\\'+name);    
-        //     res.download(file, function (err) {
-        //         if (err) {
-        //             console.log("Error");
-        //             console.log(err);
-        //             res.json(err)
-        //         } else {
-        //             console.log("Success")
-        //             res.json("success")
-        //         }    
-        //     });
-        // }
-        //probando la subida de archivos pdf
-        //guardar polizas
-        this.Savefiles = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+        //TODO: guardar polizas ya conlas nuevas correciones
+        this.SavePolice = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b;
             res.set('Access-Control-Allow-Origin', '*');
             var file = _req.file;
@@ -93,18 +70,24 @@ class ImpulsaController {
             }
             else if (file.mimetype === 'application/pdf') {
                 /** search Number phone in the data base */
-                const isUserExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.params.phoneNumber });
+                const isUserExist = yield Client_1.ClientsModel.findOne({ externalId: _req.params.externalId });
                 if (isUserExist) {
+                    //creando el alias del modelo
+                    const tipe = _req.body.policyType;
+                    const number = _req.body.policyNumber;
+                    let extraida = tipe.substring(0, 3);
+                    const alias = `${extraida}-${number}`;
                     //instantiating the model for save data
                     const user = new InsurancePolicy_1.InsurancePoliciesModel({
                         insurerName: _req.body.insurerName,
-                        policyNumber: _req.body.policyNumber,
-                        policyType: _req.body.policyType,
+                        policyNumber: number,
+                        policyType: tipe,
+                        alias: alias,
                         effectiveDate: _req.body.effectiveDate,
                         expirationDate: _req.body.expirationDate,
                         status: _req.body.status,
                         fileUrl: file.filename,
-                        clientId: isUserExist._id
+                        externalId: _req.body.externalId
                     });
                     try {
                         //save data
@@ -237,7 +220,7 @@ class ImpulsaController {
             }
         });
         //eliminar poliza
-        this.DeletePDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.DeletePolice = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             let policyNumber = _req.params.policyNumber;
             const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber });

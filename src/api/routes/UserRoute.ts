@@ -6,13 +6,6 @@ import { Upload } from '../services/saveFile';
 
 
 const UserRoute: Router = Router();
-/**
-    // UserRoute.get('/', UserController.index);
- */
-// UserRoute.get('/',function(req,res){
-//     res.sendFile(__dirname + '/index.html');
-    
-// });
 
 UserRoute.post('/users', UserController.register);
 
@@ -32,44 +25,42 @@ UserRoute.get('/codigoR/:phoneNumber', UserController.ReenvioConfirmacion);
  * CRUD DE POLIZAS
 */
 
-//obteniendo los PDF
-UserRoute.get('/viewFile/:id', ImpulsaController.ViewFile);
+//obteniendo los PDF de un cliente
+UserRoute.get('/sync/policies/:externalId', ImpulsaController.ViewPolicies);
 
-//vizualisar un pdf en web
-UserRoute.get('/viewPDF/:name', ImpulsaController.ViewPDF);
+//vizualisar un pdf en especifico
+UserRoute.get('/sync/policie/:name', ImpulsaController.ViewPDF);
 
 //guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
-UserRoute.post('/uploadfile/:phoneNumber', Upload.single('myFile'), ImpulsaController.Savefiles);
-
-//descargar pdf
-// UserRoute.get('/download/:name', ImpulsaController.DownloadPDF);
+UserRoute.post('/sync/policies', Upload.single('myFile'), ImpulsaController.SavePolice);
 
 //eliminar pdf con el numero de poliza
-UserRoute.delete('/deletePolicy/:policyNumber', ImpulsaController.DeletePDF);
+UserRoute.delete('/sync/policies/:policyNumber', ImpulsaController.DeletePolice);
 
 //actualizar polizas
-UserRoute.put('/updatePoliza/:policeId', ImpulsaController.UpdatePoliza);
+UserRoute.put('/sync/policies/:policeId', ImpulsaController.UpdatePoliza);
 
 
 
 /**
+ * FUNCIONALIDADES IMPULSA
  * CRUD DE CLIENTES
 */
 
-//visualizar PDF's
-UserRoute.get('/clients', ImpulsaController.ViewClients);
+//visualizar Clientes
+UserRoute.get('/sync/clients', ImpulsaController.ViewClients);
 
 //vizualisar cliente por numero de telefono
 
-UserRoute.get('/client/:phoneNumber', ImpulsaController.ViewClient);
+UserRoute.get('/sync/clients/:phoneNumber', ImpulsaController.ViewClient);
 
 //guardando clientes desde impulsa
-UserRoute.post('/saveclient', ImpulsaController.SaveClient);
+UserRoute.post('/sync/clients', ImpulsaController.SaveClient);
 
 //eliminando clientes
-UserRoute.delete('/deleteclient/:phoneNumber', ImpulsaController.DeleteClient);
+UserRoute.delete('/sync/clients/:phoneNumber', ImpulsaController.DeleteClient);
 
 //actualizar cliente
-UserRoute.put('/updateClient/:clientId', ImpulsaController.UpdateClient);
+UserRoute.put('/sync/clients/:clientId', ImpulsaController.UpdateClient);
 
 export default UserRoute;
