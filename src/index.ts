@@ -4,16 +4,16 @@ import cors from 'cors';
 
 /** Import Routes */
 import UserRoute from './api/routes/UserRoute';
-
-/** Accept connection of frontend */
-const options: cors.CorsOptions = {
-    origin: '*'
-};
+import './config/database';
 
 /** Initializations */
+
+const options: cors.CorsOptions = {
+  origin: '*'
+};
+
 const app = express();
 app.use(cors(options));
-import './config/database';
 
 /** Settings */
 app.set('port', process.env.PORT);
@@ -27,5 +27,5 @@ app.use('/api', UserRoute);
 
 /** Starting Server */
 app.listen(app.get('port'), () => {
-    console.log(`Server listening on port ${app.get('port')}`);
+  console.log(`Server listening on port ${app.get('port')}`);
 });

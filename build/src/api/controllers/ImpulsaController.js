@@ -18,14 +18,15 @@ const Client_1 = require("../models/Client");
 /** My class of Impulsa controller */
 class ImpulsaController {
     constructor() {
-        //ver pdf de un cliente
+        // ver pdf de un cliente
         this.ViewPolicies = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            var externalId = _req.params.externalId;
+            const externalId = _req.params.externalId;
             const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalId: externalId });
             if (!isPoliceExist) {
                 res.json({
-                    message: 'No estas asociado a ninguna poliza aún'
+                    message: 'No hay polizas para este cliente',
+                    status: 400
                 });
             }
             else if (isPoliceExist) {
@@ -33,10 +34,14 @@ class ImpulsaController {
                 const validator = isObjEmpty(isPoliceExist);
                 if (validator === true) {
                     return res.status(400).json({
-                        message: 'Aún no tiene Polizas'
+                        message: 'Aún no tiene Polizas',
+                        status: 400
                     });
                 }
-                res.status(200).json(isPoliceExist);
+                res.status(200).json({
+                    isPoliceExist,
+                    status: 200
+                });
             }
             else {
                 res.json({
@@ -44,25 +49,28 @@ class ImpulsaController {
                 });
             }
         });
-        //visualizar pdf
+        // visualizar pdf
         this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            var name = _req.params.name;
-            var data = fs_1.default.readFileSync('src/uploads/' + name);
+            const name = _req.params.name;
             try {
+                const data = fs_1.default.readFileSync('src/uploads/' + name);
                 res.setHeader('Content-Type', 'application/pdf');
                 // res.contentType("application/pdf");
                 res.send(data);
             }
             catch (error) {
-                res.status(404).send('No se encuentra la poliza: ' + error);
+                res.status(400).send({
+                    message: 'No se ecuentra la póliza' + error,
+                    status: 400
+                });
             }
         });
-        //guardar poliza
+        // guardar poliza
         this.SavePolice = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b;
             res.set('Access-Control-Allow-Origin', '*');
-            var file = _req.file;
+            const file = _req.file;
             if (!file) {
                 const error = new Error('Please upload a file');
                 return error;
@@ -71,12 +79,12 @@ class ImpulsaController {
                 /** search Number phone in the data base */
                 const isUserExist = yield Client_1.ClientsModel.findOne({ externalId: _req.params.externalId });
                 if (isUserExist) {
-                    //creando el alias del modelo
+                    // creando el alias del modelo
                     const tipe = _req.body.policyType;
                     const number = _req.body.policyNumber;
-                    let extraida = tipe.substring(0, 3);
+                    const extraida = tipe.substring(0, 3);
                     const alias = `${extraida}-${number}`;
-                    //instantiating the model for save data
+                    // instantiating the model for save data
                     const user = new InsurancePolicy_1.InsurancePoliciesModel({
                         insurerName: _req.body.insurerName,
                         policyNumber: number,
@@ -89,9 +97,9 @@ class ImpulsaController {
                         externalId: _req.body.externalId
                     });
                     try {
-                        //save data
+                        // save data
                         yield user.save();
-                        //send request exit
+                        // send request exit
                         res.status(200).json({
                             message: 'Poliza registrada',
                             UserPolicy: [
@@ -116,7 +124,7 @@ class ImpulsaController {
                     fs_1.default.unlinkSync(`${(_a = _req.file) === null || _a === void 0 ? void 0 : _a.path}`);
                     res.status(400).json({
                         message: 'Usuario no encontrado',
-                        status: 400,
+                        status: 400
                     });
                 }
             }
@@ -124,11 +132,11 @@ class ImpulsaController {
                 fs_1.default.unlinkSync(`${(_b = _req.file) === null || _b === void 0 ? void 0 : _b.path}`);
                 res.status(400).json({
                     message: 'no es un archivo pdf',
-                    status: 400,
+                    status: 400
                 });
             }
         });
-        //vizualisar clientes
+        // vizualisar clientes
         this.ViewClients = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             // var phone = _req.params.phoneNumber;
@@ -147,29 +155,34 @@ class ImpulsaController {
                 });
             }
         });
-        //visaualizar cliente por telefono
+        // visaualizar cliente por telefono
         this.ViewClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            var externalId = _req.params.externalId;
+            const externalId = _req.params.externalId;
             const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalId });
             if (!isClientExist) {
-                res.json({
-                    message: 'No existe el cliente'
+                res.status(400).json({
+                    message: 'No existe el cliente',
+                    status: 400
                 });
             }
             else if (isClientExist) {
-                res.status(200).json(isClientExist);
+                res.status(200).json({
+                    isClientExist,
+                    status: 200
+                });
             }
             else {
-                res.json({
-                    mensaje: 'ocurrio un error'
+                res.status(404).json({
+                    mensaje: 'ocurrio un error',
+                    status: 404
                 });
             }
         });
-        //guardar cliente
+        // guardar cliente
         this.SaveClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            //TODOs:: falta validar los imputs que son necesarios como el external id
+            // TODOs:: falta validar los imputs que son necesarios como el external id
             const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
             if (isTelefonoExist) {
                 return res.status(208).json({
@@ -178,23 +191,23 @@ class ImpulsaController {
                 });
             }
             else {
-                //instantiating the model for save data
+                // instantiating the model for save data
                 const client = new Client_1.ClientsModel({
                     firstName: _req.body.firstName,
                     middleName: _req.body.middleName,
                     lastName: _req.body.lastName,
                     birthday: _req.body.birthday,
                     phoneNumber: _req.body.phoneNumber,
-                    externalId: _req.body.externalId,
+                    externalId: _req.body.externalId
                 });
                 try {
-                    //save data
+                    // save data
                     yield client.save();
-                    //send request exit
+                    // send request exit
                     res.status(200).json({
                         message: 'cliente registrado',
                         Client: client,
-                        status: 200,
+                        status: 200
                     });
                 }
                 catch (error) {
@@ -205,57 +218,84 @@ class ImpulsaController {
                 }
             }
         });
-        //eliminar cliente
+        // eliminar cliente
         this.DeleteClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            let externalId = _req.params.externalId;
+            const externalId = _req.params.externalId;
             const isTelefonoExist = yield Client_1.ClientsModel.findOne({ externalId: externalId });
             if (!isTelefonoExist) {
-                return res.status(500).json({ message: 'El cliente no se encuentra en la base de datos' });
+                return res.status(400).json({
+                    message: 'El cliente no se encuentra en la base de datos',
+                    status: 400
+                });
             }
             else {
                 isTelefonoExist.remove();
-                res.status(200).json({ message: 'El cliente se elimino correctamente' });
-            }
-        });
-        //eliminar poliza
-        this.DeletePolice = (_req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.set('Access-Control-Allow-Origin', '*');
-            let policyNumber = _req.params.policyNumber;
-            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
-            if (!isPolicyExist) {
-                return res.status(500).json({ message: 'El numero de poliza no se encuentra en la base de datos' });
-            }
-            else {
-                isPolicyExist.remove();
-                res.status(200).json({ message: 'La poliza se elimino correctamente' });
-            }
-        });
-        //actualizar cliente
-        this.UpdateClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.set('Access-Control-Allow-Origin', '*');
-            let _id = _req.params.clientId;
-            let update = _req.body;
-            // const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phoneNumber });
-            yield Client_1.ClientsModel.findByIdAndUpdate(_id, update);
-            try {
-                const updateClientNow = yield Client_1.ClientsModel.findById(_id);
                 res.status(200).json({
-                    message: 'Cliente actualizado',
-                    updateClientNow
+                    message: 'El cliente se elimino correctamente',
+                    status: 200
                 });
             }
-            catch (error) {
-                return res.status(400).json({ message: `Error al actualizar el usuario`, error });
+        });
+        // eliminar poliza
+        this.DeletePolice = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            const policyNumber = _req.params.policyNumber;
+            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
+            if (!isPolicyExist) {
+                return res.status(400).json({
+                    message: 'El numero de poliza no se encuentra en la base de datos',
+                    status: 400
+                });
+            }
+            else {
+                yield fs_1.default.unlinkSync('src/uploads/' + isPolicyExist.fileUrl);
+                yield isPolicyExist.remove();
+                res.status(200).json({
+                    message: 'La poliza se elimino correctamente',
+                    status: 200
+                });
             }
         });
-        //actualizar poliza
+        // actualizar cliente
+        this.UpdateClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            const _id = _req.params.externalId;
+            const update = _req.body;
+            const mostrar = yield Client_1.ClientsModel.findOne({ externalId: _id });
+            if (mostrar) {
+                const idclient = mostrar._id;
+                yield Client_1.ClientsModel.findByIdAndUpdate(idclient, update);
+                try {
+                    const Updatedclient = yield Client_1.ClientsModel.findOne({ _id: idclient });
+                    res.status(200).json({
+                        message: 'Cliente actualizado',
+                        Updatedclient,
+                        status: 200
+                    });
+                }
+                catch (error) {
+                    return res.status(400).json({
+                        message: 'Error al actualizar el usuario',
+                        status: 400,
+                        error
+                    });
+                }
+            }
+            else {
+                return res.status(400).json({
+                    message: 'No se encontro el usuario el usuario',
+                    status: 400
+                });
+            }
+        });
+        // actualizar poliza
         this.UpdatePoliza = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             var _c, _d;
             res.set('Access-Control-Allow-Origin', '*');
-            var file = _req.file;
-            let _id = _req.params.policeId;
-            let update = _req.body;
+            const file = _req.file;
+            const _id = _req.params.policeId;
+            const update = _req.body;
             const data = {
                 fileUrl: file === null || file === void 0 ? void 0 : file.filename
             };
@@ -283,14 +323,15 @@ class ImpulsaController {
                 fs_1.default.unlinkSync(`${(_d = _req.file) === null || _d === void 0 ? void 0 : _d.path}`);
                 res.status(400).json({
                     message: 'No se cargo ningún archivo o no es un PDF',
-                    status: 400,
+                    status: 400
                 });
             }
         });
     }
 }
 function isObjEmpty(obj) {
-    for (var prop in obj) {
+    for (const prop in obj) {
+        // eslint-disable-next-line no-prototype-builtins
         if (obj.hasOwnProperty(prop))
             return false;
     }

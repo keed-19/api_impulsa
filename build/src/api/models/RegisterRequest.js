@@ -10,7 +10,7 @@ const shema = new mongoose_1.Schema({
     birthday: { type: Date, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
-    tokenTotp: { type: String, required: true },
+    tokenTotp: { type: String, required: true }
 });
 const RegisterRequestModel = (0, mongoose_1.model)('RegisterRequest', shema);
 exports.RegisterRequestModel = RegisterRequestModel;

@@ -8,7 +8,7 @@ const shema = new mongoose_1.Schema({
     lastName: { type: String, required: true },
     phoneNumber: { type: String, required: true },
     birthday: { type: Date, required: true },
-    externalId: { type: Number, required: false },
+    externalId: { type: Number, required: false }
 });
 const ClientsModel = (0, mongoose_1.model)('Clients', shema);
 exports.ClientsModel = ClientsModel;

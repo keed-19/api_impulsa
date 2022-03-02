@@ -51,7 +51,7 @@ class UserController {
                     phoneNumber: user.phoneNumber
                 });
                 try {
-                    //save models with data of RegisterRequestModel
+                    // save models with data of RegisterRequestModel
                     const savedClient = yield client.save();
                     if (savedClient) {
                         const saveuser = new User_1.UsersModel({
@@ -62,9 +62,9 @@ class UserController {
                         });
                         yield saveuser.save();
                     }
-                    //delete RegisterRequestModel 
+                    // delete RegisterRequestModel
                     yield user.remove();
-                    //send request
+                    // send request
                     res.status(200).json({
                         savedClient,
                         status: 200
@@ -73,22 +73,25 @@ class UserController {
                 catch (error) {
                     res.status(404).json({
                         error,
-                        status: 404,
+                        status: 404
                     });
                 }
             }
             else {
-                res.status(203).json({ message: 'Verifica tu código', status: 203 });
+                res.status(203).json({
+                    message: 'Verifica tu código',
+                    status: 203
+                });
             }
         });
-        //reenvio de codigo de verificacion
+        // reenvio de codigo de verificacion
         this.ReenvioConfirmacion = (_req, res) => __awaiter(this, void 0, void 0, function* () {
-            let _id = _req.params._id;
+            const _id = _req.params._id;
             const updateRequest = yield RegisterRequest_1.RegisterRequestModel.findOne(_id);
             try {
                 ramdomReenvio(updateRequest === null || updateRequest === void 0 ? void 0 : updateRequest.phoneNumber);
                 console.log(cadenaReenvio);
-                let update = { tokenTotp: cadenaReenvio };
+                const update = { tokenTotp: cadenaReenvio };
                 yield RegisterRequest_1.RegisterRequestModel.updateOne(_id, update);
                 // const updateRequestNow = await RegisterRequestModel.findOne(_id);
                 res.status(200).json({
@@ -97,11 +100,15 @@ class UserController {
                 });
             }
             catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 400
+                });
             }
         });
         /**
-            * Function to create RegisterRequestModel on database and save verific code SMS
-            * This function accepts the personal data of the users
+          * Function to create RegisterRequestModel on database and save verific code SMS
+          * This function accepts the personal data of the users
         */
         this.register = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
@@ -114,9 +121,9 @@ class UserController {
                 });
             }
             else {
-                //send verification code to number phone of the user
+                // send verification code to number phone of the user
                 ramdom(_req.body.phoneNumber);
-                //instantiating the model for save data
+                // instantiating the model for save data
                 const user = new RegisterRequest_1.RegisterRequestModel({
                     firstName: _req.body.firstName,
                     middleName: _req.body.middleName,
@@ -128,9 +135,9 @@ class UserController {
                     tokenTotp: cadena
                 });
                 try {
-                    //save data
+                    // save data
                     const savedUser = yield user.save();
-                    //send request exit
+                    // send request exit
                     res.status(200).json({
                         message: 'usuario registrado',
                         status: 200,
@@ -146,11 +153,11 @@ class UserController {
             }
         });
         /**
-         * function to login of the application
-         * @param {String} _req this parameter receives two values the phone number and the password
-         * @param {Json} res is response function in json format
-         * @returns {Json}
-         */
+        * function to login of the application
+        * @param {String} _req this parameter receives two values the phone number and the password
+        * @param {Json} res is response function in json format
+        * @returns {Json}
+        */
         this.login = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const pass = _req.body.password;
@@ -164,17 +171,17 @@ class UserController {
                 });
             }
             else if (user.password === pass) {
-                //search user in model clients
+                // search user in model clients
                 const searchclient = yield Client_1.ClientsModel.findOne({ phoneNumber: numuser });
                 // creating  token
                 const token = (0, jsonwebtoken_1.sign)({
                     user
                 }, process.env.TOKEN_SECRET);
-                //creating message Twilio
+                // creating message Twilio
                 // const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
                 // const authToken = process.env.TWILIO_AUTH_TOKEN as string;
                 // const client = new Twilio(accountSid, authToken);
-                //sent SMS of twilio
+                // sent SMS of twilio
                 // await client.messages
                 // .create({
                 //     body: `Hola ${searchclient?.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
@@ -182,7 +189,7 @@ class UserController {
                 //     to: `+52${user.username}`
                 // })
                 // .then(message => console.log(message.sid));
-                //send request
+                // send request
                 yield res.status(200).json({
                     status: 200,
                     data: { token },
@@ -198,15 +205,15 @@ class UserController {
                 });
             }
         });
-        //ver polizas de un cliente
+        // ver polizas de un cliente
         this.ViewPolicies = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            var _id = _req.params.id;
-            const error = [];
+            const _id = _req.params.id;
             const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalId: _id });
             if (!isPoliceExist) {
-                res.json({
-                    message: 'No estas asociado a ninguna poliza aún'
+                res.status(400).json({
+                    message: 'No estas asociado a ninguna poliza aún',
+                    status: 400
                 });
             }
             else if (isPoliceExist) {
@@ -218,16 +225,17 @@ class UserController {
                 res.status(200).json(isPoliceExist);
             }
             else {
-                res.json({
-                    mensaje: 'ocurrio un error'
+                res.status(400).json({
+                    mensaje: 'ocurrio un error',
+                    status: 400
                 });
             }
         });
-        //ver pdf de un cliente
+        // ver pdf de un cliente
         this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            var name = _req.params.name;
-            var data = fs_1.default.readFileSync('src/uploads/' + name);
+            const name = _req.params.name;
+            const data = fs_1.default.readFileSync('src/uploads/' + name);
             try {
                 res.setHeader('Content-Type', 'application/pdf');
                 // res.contentType("application/pdf");
@@ -238,16 +246,14 @@ class UserController {
             }
         });
     }
-    /**
-        * Function to get users from database
-    */
+    /** Function to get users from database */
     index(_, res) {
         RegisterRequest_1.RegisterRequestModel.find({}, (err, users) => {
             res.set('Access-Control-Allow-Origin', '*');
             if (err)
                 return res.status(500).send({ message: `Error al hacer la petición: ${err}` });
             if (!users)
-                return res.status(404).send({ message: `Aún no existen usuarios en la base de datos` });
+                return res.status(404).send({ message: 'Aún no existen usuarios en la base de datos' });
             res.status(200).json({ users: users });
         });
     }
@@ -258,53 +264,50 @@ class UserController {
  * @returns {String} this value is the code verification
  */
 function ramdom(phone) {
-    //generating 4 random numbers
-    let val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
-    let val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
-    let val3 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
-    let val4 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
-    //save code in variable to save with user data
+    // generating 4 random numbers
+    const val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val3 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val4 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    // save code in variable to save with user data
     cadena = `${val1}${val2}${val3}${val4}`;
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    //token twilio
+    // token twilio
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     // instantiating twilio
     const client = new twilio_1.Twilio(accountSid, authToken);
-    //send code verification
-    client.messages
-        .create({
+    // send code verification
+    client.messages.create({
         body: `Tu código de verificación es: ${cadena}`,
         from: '+19378602978',
         to: `+52${phone}`
-    })
-        .then(message => console.log(message.sid));
+    }).then((message) => console.log(message.sid));
     return (cadena);
 }
 function ramdomReenvio(phone) {
-    //generating 4 random numbers
-    let val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
-    let val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
-    let val3 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
-    let val4 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
-    //save code in variable to save with user data
+    // generating 4 random numbers
+    const val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val3 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val4 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    // save code in variable to save with user data
     cadenaReenvio = `${val1}${val2}${val3}${val4}`;
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    //token twilio
+    // token twilio
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     // instantiating twilio
     const client = new twilio_1.Twilio(accountSid, authToken);
-    //send code verification
-    client.messages
-        .create({
+    // send code verification
+    client.messages.create({
         body: `Tu código de verificación es: ${cadenaReenvio}`,
         from: '+19378602978',
         to: `+52${phone}`
-    })
-        .then(message => console.log(message.sid));
+    }).then(message => console.log(message.sid));
     return (cadenaReenvio);
 }
 function isObjEmpty(obj) {
-    for (var prop in obj) {
+    for (const prop in obj) {
+        // eslint-disable-next-line no-prototype-builtins
         if (obj.hasOwnProperty(prop))
             return false;
     }
