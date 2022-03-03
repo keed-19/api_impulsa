@@ -196,7 +196,8 @@ class UserController {
                     status: 200,
                     data: { token },
                     name: searchclient === null || searchclient === void 0 ? void 0 : searchclient.firstName,
-                    id: searchclient === null || searchclient === void 0 ? void 0 : searchclient.externalId,
+                    external_id: searchclient === null || searchclient === void 0 ? void 0 : searchclient.externalId,
+                    id: searchclient === null || searchclient === void 0 ? void 0 : searchclient._id,
                     phoneNumber: user.username
                 });
             }

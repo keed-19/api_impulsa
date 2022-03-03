@@ -206,7 +206,8 @@ class UserController {
         status: 200,
         data: { token },
         name: searchclient?.firstName,
-        id: searchclient?.externalId,
+        external_id: searchclient?.externalId,
+        id: searchclient?._id,
         phoneNumber: user.username
       });
     } else {
