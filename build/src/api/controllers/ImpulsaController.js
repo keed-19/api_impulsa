@@ -182,46 +182,59 @@ class ImpulsaController {
         // guardar cliente
         this.SaveClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            // TODOs:: falta validar los imputs que son necesarios como el external id
-            const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
-            const isEzternalIDExist = yield Client_1.ClientsModel.findOne({ externalId: _req.body.externalId });
-            if (isTelefonoExist) {
+            if (_req.body.phoneNumber === null) {
                 return res.status(208).json({
-                    error: 'El numero telefonico ya se encuentra registrado en la base de datos',
+                    error: 'El número telefónico es requerido',
                     status: 208
                 });
             }
-            else if (isEzternalIDExist) {
+            else if (_req.body.externalId === null) {
                 return res.status(208).json({
-                    error: 'El ExternalId ya se encuentra registrado en la base de datos',
+                    error: 'El exterlId es requerido',
                     status: 208
                 });
             }
             else {
-                // instantiating the model for save data
-                const client = new Client_1.ClientsModel({
-                    firstName: _req.body.firstName,
-                    middleName: _req.body.middleName,
-                    lastName: _req.body.lastName,
-                    birthday: _req.body.birthday,
-                    phoneNumber: _req.body.phoneNumber,
-                    externalId: _req.body.externalId
-                });
-                try {
-                    // save data
-                    yield client.save();
-                    // send request exit
-                    res.status(200).json({
-                        message: 'cliente registrado',
-                        Client: client,
-                        status: 200
+                const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
+                const isEzternalIDExist = yield Client_1.ClientsModel.findOne({ externalId: _req.body.externalId });
+                if (isTelefonoExist) {
+                    return res.status(208).json({
+                        error: 'El numero telefonico ya se encuentra registrado en la base de datos',
+                        status: 208
                     });
                 }
-                catch (error) {
-                    res.status(404).json({
-                        error,
-                        status: 404
+                else if (isEzternalIDExist) {
+                    return res.status(208).json({
+                        error: 'El ExternalId ya se encuentra registrado en la base de datos y es un campo requerido',
+                        status: 208
                     });
+                }
+                else {
+                    // instantiating the model for save data
+                    const client = new Client_1.ClientsModel({
+                        firstName: _req.body.firstName,
+                        middleName: _req.body.middleName,
+                        lastName: _req.body.lastName,
+                        birthday: _req.body.birthday,
+                        phoneNumber: _req.body.phoneNumber,
+                        externalId: _req.body.externalId
+                    });
+                    try {
+                        // save data
+                        yield client.save();
+                        // send request exit
+                        res.status(200).json({
+                            message: 'cliente registrado',
+                            Client: client,
+                            status: 200
+                        });
+                    }
+                    catch (error) {
+                        res.status(404).json({
+                            error,
+                            status: 404
+                        });
+                    }
                 }
             }
         });

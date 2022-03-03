@@ -221,9 +221,15 @@ class UserController {
                 // const url = isUserExist;
                 const validator = isObjEmpty(isPoliceExist);
                 if (validator === true) {
-                    return res.status(401).json([]);
+                    return res.status(400).json({
+                        data: [],
+                        status: 400
+                    });
                 }
-                res.status(200).json(isPoliceExist);
+                res.status(200).json({
+                    data: isPoliceExist,
+                    status: 200
+                });
             }
             else {
                 res.status(400).json({
