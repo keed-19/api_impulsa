@@ -271,9 +271,9 @@ class UserController {
                     const update = { verificationCode: CodeValidator };
                     const clienteActualizado = yield Client_1.ClientsModel.findByIdAndUpdate(_id, update);
                     if (clienteActualizado) {
-                        const externalId = client.externalId;
+                        const ClientexternalId = client.externalId;
                         res.status(200).json({
-                            externalId,
+                            ClientexternalId,
                             status: 200
                         });
                     }
