@@ -184,9 +184,16 @@ class ImpulsaController {
             res.set('Access-Control-Allow-Origin', '*');
             // TODOs:: falta validar los imputs que son necesarios como el external id
             const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
+            const isEzternalIDExist = yield Client_1.ClientsModel.findOne({ externalId: _req.body.externalId });
             if (isTelefonoExist) {
                 return res.status(208).json({
                     error: 'El numero telefonico ya se encuentra registrado en la base de datos',
+                    status: 208
+                });
+            }
+            else if (isEzternalIDExist) {
+                return res.status(208).json({
+                    error: 'El ExternalId ya se encuentra registrado en la base de datos',
                     status: 208
                 });
             }
@@ -265,8 +272,22 @@ class ImpulsaController {
             const mostrar = yield Client_1.ClientsModel.findOne({ externalId: _id });
             if (mostrar) {
                 const idclient = mostrar._id;
-                yield Client_1.ClientsModel.findByIdAndUpdate(idclient, update);
-                try {
+                const isExistPhoneNumber = yield Client_1.ClientsModel.findOne({ phoneNumber: update.phoneNumber });
+                const isExistExternalId = yield Client_1.ClientsModel.findOne({ externalId: update.externalId });
+                if (isExistExternalId) {
+                    res.status(400).json({
+                        message: 'El ExternalId ya esta registrado en la base de datos',
+                        status: 400
+                    });
+                }
+                else if (isExistPhoneNumber) {
+                    res.status(400).json({
+                        message: 'El número de teléfono ya esta registrado en la base de datos',
+                        status: 400
+                    });
+                }
+                else {
+                    yield Client_1.ClientsModel.findByIdAndUpdate(idclient, update);
                     const Updatedclient = yield Client_1.ClientsModel.findOne({ _id: idclient });
                     res.status(200).json({
                         message: 'Cliente actualizado',
@@ -274,17 +295,10 @@ class ImpulsaController {
                         status: 200
                     });
                 }
-                catch (error) {
-                    return res.status(400).json({
-                        message: 'Error al actualizar el usuario',
-                        status: 400,
-                        error
-                    });
-                }
             }
             else {
                 return res.status(400).json({
-                    message: 'No se encontro el usuario el usuario',
+                    message: 'No se encontro el cliente',
                     status: 400
                 });
             }

@@ -22,6 +22,7 @@ const fs_1 = __importDefault(require("fs"));
 /** Variable for verification code */
 let cadena = '';
 let cadenaReenvio = '';
+let CodeValidator = '';
 /** My class of user controller */
 class UserController {
     constructor() {
@@ -235,14 +236,39 @@ class UserController {
         this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const name = _req.params.name;
-            const data = fs_1.default.readFileSync('src/uploads/' + name);
             try {
+                const data = fs_1.default.readFileSync('src/uploads/' + name);
                 res.setHeader('Content-Type', 'application/pdf');
                 // res.contentType("application/pdf");
                 res.send(data);
             }
             catch (error) {
-                res.status(404).send('No se encuentra la poliza: ' + error);
+                res.status(400).send({
+                    message: 'No se ecuentra la póliza' + error,
+                    status: 400
+                });
+            }
+        });
+        //todo: provando el endpoint para devolver las polizas asociadas de un cliente a otro
+        this.PolicyNumberSendSMS = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            const policyNumber = _req.params.policyNumber;
+            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
+            if (isPolicyExist) {
+                const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalId });
+                if (client) {
+                    sendSMSClientPolicy(client.phoneNumber);
+                    const externalId = client.externalId;
+                    res.status(200).json({
+                        externalId,
+                        status: 200
+                    });
+                }
+            }
+            else {
+                res.status(400).json({
+                    message: 'Ocurrio un error',
+                    status: 400
+                });
             }
         });
     }
@@ -312,5 +338,26 @@ function isObjEmpty(obj) {
             return false;
     }
     return true;
+}
+function sendSMSClientPolicy(phone) {
+    // generating 4 random numbers
+    const val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val3 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val4 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    // save code in variable to save with user data
+    CodeValidator = `${val1}${val2}${val3}${val4}`;
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    // token twilio
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    // instantiating twilio
+    const client = new twilio_1.Twilio(accountSid, authToken);
+    // send code verification
+    client.messages.create({
+        body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
+        from: '+19378602978',
+        to: `+52${phone}`
+    }).then(message => console.log(message.sid));
+    return (CodeValidator);
 }
 exports.default = new UserController();

@@ -11,6 +11,7 @@ import fs from 'fs';
 /** Variable for verification code */
 let cadena = '';
 let cadenaReenvio = '';
+let CodeValidator = '';
 
 /** My class of user controller */
 class UserController {
@@ -249,14 +250,46 @@ class UserController {
     res.set('Access-Control-Allow-Origin', '*');
 
     const name = _req.params.name as String;
-    const data = fs.readFileSync('src/uploads/' + name);
 
     try {
+      const data = fs.readFileSync('src/uploads/' + name);
+
       res.setHeader('Content-Type', 'application/pdf');
       // res.contentType("application/pdf");
       res.send(data);
     } catch (error) {
-      res.status(404).send('No se encuentra la poliza: ' + error);
+      res.status(400).send({
+        message: 'No se ecuentra la póliza' + error,
+        status: 400
+      });
+    }
+  }
+
+  //todo: provando el endpoint para devolver las polizas asociadas de un cliente a otro
+  public PolicyNumberSendSMS = async (_req:Request, res:Response) => {
+    const policyNumber = _req.params.policyNumber;
+
+    const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber});
+    
+    if (isPolicyExist) {
+
+      const client = await ClientsModel.findOne({ externalId: isPolicyExist.externalId });
+      
+      if (client) {
+        sendSMSClientPolicy(client.phoneNumber);
+        
+        const externalId = client.externalId;
+
+        res.status(200).json({
+          externalId,
+          status: 200
+        });
+      }
+    } else {
+      res.status(400).json({
+        message: 'Ocurrio un error',
+        status: 400
+      });
     }
   }
 }
@@ -327,4 +360,30 @@ function isObjEmpty (obj:Object) {
   return true;
 }
 
+function sendSMSClientPolicy(phone: String) {
+  // generating 4 random numbers
+  const val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+  const val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+  const val3 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+  const val4 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+
+  // save code in variable to save with user data
+  CodeValidator = `${val1}${val2}${val3}${val4}`;
+
+  const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
+  // token twilio
+  const authToken = process.env.TWILIO_AUTH_TOKEN as string;
+
+  // instantiating twilio
+  const client = new Twilio(accountSid, authToken);
+
+  // send code verification
+  client.messages.create({
+    body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
+    from: '+19378602978',
+    to: `+52${phone}`
+  }).then(message => console.log(message.sid));
+  return (CodeValidator);
+}
 export default new UserController();
+

@@ -186,10 +186,16 @@ class ImpulsaController {
       // TODOs:: falta validar los imputs que son necesarios como el external id
 
       const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
+      const isEzternalIDExist = await ClientsModel.findOne({ externalId: _req.body.externalId });
 
       if (isTelefonoExist) {
         return res.status(208).json({
           error: 'El numero telefonico ya se encuentra registrado en la base de datos',
+          status: 208
+        });
+      } else if (isEzternalIDExist) {
+        return res.status(208).json({
+          error: 'El ExternalId ya se encuentra registrado en la base de datos',
           status: 208
         });
       } else {
@@ -276,25 +282,32 @@ class ImpulsaController {
       if (mostrar) {
         const idclient = mostrar._id;
 
-        await ClientsModel.findByIdAndUpdate(idclient, update);
+        const isExistPhoneNumber = await ClientsModel.findOne({ phoneNumber: update.phoneNumber });
+        const isExistExternalId = await ClientsModel.findOne({ externalId: update.externalId });
 
-        try {
+        if(isExistExternalId){
+          res.status(400).json({
+            message: 'El ExternalId ya esta registrado en la base de datos',
+            status: 400
+          });
+        } else if (isExistPhoneNumber) {
+          res.status(400).json({
+            message: 'El número de teléfono ya esta registrado en la base de datos',
+            status: 400
+          });
+        } else {
+          await ClientsModel.findByIdAndUpdate(idclient, update);
+
           const Updatedclient = await ClientsModel.findOne({ _id: idclient });
           res.status(200).json({
             message: 'Cliente actualizado',
             Updatedclient,
             status: 200
           });
-        } catch (error) {
-          return res.status(400).json({
-            message: 'Error al actualizar el usuario',
-            status: 400,
-            error
-          });
         }
       } else {
         return res.status(400).json({
-          message: 'No se encontro el usuario el usuario',
+          message: 'No se encontro el cliente',
           status: 400
         });
       }

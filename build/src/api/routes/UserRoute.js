@@ -21,6 +21,8 @@ UserRoute.get('/codigoR/:phoneNumber', UserController_1.default.ReenvioConfirmac
 UserRoute.get('/app/policies/:id', UserController_1.default.ViewPolicies);
 // vizualisar un pdf en especifico
 UserRoute.get('/app/policie/:name', UserController_1.default.ViewPDF);
+//todo: provando nueva funcionalidad
+UserRoute.get('/app/externalClient/:policyNumber', UserController_1.default.PolicyNumberSendSMS);
 /**
  * CRUD DE POLIZAS
 */
