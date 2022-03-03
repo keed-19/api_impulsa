@@ -22,7 +22,9 @@ UserRoute.get('/app/policies/:id', UserController_1.default.ViewPolicies);
 // vizualisar un pdf en especifico
 UserRoute.get('/app/policie/:name', UserController_1.default.ViewPDF);
 //todo: provando nueva funcionalidad
-UserRoute.get('/app/externalClient/:policyNumber', UserController_1.default.PolicyNumberSendSMS);
+UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController_1.default.PolicyNumberSendSMS);
+//comprobando el codigo 
+UserRoute.post('/app/verificar', UserController_1.default.VerifyClient);
 /**
  * CRUD DE POLIZAS
 */

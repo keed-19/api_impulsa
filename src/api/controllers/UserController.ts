@@ -7,6 +7,7 @@ import { InsurancePoliciesModel } from '../models/InsurancePolicy';
 import { RegisterRequestModel } from '../models/RegisterRequest';
 import { UsersModel } from '../models/User';
 import fs from 'fs';
+import { ExternalPolicyClinetModel } from '../models/ExternalPolicyClinet';
 
 /** Variable for verification code */
 let cadena = '';
@@ -222,7 +223,7 @@ class UserController {
 
     const _id = _req.params.id;
 
-    const isPoliceExist = await InsurancePoliciesModel.find({ externalId: _id });
+    const isPoliceExist = await InsurancePoliciesModel.find({ externalIdClient: _id });
 
     if (!isPoliceExist) {
       res.status(400).json({
@@ -272,8 +273,10 @@ class UserController {
   }
 
   //todo: provando el endpoint para devolver las polizas asociadas de un cliente a otro
+  //listo
   public PolicyNumberSendSMS = async (_req:Request, res:Response) => {
     const policyNumber = _req.params.policyNumber;
+    const _id = _req.params.clientId as Object;
 
     const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber});
     
@@ -283,13 +286,22 @@ class UserController {
       
       if (client) {
         sendSMSClientPolicy(client.phoneNumber);
-        
-        const externalId = client.externalId;
+        const update = { verificationCode: CodeValidator };
+        const clienteActualizado = await ClientsModel.findByIdAndUpdate(_id, update);
 
-        res.status(200).json({
-          externalId,
-          status: 200
-        });
+        if (clienteActualizado) {
+          const externalId = client.externalId;
+
+          res.status(200).json({
+            externalId,
+            status: 200
+          });
+        } else {
+          res.status(400).json({
+            message: 'Ocurrio un error',
+            status: 400
+          });
+        }
       }
     } else {
       res.status(400).json({
@@ -298,6 +310,84 @@ class UserController {
       });
     }
   }
+
+  // verificacion de codigo
+  public VerifyClient = async (_req:Request, res:Response) => {
+    /** frond end acces origin */
+    res.set('Access-Control-Allow-Origin', '*');
+    const externalId = _req.body.externalId;
+    const code = _req.body.code;
+
+    /** Search RegisterRequest with id parameter */
+    const user = await ClientsModel.findOne({ verificationCode: code });
+    if (!user) {
+      res.status(404).json({ message: 'Verifique su código' });
+    } else if (user) {
+      // instantiating the models
+      const externalClient = new ExternalPolicyClinetModel({
+        IdClient: user._id,
+        externalIdClient: user.externalId
+      });
+
+      try {
+        // save models with data of RegisterRequestModel
+        const savedClient = await externalClient.save();
+
+        if (savedClient) {
+          res.status(200).json({
+            savedClient,
+            status: 200
+          });
+        }
+      } catch (error) {
+        res.status(400).json({
+          error,
+          status: 400
+        });
+      }
+    } else {
+      res.status(203).json({
+        message: 'Verifica tu código',
+        status: 203
+      });
+    }
+  }
+
+  // devolviendo las polizas de un cliente externo
+  public ViewPoliciesExternal = async (_req : Request, res : Response) => {
+    res.set('Access-Control-Allow-Origin', '*');
+
+    const externalIdClient = _req.params.externalIdClient;
+
+    const isPoliceExist = await InsurancePoliciesModel.find({ externalId: externalIdClient });
+
+    if (!isPoliceExist) {
+      res.status(400).json({
+        message: 'No estas asociado a ninguna poliza aún',
+        status: 400
+      });
+    } else if (isPoliceExist) {
+      // const url = isUserExist;
+      const validator = isObjEmpty(isPoliceExist as object);
+
+      if (validator === true) {
+        return res.status(400).json({
+          data: [],
+          status: 400 
+        });
+      }
+      res.status(200).json({
+        data: isPoliceExist,
+        status: 200
+      });
+    } else {
+      res.status(400).json({
+        mensaje: 'ocurrio un error',
+        status: 400
+      });
+    }
+  }
+  
 }
 
 /**

@@ -8,6 +8,7 @@ interface Clients {
     phoneNumber : String;
     birthday : Date;
     externalId : Number;
+    verificationCode : Number;//token de verificacion para las polizas externas
 }
 
 const shema = new Schema<Clients>({
@@ -16,7 +17,8 @@ const shema = new Schema<Clients>({
   lastName: { type: String, required: true },
   phoneNumber: { type: String, required: true },
   birthday: { type: Date, required: true },
-  externalId: { type: Number, required: false }
+  externalId: { type: Number, required: false },
+  verificationCode: { type: Number, required: false }
 });
 
 const ClientsModel = model<Clients>('Clients', shema);

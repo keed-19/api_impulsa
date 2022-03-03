@@ -25,7 +25,10 @@ UserRoute.get('/app/policies/:id', UserController.ViewPolicies);
 UserRoute.get('/app/policie/:name', UserController.ViewPDF);
 
 //todo: provando nueva funcionalidad
-UserRoute.get('/app/externalClient/:policyNumber', UserController.PolicyNumberSendSMS);
+UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController.PolicyNumberSendSMS);
+
+//comprobando el codigo 
+UserRoute.post('/app/verificar', UserController.VerifyClient);
 
 /**
  * CRUD DE POLIZAS
