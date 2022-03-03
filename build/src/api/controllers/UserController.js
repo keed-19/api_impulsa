@@ -261,10 +261,11 @@ class UserController {
         //listo
         this.PolicyNumberSendSMS = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             const policyNumber = _req.params.policyNumber;
+            const NumberPolice = parseInt(policyNumber);
             const _id = _req.params.clientId;
-            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
+            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: NumberPolice });
             if (isPolicyExist) {
-                const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalId });
+                const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
                 if (client) {
                     sendSMSClientPolicy(client.phoneNumber);
                     const update = { verificationCode: CodeValidator };

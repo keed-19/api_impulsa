@@ -277,13 +277,13 @@ class UserController {
   //listo
   public PolicyNumberSendSMS = async (_req:Request, res:Response) => {
     const policyNumber = _req.params.policyNumber;
+    const NumberPolice = parseInt(policyNumber);
     const _id = _req.params.clientId as Object;
 
-    const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber});
+    const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: NumberPolice});
     
     if (isPolicyExist) {
-
-      const client = await ClientsModel.findOne({ externalId: isPolicyExist.externalId });
+      const client = await ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
       
       if (client) {
         sendSMSClientPolicy(client.phoneNumber);
