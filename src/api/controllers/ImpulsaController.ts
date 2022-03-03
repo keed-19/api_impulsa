@@ -70,57 +70,68 @@ class ImpulsaController {
         return error;
       } else if (file.mimetype === 'application/pdf') {
         /** search Number phone in the data base */
-        const isUserExist = await ClientsModel.findOne({ externalId: _req.params.externalId });
-
+        const isUserExist = await ClientsModel.findOne({ externalId: _req.params.externalIdClient });
+        
         if (isUserExist) {
-          // creando el alias del modelo
+          const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: _req.body.externalId });
 
-          const tipe = _req.body.policyType;
-          const number = _req.body.policyNumber;
-
-          const extraida = tipe.substring(0, 3);
-
-          const alias = `${extraida}-${number}`;
-          // instantiating the model for save data
-          const user = new InsurancePoliciesModel({
-            insurerName: _req.body.insurerName,
-            policyNumber: number,
-            policyType: tipe,
-            alias: alias,
-            effectiveDate: _req.body.effectiveDate,
-            expirationDate: _req.body.expirationDate,
-            status: _req.body.status,
-            fileUrl: file.filename,
-            externalId: _req.body.externalId
-          });
-
-          try {
-            // save data
-            await user.save();
-
-            // send request exit
-            res.status(200).json({
-              message: 'Poliza registrada',
-              UserPolicy: [
-                            `InsurerName : ${user.insurerName}`,
-                            `PolicyNumber : ${user.policyNumber}`,
-                            `PolicyType : ${user.policyType}`,
-                            `EffectiveDate : ${user.effectiveDate}`,
-                            `ExpirationDate : ${user.expirationDate}`,
-                            `Status : ${user.status}`,
-                            `FileName : ${user.fileUrl}`
-              ]
+          if (isPolicyExist) {
+            return res.status(400).json({
+              error: 'El externalId ya se encuentra registrado en la base de datos',
+              status: 400
             });
-          } catch (error) {
-            res.status(404).json({
-              error,
-              status: 404
+          } else {
+            // creando el alias del modelo
+
+            const tipe = _req.body.policyType;
+            const number = _req.body.policyNumber;
+
+            const extraida = tipe.substring(0, 3);
+
+            const alias = `${extraida}-${number}`;
+            // instantiating the model for save data
+            const user = new InsurancePoliciesModel({
+              insurerName: _req.body.insurerName,
+              policyNumber: number,
+              policyType: tipe,
+              alias: alias,
+              effectiveDate: _req.body.effectiveDate,
+              expirationDate: _req.body.expirationDate,
+              status: _req.body.status,
+              fileUrl: file.filename,
+              externalId: _req.body.externalId,
+              externalIdClient: _req.params.externalIdClient
             });
+
+            try {
+              // save data
+              await user.save();
+
+              // send request exit
+              res.status(200).json({
+                message: 'Poliza registrada',
+                UserPolicy: [
+                              `InsurerName : ${user.insurerName}`,
+                              `PolicyNumber : ${user.policyNumber}`,
+                              `PolicyType : ${user.policyType}`,
+                              `EffectiveDate : ${user.effectiveDate}`,
+                              `ExpirationDate : ${user.expirationDate}`,
+                              `Status : ${user.status}`,
+                              `FileName : ${user.fileUrl}`,
+                              `externalId : ${user.externalId}`
+                ]
+              });
+            } catch (error) {
+              res.status(404).json({
+                error,
+                status: 404
+              });
+            }
           }
         } else {
           fs.unlinkSync(`${_req.file?.path}`);
           res.status(400).json({
-            message: 'Usuario no encontrado',
+            message: 'Cliente no encontrado',
             status: 400
           });
         }
@@ -263,13 +274,13 @@ class ImpulsaController {
     // eliminar poliza
     public DeletePolice = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
-      const policyNumber = _req.params.policyNumber;
+      const externalId = _req.params.externalId;
 
-      const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
+      const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
 
       if (!isPolicyExist) {
         return res.status(400).json({
-          message: 'El numero de poliza no se encuentra en la base de datos',
+          message: 'La póliza no se encuentra en la base de datos',
           status: 400
         });
       } else {
@@ -318,7 +329,7 @@ class ImpulsaController {
         }
       } else {
         return res.status(400).json({
-          message: 'No se encontro el cliente',
+          message: 'No se encontró el cliente en la base de datos',
           status: 400
         });
       }
@@ -328,7 +339,7 @@ class ImpulsaController {
     public UpdatePoliza = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       const file = _req.file;
-      const _id = _req.params.policeId as Object;
+      const externalId = _req.params.externalId;
       const update = _req.body;
 
       const data = {
@@ -339,17 +350,26 @@ class ImpulsaController {
         const error = new Error('Se necesita el archivo para realizar la actualización');
         return error;
       } else if (file.mimetype === 'application/pdf') {
-        /** search Number phone in the data base */
-        await InsurancePoliciesModel.findByIdAndUpdate(_id, data);
-        await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
-        const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
+        
+        const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
 
-        try {
-          res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
-        } catch (error) {
-          fs.unlinkSync(`${_req.file?.path}`);
-          return res.status(400).send({
-            message: `Error al actualizar l apoliza: ${error}`,
+        if (isPolicyExist) {
+          const _id = isPolicyExist._id;
+          try {
+            await InsurancePoliciesModel.findByIdAndUpdate(_id, data);
+            await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
+            const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
+            res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
+          } catch (error) {
+            fs.unlinkSync(`${_req.file?.path}`);
+            return res.status(400).send({
+              message: `Error al actualizar l apoliza: ${error}`,
+              status: 400
+            });
+          }
+        } else {
+          res.status(400).json({
+            message: 'No se encuentra la póliza',
             status: 400
           });
         }

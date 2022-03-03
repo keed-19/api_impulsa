@@ -31,11 +31,11 @@ UserRoute.get('/sync/policies/:externalId', ImpulsaController_1.default.ViewPoli
 // vizualisar un pdf en especifico
 UserRoute.get('/sync/policie/:name', ImpulsaController_1.default.ViewPDF);
 // guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
-UserRoute.post('/sync/policies', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.SavePolice);
+UserRoute.post('/sync/policies/client/:externalIdClient', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.SavePolice);
 // eliminar pdf con el numero de poliza
-UserRoute.delete('/sync/policies/:policyNumber', ImpulsaController_1.default.DeletePolice);
+UserRoute.delete('/sync/policies/:externalId', ImpulsaController_1.default.DeletePolice);
 // actualizar polizas
-UserRoute.put('/sync/policies/:policeId', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.UpdatePoliza);
+UserRoute.put('/sync/policies/:externalId', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.UpdatePoliza);
 /**
  * FUNCIONALIDADES IMPULSA
  * CRUD DE CLIENTES

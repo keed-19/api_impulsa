@@ -11,7 +11,8 @@ const shema = new mongoose_1.Schema({
     expirationDate: { type: Date, required: true },
     status: { type: String, required: true },
     fileUrl: { type: Object, required: true },
-    externalId: { type: String, required: true }
+    externalId: { type: String, required: true },
+    externalIdClient: { type: String, required: true }
 });
 const InsurancePoliciesModel = (0, mongoose_1.model)('InsurancePolicies', shema);
 exports.InsurancePoliciesModel = InsurancePoliciesModel;

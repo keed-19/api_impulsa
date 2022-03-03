@@ -12,6 +12,7 @@ interface InsurancePolicies {
     status : String; // Estatus
     fileUrl : Object; // Ruta del PDF
     externalId : String; // Id del usuario al que pertenece la poliza
+    externalIdClient : String; // Id del usuario al que pertenece la poliza
 }
 
 const shema = new Schema<InsurancePolicies>({
@@ -23,7 +24,8 @@ const shema = new Schema<InsurancePolicies>({
   expirationDate: { type: Date, required: true },
   status: { type: String, required: true },
   fileUrl: { type: Object, required: true },
-  externalId: { type: String, required: true }
+  externalId: { type: String, required: true },
+  externalIdClient: { type: String, required: true }
 });
 
 const InsurancePoliciesModel = model<InsurancePolicies>('InsurancePolicies', shema);
