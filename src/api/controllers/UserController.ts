@@ -359,7 +359,7 @@ class UserController {
 
     const externalIdClient = _req.params.externalIdClient;
 
-    const isPoliceExist = await InsurancePoliciesModel.find({ externalId: externalIdClient });
+    const isPoliceExist = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
 
     if (!isPoliceExist) {
       res.status(400).json({
@@ -376,10 +376,7 @@ class UserController {
           status: 400 
         });
       }
-      res.status(200).json({
-        data: isPoliceExist,
-        status: 200
-      });
+      res.status(200).json(isPoliceExist);
     } else {
       res.status(400).json({
         mensaje: 'ocurrio un error',

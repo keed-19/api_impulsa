@@ -335,7 +335,7 @@ class UserController {
         this.ViewPoliciesExternal = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const externalIdClient = _req.params.externalIdClient;
-            const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalId: externalIdClient });
+            const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
             if (!isPoliceExist) {
                 res.status(400).json({
                     message: 'No estas asociado a ninguna poliza aún',
@@ -351,10 +351,7 @@ class UserController {
                         status: 400
                     });
                 }
-                res.status(200).json({
-                    data: isPoliceExist,
-                    status: 200
-                });
+                res.status(200).json(isPoliceExist);
             }
             else {
                 res.status(400).json({
