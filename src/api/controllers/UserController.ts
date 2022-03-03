@@ -234,7 +234,7 @@ class UserController {
       const validator = isObjEmpty(isPoliceExist as object);
 
       if (validator === true) {
-        return res.status(400).json([]);
+        return res.status(401).json([]);
       }
       res.status(200).json(isPoliceExist);
     } else {
