@@ -286,7 +286,7 @@ class UserController {
             }
             else {
                 res.status(400).json({
-                    message: 'Ocurrio un error',
+                    message: 'Póliza no encontrada',
                     status: 400
                 });
             }
