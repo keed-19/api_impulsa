@@ -264,11 +264,11 @@ class UserController {
             const update = {
                 alias: _req.body.alias
             };
-            const isClientExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient });
-            if (isClientExist) {
-                const Id = isClientExist.externalId;
-                if (Id === externalId) {
-                    const _id = isClientExist._id;
+            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalId: externalId });
+            if (isPolicyExist) {
+                const Id = isPolicyExist.externalIdClient;
+                if (Id == externalIdClient) {
+                    const _id = isPolicyExist._id;
                     try {
                         yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, update);
                         res.status(200).json({
@@ -283,6 +283,7 @@ class UserController {
                 else {
                     res.status(400).json({
                         message: 'No se encontro la póliza',
+                        id: Id,
                         status: 400
                     });
                 }

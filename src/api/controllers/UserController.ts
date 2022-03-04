@@ -282,12 +282,12 @@ class UserController {
         alias: _req.body.alias
       }
 
-      const isClientExist = await InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient });
+      const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
 
-      if (isClientExist) {
-        const Id = isClientExist.externalId;
-        if (Id === externalId) {
-          const _id = isClientExist._id;
+      if (isPolicyExist) {
+        const Id = isPolicyExist.externalIdClient;
+        if (Id == externalIdClient) {
+          const _id = isPolicyExist._id;
           try {
             await InsurancePoliciesModel.findByIdAndUpdate(_id,update);
             res.status(200).json({
@@ -300,6 +300,7 @@ class UserController {
         } else {
           res.status(400).json({
             message: 'No se encontro la póliza',
+            id: Id,
             status: 400
           });
         }
