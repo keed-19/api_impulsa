@@ -316,36 +316,42 @@ class UserController {
   public VerifyClient = async (_req:Request, res:Response) => {
     /** frond end acces origin */
     res.set('Access-Control-Allow-Origin', '*');
-    const externalId = _req.body.externalId;
-    const code = _req.body.code;
+    const _id = _req.body.id as Object;//id del cliente que quiere ver polizas externas
+    const externalIdClient = _req.body.externalIdClient;//para ver las polizas del usuario externo
+    const code = _req.body.code as Number;
 
     /** Search RegisterRequest with id parameter */
-    const user = await ClientsModel.findOne({ verificationCode: code });
+    const user = await ClientsModel.findById({ _id: _id });
     if (!user) {
-      res.status(404).json({ message: 'Verifique su código' });
-    } else if (user) {
+      res.status(404).json({ message: 'No se encuantra el usuario' });
+    } else if (user.verificationCode == code) {
+
+      const isPoliceExist = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
+
+      res.status(200).json(isPoliceExist);
       // instantiating the models
-      const externalClient = new ExternalPolicyClinetModel({
-        IdClient: user._id,
-        externalIdClient: user.externalId
-      });
 
-      try {
-        // save models with data of RegisterRequestModel
-        const savedClient = await externalClient.save();
+      // const externalClient = new ExternalPolicyClinetModel({
+      //   IdClient: user._id,
+      //   externalIdClient: user.externalId
+      // });
 
-        if (savedClient) {
-          res.status(200).json({
-            savedClient,
-            status: 200
-          });
-        }
-      } catch (error) {
-        res.status(400).json({
-          error,
-          status: 400
-        });
-      }
+      // try {
+      //   // save models with data of RegisterRequestModel
+      //   const savedClient = await externalClient.save();
+
+      //   if (savedClient) {
+      //     res.status(200).json({
+      //       savedClient,
+      //       status: 200
+      //     });
+      //   }
+      // } catch (error) {
+      //   res.status(400).json({
+      //     error,
+      //     status: 400
+      //   });
+      // }
     } else {
       res.status(203).json({
         message: 'Verifica tu código',

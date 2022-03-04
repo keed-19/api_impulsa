@@ -81,51 +81,61 @@ class ImpulsaController {
               status: 400
             });
           } else {
-            // creando el alias del modelo
 
-            const tipe = _req.body.policyType;
-            const number = _req.body.policyNumber;
+            const isNumberPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: _req.body.policyNumber });
 
-            const extraida = tipe.substring(0, 3);
-
-            const alias = `${extraida}-${number}`;
-            // instantiating the model for save data
-            const user = new InsurancePoliciesModel({
-              insurerName: _req.body.insurerName,
-              policyNumber: number,
-              policyType: tipe,
-              alias: alias,
-              effectiveDate: _req.body.effectiveDate,
-              expirationDate: _req.body.expirationDate,
-              status: _req.body.status,
-              fileUrl: file.filename,
-              externalId: _req.body.externalId,
-              externalIdClient: _req.params.externalIdClient
-            });
-
-            try {
-              // save data
-              await user.save();
-
-              // send request exit
-              res.status(200).json({
-                message: 'Poliza registrada',
-                UserPolicy: [
-                              `InsurerName : ${user.insurerName}`,
-                              `PolicyNumber : ${user.policyNumber}`,
-                              `PolicyType : ${user.policyType}`,
-                              `EffectiveDate : ${user.effectiveDate}`,
-                              `ExpirationDate : ${user.expirationDate}`,
-                              `Status : ${user.status}`,
-                              `FileName : ${user.fileUrl}`,
-                              `externalId : ${user.externalId}`
-                ]
+            if (isNumberPolicyExist){
+              res.status(400).json({
+                message: 'El número de la poliza debe ser único',
+                status: 400
               });
-            } catch (error) {
-              res.status(404).json({
-                error,
-                status: 404
+            }else{
+              // creando el alias del modelo
+
+              const tipe = _req.body.policyType;
+              const number = _req.body.policyNumber;
+
+              const extraida = tipe.substring(0, 3);
+
+              const alias = `${extraida}-${number}`;
+              // instantiating the model for save data
+              const user = new InsurancePoliciesModel({
+                insurerName: _req.body.insurerName,
+                policyNumber: number,
+                policyType: tipe,
+                alias: alias,
+                effectiveDate: _req.body.effectiveDate,
+                expirationDate: _req.body.expirationDate,
+                status: _req.body.status,
+                fileUrl: file.filename,
+                externalId: _req.body.externalId,
+                externalIdClient: _req.params.externalIdClient
               });
+
+              try {
+                // save data
+                await user.save();
+
+                // send request exit
+                res.status(200).json({
+                  message: 'Poliza registrada',
+                  UserPolicy: [
+                                `InsurerName : ${user.insurerName}`,
+                                `PolicyNumber : ${user.policyNumber}`,
+                                `PolicyType : ${user.policyType}`,
+                                `EffectiveDate : ${user.effectiveDate}`,
+                                `ExpirationDate : ${user.expirationDate}`,
+                                `Status : ${user.status}`,
+                                `FileName : ${user.fileUrl}`,
+                                `externalId : ${user.externalId}`
+                  ]
+                });
+              } catch (error) {
+                res.status(404).json({
+                  error,
+                  status: 404
+                });
+              }
             }
           }
         } else {

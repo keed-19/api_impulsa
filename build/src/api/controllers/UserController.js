@@ -19,7 +19,6 @@ const InsurancePolicy_1 = require("../models/InsurancePolicy");
 const RegisterRequest_1 = require("../models/RegisterRequest");
 const User_1 = require("../models/User");
 const fs_1 = __importDefault(require("fs"));
-const ExternalPolicyClinet_1 = require("../models/ExternalPolicyClinet");
 /** Variable for verification code */
 let cadena = '';
 let cadenaReenvio = '';
@@ -296,35 +295,37 @@ class UserController {
         this.VerifyClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             /** frond end acces origin */
             res.set('Access-Control-Allow-Origin', '*');
-            const externalId = _req.body.externalId;
+            const _id = _req.body.id; //id del cliente que quiere ver polizas externas
+            const externalIdClient = _req.body.externalIdClient; //para ver las polizas del usuario externo
             const code = _req.body.code;
             /** Search RegisterRequest with id parameter */
-            const user = yield Client_1.ClientsModel.findOne({ verificationCode: code });
+            const user = yield Client_1.ClientsModel.findById({ _id: _id });
             if (!user) {
-                res.status(404).json({ message: 'Verifique su código' });
+                res.status(404).json({ message: 'No se encuantra el usuario' });
             }
-            else if (user) {
+            else if (user.verificationCode == code) {
+                const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
+                res.status(200).json(isPoliceExist);
                 // instantiating the models
-                const externalClient = new ExternalPolicyClinet_1.ExternalPolicyClinetModel({
-                    IdClient: user._id,
-                    externalIdClient: user.externalId
-                });
-                try {
-                    // save models with data of RegisterRequestModel
-                    const savedClient = yield externalClient.save();
-                    if (savedClient) {
-                        res.status(200).json({
-                            savedClient,
-                            status: 200
-                        });
-                    }
-                }
-                catch (error) {
-                    res.status(400).json({
-                        error,
-                        status: 400
-                    });
-                }
+                // const externalClient = new ExternalPolicyClinetModel({
+                //   IdClient: user._id,
+                //   externalIdClient: user.externalId
+                // });
+                // try {
+                //   // save models with data of RegisterRequestModel
+                //   const savedClient = await externalClient.save();
+                //   if (savedClient) {
+                //     res.status(200).json({
+                //       savedClient,
+                //       status: 200
+                //     });
+                //   }
+                // } catch (error) {
+                //   res.status(400).json({
+                //     error,
+                //     status: 400
+                //   });
+                // }
             }
             else {
                 res.status(203).json({

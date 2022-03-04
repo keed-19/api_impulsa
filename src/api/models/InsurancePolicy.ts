@@ -17,7 +17,7 @@ interface InsurancePolicies {
 
 const shema = new Schema<InsurancePolicies>({
   insurerName: { type: String, required: true },
-  policyNumber: { type: Number, required: true },
+  policyNumber: { type: Number, unique: true, required: true },
   policyType: { type: String, required: true },
   alias: { type: String, required: true },
   effectiveDate: { type: Date, required: true },
