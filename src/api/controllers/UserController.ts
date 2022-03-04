@@ -328,7 +328,10 @@ class UserController {
 
       const isPoliceExist = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
 
-      res.status(200).json(isPoliceExist);
+      res.status(200).json({
+        data: isPoliceExist,
+        status: 200
+      });
       // instantiating the models
 
       // const externalClient = new ExternalPolicyClinetModel({

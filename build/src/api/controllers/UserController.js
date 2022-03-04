@@ -305,7 +305,10 @@ class UserController {
             }
             else if (user.verificationCode == code) {
                 const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
-                res.status(200).json(isPoliceExist);
+                res.status(200).json({
+                    data: isPoliceExist,
+                    status: 200
+                });
                 // instantiating the models
                 // const externalClient = new ExternalPolicyClinetModel({
                 //   IdClient: user._id,
