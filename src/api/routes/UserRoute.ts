@@ -24,6 +24,9 @@ UserRoute.get('/app/policies/:id', UserController.ViewPolicies);
 // vizualisar un pdf en especifico
 UserRoute.get('/app/policie/:name', UserController.ViewPDF);
 
+// Editar el alias de una poliza
+UserRoute.put('/app/updateAlias', UserController.UpdateAlias);
+
 //todo: provando nueva funcionalidad
 UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController.PolicyNumberSendSMS);
 

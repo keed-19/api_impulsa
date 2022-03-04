@@ -21,6 +21,8 @@ UserRoute.get('/codigoR/:phoneNumber', UserController_1.default.ReenvioConfirmac
 UserRoute.get('/app/policies/:id', UserController_1.default.ViewPolicies);
 // vizualisar un pdf en especifico
 UserRoute.get('/app/policie/:name', UserController_1.default.ViewPDF);
+// Editar el alias de una poliza
+UserRoute.put('/app/updateAlias', UserController_1.default.UpdateAlias);
 //todo: provando nueva funcionalidad
 UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController_1.default.PolicyNumberSendSMS);
 //comprobando el codigo 

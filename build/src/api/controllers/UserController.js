@@ -256,6 +256,44 @@ class UserController {
                 });
             }
         });
+        // actualizar alias de poliza personal
+        this.UpdateAlias = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            const externalId = _req.body.externalId;
+            const externalIdClient = _req.body.externalIdClient;
+            const update = {
+                alias: _req.body.alias
+            };
+            const isClientExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient });
+            if (isClientExist) {
+                const Id = isClientExist.externalId;
+                if (Id === externalId) {
+                    const _id = isClientExist._id;
+                    try {
+                        yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, update);
+                        res.status(200).json({
+                            message: 'Actualización del alias correcto',
+                            status: 200
+                        });
+                    }
+                    catch (error) {
+                        return res.status(400).json(error);
+                    }
+                }
+                else {
+                    res.status(400).json({
+                        message: 'No se encontro la póliza',
+                        status: 400
+                    });
+                }
+            }
+            else {
+                res.status(400).json({
+                    message: 'No estas asociado a ninguna póliza',
+                    status: 400
+                });
+            }
+        });
         //todo: provando el endpoint para devolver las polizas asociadas de un cliente a otro
         //listo
         this.PolicyNumberSendSMS = (_req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -292,6 +330,7 @@ class UserController {
             }
         });
         // verificacion de codigo
+        //todo: pendiente por generar el modelo de relacion de la polizas externas con el aias
         this.VerifyClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             /** frond end acces origin */
             res.set('Access-Control-Allow-Origin', '*');
