@@ -20,7 +20,7 @@ UserRoute.get('/codigoR/:phoneNumber', UserController_1.default.ReenvioConfirmac
 // lista de polizas para un cliente
 UserRoute.get('/app/policies/:id', UserController_1.default.ViewPolicies);
 // vizualisar un pdf en especifico
-UserRoute.get('/app/policie/:name', UserController_1.default.ViewPDF);
+UserRoute.get('/app/policie/:externalId', UserController_1.default.ViewPDF);
 // Editar el alias de una poliza
 UserRoute.put('/app/updateAlias', UserController_1.default.UpdateAlias);
 //todo: provando nueva funcionalidad
@@ -35,7 +35,7 @@ UserRoute.get('/app/policies/external/:externalIdClient', UserController_1.defau
 // obteniendo los PDF de un cliente
 UserRoute.get('/sync/policies/:externalId', ImpulsaController_1.default.ViewPolicies);
 // vizualisar un pdf en especifico
-UserRoute.get('/sync/policie/:name', ImpulsaController_1.default.ViewPDF);
+UserRoute.get('/sync/policie/:externalId', ImpulsaController_1.default.ViewPDF);
 // guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
 UserRoute.post('/sync/policies/client/:externalIdClient', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.SavePolice);
 // eliminar pdf con el numero de poliza

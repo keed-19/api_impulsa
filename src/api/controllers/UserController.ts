@@ -257,19 +257,25 @@ class UserController {
   public ViewPDF = async (_req : Request, res : Response) => {
     res.set('Access-Control-Allow-Origin', '*');
 
-    const name = _req.params.name as String;
+    const externalId = _req.params.externalId;
 
-    try {
-      const data = fs.readFileSync('src/uploads/' + name);
+    const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId});
+    if (isPolicyExist) {
 
-      res.setHeader('Content-Type', 'application/pdf');
-      // res.contentType("application/pdf");
-      res.send(data);
-    } catch (error) {
-      res.status(400).send({
-        message: 'No se ecuentra la póliza' + error,
-        status: 400
-      });
+      const name = isPolicyExist?.fileUrl;
+
+      try {
+        const data = fs.readFileSync('src/uploads/' + name);
+  
+        res.setHeader('Content-Type', 'application/pdf');
+        // res.contentType("application/pdf");
+        res.send(data);
+      } catch (error) {
+        res.status(400).send({
+          message: 'No se ecuentra la póliza: ' + error,
+          status: 400
+        });
+      }
     }
   }
 

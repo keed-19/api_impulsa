@@ -44,19 +44,25 @@ class ImpulsaController {
     public ViewPDF = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
 
-      const name = _req.params.name as String;
+      const externalId = _req.params.externalId;
 
-      try {
-        const data = fs.readFileSync('src/uploads/' + name);
+      const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId});
+      if (isPolicyExist) {
 
-        res.setHeader('Content-Type', 'application/pdf');
-        // res.contentType("application/pdf");
-        res.send(data);
-      } catch (error) {
-        res.status(400).send({
-          message: 'No se ecuentra la póliza' + error,
-          status: 400
-        });
+        const name = isPolicyExist?.fileUrl;
+
+        try {
+          const data = fs.readFileSync('src/uploads/' + name);
+    
+          res.setHeader('Content-Type', 'application/pdf');
+          // res.contentType("application/pdf");
+          res.send(data);
+        } catch (error) {
+          res.status(400).send({
+            message: 'No se ecuentra la póliza: ' + error,
+            status: 400
+          });
+        }
       }
     }
 
@@ -92,15 +98,21 @@ class ImpulsaController {
             }else{
               // creando el alias del modelo
 
-              const tipe = _req.body.policyType;
+              const tipe = _req.body.policyType.toUpperCase();
               const number = _req.body.policyNumber;
+              const aseguradora = _req.body.insurerName.toUpperCase();
 
-              const extraida = tipe.substring(0, 3);
+              //construyendo el alias momentario
+              const alias = `${aseguradora}-${tipe}-${number}`;
 
-              const alias = `${extraida}-${number}`;
+              // este codigo corta una cadena string de acuerdo a la necesidad
+              // const extraida = tipe.substring(0, 3);
+              // const alias = `${extraida}-${number}`;
+
+
               // instantiating the model for save data
               const user = new InsurancePoliciesModel({
-                insurerName: _req.body.insurerName,
+                insurerName: aseguradora,
                 policyNumber: number,
                 policyType: tipe,
                 alias: alias,
@@ -403,3 +415,6 @@ function isObjEmpty (obj:Object) {
 }
 
 export default new ImpulsaController();
+
+
+//todo: no permitir que se actulice la external id en los de actualizar poliza y cliente

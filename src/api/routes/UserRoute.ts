@@ -22,7 +22,7 @@ UserRoute.get('/codigoR/:phoneNumber', UserController.ReenvioConfirmacion);
 UserRoute.get('/app/policies/:id', UserController.ViewPolicies);
 
 // vizualisar un pdf en especifico
-UserRoute.get('/app/policie/:name', UserController.ViewPDF);
+UserRoute.get('/app/policie/:externalId', UserController.ViewPDF);
 
 // Editar el alias de una poliza
 UserRoute.put('/app/updateAlias', UserController.UpdateAlias);
@@ -44,7 +44,7 @@ UserRoute.get('/app/policies/external/:externalIdClient', UserController.ViewPol
 UserRoute.get('/sync/policies/:externalId', ImpulsaController.ViewPolicies);
 
 // vizualisar un pdf en especifico
-UserRoute.get('/sync/policie/:name', ImpulsaController.ViewPDF);
+UserRoute.get('/sync/policie/:externalId', ImpulsaController.ViewPDF);
 
 // guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
 UserRoute.post('/sync/policies/client/:externalIdClient', Upload.single('myFile'), ImpulsaController.SavePolice);

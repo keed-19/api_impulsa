@@ -52,18 +52,22 @@ class ImpulsaController {
         // visualizar pdf
         this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            const name = _req.params.name;
-            try {
-                const data = fs_1.default.readFileSync('src/uploads/' + name);
-                res.setHeader('Content-Type', 'application/pdf');
-                // res.contentType("application/pdf");
-                res.send(data);
-            }
-            catch (error) {
-                res.status(400).send({
-                    message: 'No se ecuentra la póliza' + error,
-                    status: 400
-                });
+            const externalId = _req.params.externalId;
+            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalId: externalId });
+            if (isPolicyExist) {
+                const name = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.fileUrl;
+                try {
+                    const data = fs_1.default.readFileSync('src/uploads/' + name);
+                    res.setHeader('Content-Type', 'application/pdf');
+                    // res.contentType("application/pdf");
+                    res.send(data);
+                }
+                catch (error) {
+                    res.status(400).send({
+                        message: 'No se ecuentra la póliza: ' + error,
+                        status: 400
+                    });
+                }
             }
         });
         // guardar poliza
@@ -96,13 +100,17 @@ class ImpulsaController {
                         }
                         else {
                             // creando el alias del modelo
-                            const tipe = _req.body.policyType;
+                            const tipe = _req.body.policyType.toUpperCase();
                             const number = _req.body.policyNumber;
-                            const extraida = tipe.substring(0, 3);
-                            const alias = `${extraida}-${number}`;
+                            const aseguradora = _req.body.insurerName.toUpperCase();
+                            //construyendo el alias momentario
+                            const alias = `${aseguradora}-${tipe}-${number}`;
+                            // este codigo corta una cadena string de acuerdo a la necesidad
+                            // const extraida = tipe.substring(0, 3);
+                            // const alias = `${extraida}-${number}`;
                             // instantiating the model for save data
                             const user = new InsurancePolicy_1.InsurancePoliciesModel({
-                                insurerName: _req.body.insurerName,
+                                insurerName: aseguradora,
                                 policyNumber: number,
                                 policyType: tipe,
                                 alias: alias,
@@ -394,3 +402,4 @@ function isObjEmpty(obj) {
     return true;
 }
 exports.default = new ImpulsaController();
+//todo: no permitir que se actulice la external id en los de actualizar poliza y cliente

@@ -242,18 +242,22 @@ class UserController {
         // ver pdf de un cliente
         this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            const name = _req.params.name;
-            try {
-                const data = fs_1.default.readFileSync('src/uploads/' + name);
-                res.setHeader('Content-Type', 'application/pdf');
-                // res.contentType("application/pdf");
-                res.send(data);
-            }
-            catch (error) {
-                res.status(400).send({
-                    message: 'No se ecuentra la póliza' + error,
-                    status: 400
-                });
+            const externalId = _req.params.externalId;
+            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalId: externalId });
+            if (isPolicyExist) {
+                const name = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.fileUrl;
+                try {
+                    const data = fs_1.default.readFileSync('src/uploads/' + name);
+                    res.setHeader('Content-Type', 'application/pdf');
+                    // res.contentType("application/pdf");
+                    res.send(data);
+                }
+                catch (error) {
+                    res.status(400).send({
+                        message: 'No se ecuentra la póliza: ' + error,
+                        status: 400
+                    });
+                }
             }
         });
         // actualizar alias de poliza personal

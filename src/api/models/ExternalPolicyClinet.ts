@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 
 // create an interface representing a document in MongoDB
-interface ExternalPolicyClinet {
+interface ExternalPolicyClient {
     IdClient : String;
     externalIdClient : Number;//cliente dueño de la poliza-> se puede ver las polizas de este cliente con su externalId
     externalIdPolicy : Number;//poliza a la que se estara editando su alias
@@ -9,13 +9,13 @@ interface ExternalPolicyClinet {
     
 }
 
-const shema = new Schema<ExternalPolicyClinet>({
+const shema = new Schema<ExternalPolicyClient>({
     IdClient: { type: String, required: true },
     externalIdClient: { type: Number, required: true },
     externalIdPolicy: { type: Number, required: false },
     alias: { type: String, required: false }
 });
 
-const ExternalPolicyClinetModel = model<ExternalPolicyClinet>('ExternalPolicyClinet', shema);
+const ExternalPolicyClinetModel = model<ExternalPolicyClient>('ExternalPolicyClient', shema);
 
 export { ExternalPolicyClinetModel };
