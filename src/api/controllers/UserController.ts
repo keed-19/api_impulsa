@@ -291,10 +291,10 @@ class UserController {
         const clienteActualizado = await ClientsModel.findByIdAndUpdate(_id, update);
 
         if (clienteActualizado) {
-          const ClientexternalId = client.externalId;
+          const clientExternalId = client.externalId;
 
           res.status(200).json({
-            ClientexternalId,
+            clientExternalId,
             status: 200
           });
         } else {
