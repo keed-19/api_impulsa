@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InsurancePoliciesModel = void 0;
 const mongoose_1 = require("mongoose");
 const shema = new mongoose_1.Schema({
-    insurerName: { type: String, required: true },
+    insuranceId: { type: String, required: true },
     policyNumber: { type: Number, unique: true, required: true },
     policyType: { type: String, required: true },
     alias: { type: String, required: true },

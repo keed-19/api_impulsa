@@ -101,53 +101,65 @@ class ImpulsaController {
 
               const tipe = _req.body.policyType.toUpperCase();
               const number = _req.body.policyNumber;
-              const aseguradora = _req.body.insurerName.toUpperCase();
 
-              //construyendo el alias momentario
-              const alias = `${aseguradora}-${tipe}-${number}`;
+              //asignando la aseguradora a la poliza
+              const insuranceId = _req.body.insuranceId;
 
-              // este codigo corta una cadena string de acuerdo a la necesidad
-              // const extraida = tipe.substring(0, 3);
-              // const alias = `${extraida}-${number}`;
+              const isInsuranceExist = await InsuranceModel.findOne({ insuranceId: insuranceId });
+              
+              if (isInsuranceExist) {
+                const aseguradora = isInsuranceExist?.name;
+                //construyendo el alias momentario
+                const alias = `${aseguradora}-${tipe}-${number}`;
+
+                // este codigo corta una cadena string de acuerdo a la necesidad
+                // const extraida = tipe.substring(0, 3);
+                // const alias = `${extraida}-${number}`;
 
 
-              // instantiating the model for save data
-              const user = new InsurancePoliciesModel({
-                insurerName: aseguradora,
-                policyNumber: number,
-                policyType: tipe,
-                alias: alias,
-                effectiveDate: _req.body.effectiveDate,
-                expirationDate: _req.body.expirationDate,
-                status: _req.body.status,
-                fileUrl: file.filename,
-                externalId: _req.body.externalId,
-                externalIdClient: _req.params.externalIdClient
-              });
-
-              try {
-                // save data
-                await user.save();
-
-                // send request exit
-                res.status(200).json({
-                  message: 'Poliza registrada',
-                  UserPolicy: [
-                                `InsurerName : ${user.insurerName}`,
-                                `PolicyNumber : ${user.policyNumber}`,
-                                `PolicyType : ${user.policyType}`,
-                                `EffectiveDate : ${user.effectiveDate}`,
-                                `ExpirationDate : ${user.expirationDate}`,
-                                `Status : ${user.status}`,
-                                `FileName : ${user.fileUrl}`,
-                                `externalId : ${user.externalId}`
-                  ]
+                // instantiating the model for save data
+                const user = new InsurancePoliciesModel({
+                  insuranceId: aseguradora,
+                  policyNumber: number,
+                  policyType: tipe,
+                  alias: alias,
+                  effectiveDate: _req.body.effectiveDate,
+                  expirationDate: _req.body.expirationDate,
+                  status: _req.body.status,
+                  fileUrl: file.filename,
+                  externalId: _req.body.externalId,
+                  externalIdClient: _req.params.externalIdClient
                 });
-              } catch (error) {
-                res.status(404).json({
-                  error,
-                  status: 404
-                });
+
+                try {
+                  // save data
+                  await user.save();
+
+                  // send request exit
+                  res.status(200).json({
+                    message: 'Poliza registrada',
+                    UserPolicy: [
+                                  `InsurerName : ${user.insuranceId}`,
+                                  `PolicyNumber : ${user.policyNumber}`,
+                                  `PolicyType : ${user.policyType}`,
+                                  `EffectiveDate : ${user.effectiveDate}`,
+                                  `ExpirationDate : ${user.expirationDate}`,
+                                  `Status : ${user.status}`,
+                                  `FileName : ${user.fileUrl}`,
+                                  `externalId : ${user.externalId}`
+                    ]
+                  });
+                } catch (error) {
+                  res.status(404).json({
+                    error,
+                    status: 404
+                  });
+                }
+              } else {
+                res.status(400).json({
+                  message: 'No se encuentra la aseguradora',
+                  status: 400
+                })
               }
             }
           }

@@ -3,7 +3,7 @@ import { Schema, model } from 'mongoose';
 // create an interface representing a document in MongoDB
 
 interface InsurancePolicies {
-    insurerName : String; // Nombre de la aseguradora
+    insuranceId: string; // externalId de la aseguradora
     policyNumber : Number; // Numero de poliza
     policyType : String; // Tipo de poliza
     alias : String;
@@ -16,7 +16,7 @@ interface InsurancePolicies {
 }
 
 const shema = new Schema<InsurancePolicies>({
-  insurerName: { type: String, required: true },
+  insuranceId: { type: String, required: true },
   policyNumber: { type: Number, unique: true, required: true },
   policyType: { type: String, required: true },
   alias: { type: String, required: true },
