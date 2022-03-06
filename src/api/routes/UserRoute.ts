@@ -76,4 +76,25 @@ UserRoute.delete('/sync/clients/:externalId', ImpulsaController.DeleteClient);
 // actualizar cliente
 UserRoute.put('/sync/clients/:externalId', ImpulsaController.UpdateClient);
 
+/**
+ * FUNCIONALIDADES IMPULSA
+ * CRUD DE ASEGURADORAS
+*/
+
+//guardar aseguradora
+UserRoute.post('/sync/insurances', ImpulsaController.SaveInsurance);
+
+//ver aseguradoras
+UserRoute.get('/sync/insurances', ImpulsaController.ViewInsurances);
+
+//ver aseguradora
+UserRoute.get('/sync/insurances/:externalId', ImpulsaController.ViewInsurance);
+
+//eliminar aseguradora
+UserRoute.delete('/sync/delete/insurances/:externalId', ImpulsaController.DeleteInsurance);
+
+// actualizar aseguradora
+UserRoute.put('/sync/update/insurances/:externalId', ImpulsaController.UpdateInsurance);
+
+
 export default UserRoute;

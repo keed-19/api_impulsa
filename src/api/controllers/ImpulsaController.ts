@@ -1,6 +1,7 @@
 /** Imports models and pluggins */
 import { Request, Response } from 'express';
 import { InsurancePoliciesModel } from '../models/InsurancePolicy';
+import { InsuranceModel } from '../models/Insurance';
 import fs from 'fs';
 import { ClientsModel } from '../models/Client';
 
@@ -321,39 +322,46 @@ class ImpulsaController {
       const _id = _req.params.externalId;
       const update = _req.body;
 
-      const mostrar = await ClientsModel.findOne({ externalId: _id });
+      if (_req.body.externalId != null){
+        res.status(400).json({
+          message: 'El externalId no se puede editar',
+          status: 400
+        })
+      } else {
+        const mostrar = await ClientsModel.findOne({ externalId: _id });
 
-      if (mostrar) {
-        const idclient = mostrar._id;
+        if (mostrar) {
+          const idclient = mostrar._id;
 
-        const isExistPhoneNumber = await ClientsModel.findOne({ phoneNumber: update.phoneNumber });
-        const isExistExternalId = await ClientsModel.findOne({ externalId: update.externalId });
+          const isExistPhoneNumber = await ClientsModel.findOne({ phoneNumber: update.phoneNumber });
+          const isExistExternalId = await ClientsModel.findOne({ externalId: update.externalId });
 
-        if(isExistExternalId){
-          res.status(400).json({
-            message: 'El ExternalId ya esta registrado en la base de datos',
-            status: 400
-          });
-        } else if (isExistPhoneNumber) {
-          res.status(400).json({
-            message: 'El número de teléfono ya esta registrado en la base de datos',
-            status: 400
-          });
+          if(isExistExternalId){
+            res.status(400).json({
+              message: 'El ExternalId ya esta registrado en la base de datos',
+              status: 400
+            });
+          } else if (isExistPhoneNumber) {
+            res.status(400).json({
+              message: 'El número de teléfono ya esta registrado en la base de datos',
+              status: 400
+            });
+          } else {
+            await ClientsModel.findByIdAndUpdate(idclient, update);
+
+            const Updatedclient = await ClientsModel.findOne({ _id: idclient });
+            res.status(200).json({
+              message: 'Cliente actualizado',
+              Updatedclient,
+              status: 200
+            });
+          }
         } else {
-          await ClientsModel.findByIdAndUpdate(idclient, update);
-
-          const Updatedclient = await ClientsModel.findOne({ _id: idclient });
-          res.status(200).json({
-            message: 'Cliente actualizado',
-            Updatedclient,
-            status: 200
+          return res.status(400).json({
+            message: 'No se encontró el cliente en la base de datos',
+            status: 400
           });
         }
-      } else {
-        return res.status(400).json({
-          message: 'No se encontró el cliente en la base de datos',
-          status: 400
-        });
       }
     }
 
@@ -368,39 +376,225 @@ class ImpulsaController {
         fileUrl: file?.filename
       };
 
-      if (!file) {
-        const error = new Error('Se necesita el archivo para realizar la actualización');
-        return error;
-      } else if (file.mimetype === 'application/pdf') {
-        
-        const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
+      if (_req.body.externalId != null){
+        res.status(400).json({
+          message: 'El externalId no se puede editar',
+          status: 400
+        })
+      } else {
 
-        if (isPolicyExist) {
-          const _id = isPolicyExist._id;
-          try {
-            await InsurancePoliciesModel.findByIdAndUpdate(_id, data);
-            await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
-            const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
-            res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
-          } catch (error) {
-            fs.unlinkSync(`${_req.file?.path}`);
-            return res.status(400).send({
-              message: `Error al actualizar l apoliza: ${error}`,
+        if (!file) {
+          const error = new Error('Se necesita el archivo para realizar la actualización');
+          return error;
+        } else if (file.mimetype === 'application/pdf') {
+          
+          const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
+
+          if (isPolicyExist) {
+            const _id = isPolicyExist._id;
+            try {
+              await InsurancePoliciesModel.findByIdAndUpdate(_id, data);
+              await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
+              const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
+              res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
+            } catch (error) {
+              fs.unlinkSync(`${_req.file?.path}`);
+              return res.status(400).send({
+                message: `Error al actualizar l apoliza: ${error}`,
+                status: 400
+              });
+            }
+          } else {
+            res.status(400).json({
+              message: 'No se encuentra la póliza',
               status: 400
             });
           }
         } else {
+          fs.unlinkSync(`${_req.file?.path}`);
           res.status(400).json({
-            message: 'No se encuentra la póliza',
+            message: 'No se cargo ningún archivo o no es un PDF',
             status: 400
           });
         }
-      } else {
-        fs.unlinkSync(`${_req.file?.path}`);
-        res.status(400).json({
-          message: 'No se cargo ningún archivo o no es un PDF',
+      }
+    }
+
+    /** 
+     * crud de aseguradoras 
+    */
+
+    // guardar poliza
+    public SaveInsurance = async (_req : Request, res : Response) => {
+      res.set('Access-Control-Allow-Origin', '*');
+      const phoneNumber = _req.body.phoneNumber;
+      const phone = phoneNumber.replace(/\s+/g, '');
+
+      if(_req.body.phoneNumber === null) {
+        return res.status(400).json({
+          error: 'El número telefónico es requerido',
           status: 400
         });
+      } else if(_req.body.externalId === null) {
+        return res.status(400).json({
+          error: 'El exterlId es requerido',
+          status: 400
+        });
+      } else if(_req.body.name === null) {
+        return res.status(400).json({
+          error: 'El nombre es requerido',
+          status: 400
+        });
+      } else {
+        const isTelefonoExist = await InsuranceModel.findOne({ phoneNumber: phone });
+        const isExternalIDExist = await InsuranceModel.findOne({ externalId: _req.body.externalId });
+        const name = _req.body.name.toUpperCase();
+
+        if (isTelefonoExist) {
+          return res.status(208).json({
+            error: 'El numero telefonico ya se encuentra registrado en la base de datos',
+            status: 208
+          });
+        } else if (isExternalIDExist) {
+          return res.status(208).json({
+            error: 'El ExternalId ya se encuentra registrado en la base de datos y es un campo requerido',
+            status: 208
+          });
+        } else {
+          // instantiating the model for save data
+          const insurance = new InsuranceModel({
+            externalId: _req.body.externalId,
+            name: name,
+            phoneNumber: phone
+          });
+
+          try {
+            // save data
+            await insurance.save();
+
+            // send request exit
+            res.status(200).json({
+              message: 'Aseguradora registrada',
+              Client: insurance,
+              status: 200
+            });
+          } catch (error) {
+            res.status(404).json({
+              error,
+              status: 404
+            });
+          }
+        }
+      }
+    }
+
+    //ver las aseguradoras
+    public ViewInsurances = async (_req : Request, res : Response) => {
+      res.set('Access-Control-Allow-Origin', '*');
+
+      // var phone = _req.params.phoneNumber;
+
+      const isInsuranceExist = await InsuranceModel.find({});
+
+      if (!isInsuranceExist) {
+        res.json({
+          message: 'No hay aseguradoras registradas'
+        });
+      } else if (isInsuranceExist) {
+        res.status(200).json(isInsuranceExist);
+      } else {
+        res.json({
+          mensaje: 'ocurrio un error'
+        });
+      }
+    }
+
+    // ver aseguradora con el externalId
+    public ViewInsurance = async (_req : Request, res : Response) => {
+      res.set('Access-Control-Allow-Origin', '*');
+
+      const externalId = _req.params.externalId;
+
+      const isClientExist = await InsuranceModel.findOne({ externalId: externalId });
+
+      if (!isClientExist) {
+        res.status(400).json({
+          message: 'No existe la aseguradora',
+          status: 400
+        });
+      } else if (isClientExist) {
+        res.status(200).json({
+          isClientExist,
+          status: 200
+        });
+      } else {
+        res.status(404).json({
+          mensaje: 'ocurrio un error',
+          status: 404
+        });
+      }
+    }
+
+    //eliminar aseguradora
+    public DeleteInsurance = async (_req : Request, res : Response) => {
+      res.set('Access-Control-Allow-Origin', '*');
+      const externalId = _req.params.externalId;
+
+      const isInsuranceExist = await InsuranceModel.findOne({ externalId: externalId });
+
+      if (!isInsuranceExist) {
+        return res.status(400).json({
+          message: 'La aseguradora no se encuentra en la base de datos',
+          status: 400
+        });
+      } else {
+        await isInsuranceExist.remove();
+        res.status(200).json({
+          message: 'La aseguradora se elimino correctamente',
+          status: 200
+        });
+      }
+    }
+
+    // actualizar aseguradora
+    public UpdateInsurance = async (_req : Request, res : Response) => {
+      res.set('Access-Control-Allow-Origin', '*');
+      const _id = _req.params.externalId;
+      const update = _req.body;
+
+      if (_req.body.externalId != null){
+        res.status(400).json({
+          message: 'El externalId no se puede editar',
+          status: 400
+        })
+      } else {
+        const mostrar = await InsuranceModel.findOne({ externalId: _id });
+
+        if (mostrar) {
+          const idInsurance = mostrar._id;
+          const isExistPhoneNumber = await InsuranceModel.findOne({ phoneNumber: update.phoneNumber });
+
+          if (isExistPhoneNumber) {
+            res.status(400).json({
+              message: 'El número de teléfono ya esta registrado en la base de datos',
+              status: 400
+            });
+          } else {
+            await InsuranceModel.findByIdAndUpdate(idInsurance, update);
+
+            const UpdatedInsurance = await InsuranceModel.findOne({ _id: idInsurance });
+            res.status(200).json({
+              message: 'Aseguradora actualizada',
+              UpdatedInsurance,
+              status: 200
+            });
+          }
+        } else {
+          return res.status(400).json({
+            message: 'No se encontró la aseguradora en la base de datos',
+            status: 400
+          });
+        }
       }
     }
 }
@@ -415,6 +609,3 @@ function isObjEmpty (obj:Object) {
 }
 
 export default new ImpulsaController();
-
-
-//todo: no permitir que se actulice la external id en los de actualizar poliza y cliente
