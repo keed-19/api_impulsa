@@ -19,6 +19,7 @@ const InsurancePolicy_1 = require("../models/InsurancePolicy");
 const RegisterRequest_1 = require("../models/RegisterRequest");
 const User_1 = require("../models/User");
 const fs_1 = __importDefault(require("fs"));
+const ExternalPolicyClinet_1 = require("../models/ExternalPolicyClinet");
 /** Variable for verification code */
 let cadena = '';
 let cadenaReenvio = '';
@@ -88,8 +89,8 @@ class UserController {
         // reenvio de codigo de verificacion
         this.ReenvioConfirmacion = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             const _id = _req.params._id;
-            const updateRequest = yield RegisterRequest_1.RegisterRequestModel.findOne(_id);
             try {
+                const updateRequest = yield RegisterRequest_1.RegisterRequestModel.findOne(_id);
                 ramdomReenvio(updateRequest === null || updateRequest === void 0 ? void 0 : updateRequest.phoneNumber);
                 console.log(cadenaReenvio);
                 const update = { tokenTotp: cadenaReenvio };
@@ -103,6 +104,31 @@ class UserController {
             catch (error) {
                 res.status(400).json({
                     message: 'Ocurrio un error: ' + error,
+                    status: 400
+                });
+            }
+        });
+        //reenvio de codigo a cliente externo
+        this.ReenvioConfirmacionClientExternal = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            const Id = _req.params.externalId;
+            const externalId = parseInt(Id);
+            console.log(externalId);
+            const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalId });
+            if (isClientExist) {
+                const phone = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.phoneNumber;
+                const id = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist._id;
+                ramdomReenvioClinet(phone);
+                const updateClient = { verificationCode: cadenaReenvio };
+                yield Client_1.ClientsModel.findByIdAndUpdate(id, updateClient);
+                // const updateRequestNow = await RegisterRequestModel.findOne(_id);
+                res.status(200).json({
+                    message: 'El código se reenvió con éxito',
+                    status: 200
+                });
+            }
+            else {
+                res.status(400).json({
+                    message: 'No se encuentra el cliente',
                     status: 400
                 });
             }
@@ -348,31 +374,33 @@ class UserController {
                 res.status(404).json({ message: 'No se encuantra el usuario' });
             }
             else if (user.verificationCode == code) {
-                const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
-                res.status(200).json({
-                    data: isPoliceExist,
-                    status: 200
-                });
-                // instantiating the models
-                // const externalClient = new ExternalPolicyClinetModel({
-                //   IdClient: user._id,
-                //   externalIdClient: user.externalId
+                const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient });
+                const external = isPoliceExist === null || isPoliceExist === void 0 ? void 0 : isPoliceExist.externalIdClient;
+                // res.status(200).json({
+                //   data: isPoliceExist,
+                //   status: 200
                 // });
-                // try {
-                //   // save models with data of RegisterRequestModel
-                //   const savedClient = await externalClient.save();
-                //   if (savedClient) {
-                //     res.status(200).json({
-                //       savedClient,
-                //       status: 200
-                //     });
-                //   }
-                // } catch (error) {
-                //   res.status(400).json({
-                //     error,
-                //     status: 400
-                //   });
-                // }
+                // instantiating the models
+                const externalClient = new ExternalPolicyClinet_1.ExternalPolicyClinetModel({
+                    IdClient: user._id,
+                    externalIdClient: external
+                });
+                try {
+                    // save models with data of RegisterRequestModel
+                    const savedClient = yield externalClient.save();
+                    if (savedClient) {
+                        res.status(200).json({
+                            savedClient,
+                            status: 200
+                        });
+                    }
+                }
+                catch (error) {
+                    res.status(400).json({
+                        error,
+                        status: 400
+                    });
+                }
             }
             else {
                 res.status(203).json({
@@ -450,6 +478,27 @@ function ramdom(phone) {
     return (cadena);
 }
 function ramdomReenvio(phone) {
+    // generating 4 random numbers
+    const val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val3 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    const val4 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
+    // save code in variable to save with user data
+    cadenaReenvio = `${val1}${val2}${val3}${val4}`;
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    // token twilio
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    // instantiating twilio
+    const client = new twilio_1.Twilio(accountSid, authToken);
+    // send code verification
+    client.messages.create({
+        body: `Tu código de verificación es: ${cadenaReenvio}`,
+        from: '+19378602978',
+        to: `+52${phone}`
+    }).then(message => console.log(message.sid));
+    return (cadenaReenvio);
+}
+function ramdomReenvioClinet(phone) {
     // generating 4 random numbers
     const val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
     const val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);

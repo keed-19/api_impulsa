@@ -16,7 +16,10 @@ UserRoute.post('/veryfic', UserMiddleware.veryfy);
 UserRoute.post('/verificar', UserController.ComprobarCod);
 
 // reenviar codigo de verificacion
-UserRoute.get('/codigoR/:phoneNumber', UserController.ReenvioConfirmacion);
+UserRoute.get('/codigoR/:id', UserController.ReenvioConfirmacion);
+
+// reenvio a cliente externo
+UserRoute.get('/forwardcode/:externalId', UserController.ReenvioConfirmacionClientExternal);
 
 // lista de polizas para un cliente
 UserRoute.get('/app/policies/:id', UserController.ViewPolicies);

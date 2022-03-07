@@ -16,7 +16,9 @@ UserRoute.post('/veryfic', middleware_1.default.veryfy);
 // verificando el codigo de sms
 UserRoute.post('/verificar', UserController_1.default.ComprobarCod);
 // reenviar codigo de verificacion
-UserRoute.get('/codigoR/:phoneNumber', UserController_1.default.ReenvioConfirmacion);
+UserRoute.get('/codigoR/:id', UserController_1.default.ReenvioConfirmacion);
+// reenvio a cliente externo
+UserRoute.get('/forwardcode/:externalId', UserController_1.default.ReenvioConfirmacionClientExternal);
 // lista de polizas para un cliente
 UserRoute.get('/app/policies/:id', UserController_1.default.ViewPolicies);
 // vizualisar un pdf en especifico
