@@ -205,17 +205,17 @@ class UserController {
                     user
                 }, process.env.TOKEN_SECRET);
                 // creating message Twilio
-                // const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
-                // const authToken = process.env.TWILIO_AUTH_TOKEN as string;
-                // const client = new Twilio(accountSid, authToken);
+                const accountSid = process.env.TWILIO_ACCOUNT_SID;
+                const authToken = process.env.TWILIO_AUTH_TOKEN;
+                const client = new twilio_1.Twilio(accountSid, authToken);
                 // sent SMS of twilio
-                // await client.messages
-                // .create({
-                //     body: `Hola ${searchclient?.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
-                //     from: '+19378602978',
-                //     to: `+52${user.username}`
-                // })
-                // .then(message => console.log(message.sid));
+                yield client.messages
+                    .create({
+                    body: `Hola ${searchclient === null || searchclient === void 0 ? void 0 : searchclient.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
+                    from: '+19378602978',
+                    to: `+52${user.username}`
+                })
+                    .then(message => console.log(message.sid));
                 // send request
                 yield res.status(200).json({
                     status: 200,
@@ -237,33 +237,59 @@ class UserController {
         this.ViewPolicies = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const _id = _req.params.id;
-            const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: _id });
-            if (!isPoliceExist) {
+            const isClientExist = yield Client_1.ClientsModel.findById(_id);
+            if (!isClientExist) {
                 res.status(400).json({
-                    message: 'No estas asociado a ninguna poliza aún',
+                    message: 'No eres cliente de impulsa',
                     status: 400
-                });
-            }
-            else if (isPoliceExist) {
-                // const url = isUserExist;
-                const validator = isObjEmpty(isPoliceExist);
-                if (validator === true) {
-                    return res.status(400).json({
-                        data: [],
-                        status: 400
-                    });
-                }
-                res.status(200).json({
-                    data: isPoliceExist,
-                    status: 200
                 });
             }
             else {
-                res.status(400).json({
-                    mensaje: 'ocurrio un error',
-                    status: 400
+                //buscar polizas propias
+                const externalIdPropio = isClientExist.externalId;
+                const polizasPropias = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdPropio });
+                const id = _id;
+                //buscar polizas asociadas
+                const polizasExternas = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: id });
+                //mapear las polizas asociadas para mandarlas en la respuesta
+                var bookRatings = [];
+                console.log(bookRatings);
+                polizasExternas.forEach(item => {
+                    bookRatings.push({
+                        policy: InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: item.externalIdClient })
+                    });
+                });
+                // console.log(bookRatings)
+                const policy = JSON.stringify(bookRatings);
+                res.json({
+                    policy
                 });
             }
+            // const isPoliceExist = await InsurancePoliciesModel.findById(_id);
+            // if (!isPoliceExist) {
+            //   res.status(400).json({
+            //     message: 'No estas asociado a ninguna poliza aún',
+            //     status: 400
+            //   });
+            // } else if (isPoliceExist) {
+            //   // const url = isUserExist;
+            //   const validator = isObjEmpty(isPoliceExist as object);
+            //   if (validator === true) {
+            //     return res.status(400).json({
+            //       data: [],
+            //       status: 400 
+            //     });
+            //   }
+            //   res.status(200).json({
+            //     data: isPoliceExist,
+            //     status: 200
+            //   });
+            // } else {
+            //   res.status(400).json({
+            //     mensaje: 'ocurrio un error',
+            //     status: 400
+            //   });
+            // }
         });
         // ver pdf de un cliente
         this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -388,9 +414,10 @@ class UserController {
                 try {
                     // save models with data of RegisterRequestModel
                     const savedClient = yield externalClient.save();
+                    const Policies = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
                     if (savedClient) {
                         res.status(200).json({
-                            savedClient,
+                            Policies,
                             status: 200
                         });
                     }
