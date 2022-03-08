@@ -248,35 +248,132 @@ class UserController {
   public ViewPolicies = async (_req : Request, res : Response) => {
     res.set('Access-Control-Allow-Origin', '*');
 
-    const _id = _req.params.id;
+    const _id = _req.params.id as Object;
 
-    const isPoliceExist = await InsurancePoliciesModel.find({ externalIdClient: _id });
+    const isClientExist = await ClientsModel.findById(_id);
 
-    if (!isPoliceExist) {
+    //buscar polizas propias
+    const externalIdPropio = isClientExist?.externalId;
+    const polizasPropias = await InsurancePoliciesModel.find({externalIdClient: externalIdPropio});
+    const id = _id as String;
+    //buscar polizas asociadas
+    const polizasExternas = await ExternalPolicyClinetModel.find({IdClient: id});
+    
+    if(!isClientExist) {
       res.status(400).json({
-        message: 'No estas asociado a ninguna poliza aún',
+        message: 'No eres cliente de impulsa',
         status: 400
       });
-    } else if (isPoliceExist) {
-      // const url = isUserExist;
-      const validator = isObjEmpty(isPoliceExist as object);
+    } else if(isClientExist && polizasPropias && polizasExternas) {
+      //mapear las polizas asociadas para mandarlas en la respuesta
+      var policyRatings:Array<any>=[];
+      var policyMe:Array<any>=[];
+      var mostrar:Array<any>=[];
+      var mostrarPolizas:Array<any>=[];
 
-      if (validator === true) {
-        return res.status(400).json({
-          data: [],
-          status: 400 
+      const ClientProp = await ClientsModel.findOne({externalId: externalIdPropio});
+      const policyProp = await InsurancePoliciesModel.find({externalIdClient: ClientProp?.externalId});
+      policyProp.forEach(item=>{ 
+        policyMe.push(
+          {
+            id: item.externalId,
+            Alias: item.alias,
+            Tipo: item.policyType
+          }
+        );
+      });
+
+      const misPolizas = {
+        id: ClientProp?.externalId,
+        Nombre: ClientProp?.firstName,
+        polizas: policyMe
+      }
+
+      polizasExternas.forEach(item=>{ 
+        policyRatings.push(
+          {
+            externalIdClient: item.externalIdClient
+          }
+        );
+      });
+      const arrayLenght = policyRatings.length;
+      for (var i=0; i<arrayLenght;i++) {
+        const search = policyRatings[i].externalIdClient;
+        // console.log(search)
+        const valores = await InsurancePoliciesModel.find({externalIdClient: search});
+        const valoresClientes = await ClientsModel.find({externalId: search});
+        valores.forEach(item=>{ 
+          mostrarPolizas.push(
+            {
+              id: item.externalId,
+              Alias: item.alias,
+              Tipo: item.policyType
+            }
+          );
+        });
+
+        valoresClientes.forEach(item=>{ 
+          mostrar.push(
+            {
+              id: item.externalId,
+              Nombre: item.firstName,
+              polizas: mostrarPolizas
+            }
+          );
         });
       }
-      res.status(200).json({
-        data: isPoliceExist,
-        status: 200
-      });
+      // console.log(mostrar);
+      console.log(arrayLenght)
+      console.log(mostrar)
+      if (misPolizas.id===undefined && arrayLenght==0) {
+        await res.status(400).json({
+          message: 'No tienes pólizas ni estas asociado a otras pólizas',
+          status: 400
+        });
+      } else if(misPolizas.id===undefined) {
+        await res.status(200).json(mostrar);
+      } else if(arrayLenght==0) {
+        await res.status(200).json(misPolizas);
+      } else if(ClientProp != undefined) {
+        await res.status(200).json([misPolizas,mostrar]);
+      }
+
     } else {
       res.status(400).json({
-        mensaje: 'ocurrio un error',
+        message: 'Ocurrio un error',
         status: 400
       });
     }
+
+
+
+
+    // const isPoliceExist = await InsurancePoliciesModel.findById(_id);
+    // if (!isPoliceExist) {
+    //   res.status(400).json({
+    //     message: 'No estas asociado a ninguna poliza aún',
+    //     status: 400
+    //   });
+    // } else if (isPoliceExist) {
+    //   // const url = isUserExist;
+    //   const validator = isObjEmpty(isPoliceExist as object);
+
+    //   if (validator === true) {
+    //     return res.status(400).json({
+    //       data: [],
+    //       status: 400 
+    //     });
+    //   }
+    //   res.status(200).json({
+    //     data: isPoliceExist,
+    //     status: 200
+    //   });
+    // } else {
+    //   res.status(400).json({
+    //     mensaje: 'ocurrio un error',
+    //     status: 400
+    //   });
+    // }
   }
 
   // ver pdf de un cliente
@@ -419,7 +516,7 @@ class UserController {
 
         if (savedClient) {
           res.status(200).json({
-            Policies,
+            externalIdClient: external,
             status: 200
           });
         }
