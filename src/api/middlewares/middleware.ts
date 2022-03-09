@@ -25,21 +25,6 @@ class UserMiddleware {
             res.status(400).json({error: 'Token no valido, acceso denegado'})
         }
     }
-
-    public saveFile = (_req: Request, res: Response, next:any)=>{
-        var storage = multer.diskStorage({
-            destination: function (req, file, cb) {
-              cb(null, 'src/uploads')
-            },
-            filename: function (req, file, cb) {
-              cb(null, file.fieldname + '-' + Date.now()+ "." + mimeTypes.extension(file.mimetype))
-            }
-          })
-           
-        var upload = multer({ storage: storage });
-        next();
-        return upload;
-    }
 }
 
 export default new UserMiddleware();

@@ -310,7 +310,7 @@ class UserController {
                         yield res.status(200).json([mostrar]);
                     }
                     else if (arrayLenght == 0) {
-                        yield res.status(200).json([misPolizas]);
+                        yield res.status(200).json([[misPolizas]]);
                     }
                     else if (ClientProp != undefined) {
                         yield res.status(200).json([[misPolizas], mostrar]);
@@ -477,9 +477,61 @@ class UserController {
         //seleccionar las polizas que el cliente decea ver
         this.selectPolicy = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             //ejemplo de peticion desde la movil
-            // var policyRatings:Array<any>=["id:'654sdf65', id:'kjkjn798797f'"]
-            const arregloPeticion = _req.body.data;
-            console.log(arregloPeticion);
+            // const arregloPeticion = _req.body.data;
+            // console.log(arregloPeticion);
+            var policyViewSelect = [];
+            const clientId = _req.body.clientId;
+            var policyRatings = [
+                { "id": "6226333ef66c1c0fe0cc6dfd" },
+                { "id": "62263463b920af7b1ec9b5f3" },
+            ];
+            const arrayLenght = policyRatings.length;
+            for (var i = 0; i < arrayLenght; i++) {
+                const _id = policyRatings[i].id;
+                // console.log(search)
+                const valores = yield InsurancePolicy_1.InsurancePoliciesModel.find({ _id: _id });
+                // valores?._id;
+                // const valoresClientes = await ClientsModel.find({externalId: search});
+                valores.forEach(item => {
+                    policyViewSelect.push({
+                        id: JSON.stringify(item._id),
+                        alias: item.alias
+                    });
+                });
+            }
+            const arrayLenghtSave = yield policyViewSelect.length;
+            for (var i = 0; i < arrayLenghtSave; i++) {
+                const _id = policyViewSelect[i].id;
+                const _alias = policyViewSelect[i].alias;
+                const save = { clientId, _id, _alias };
+                console.log({ save });
+            }
+            // const arrayLenghtSave = policyViewSelect.length;
+            // for (var i=0; i<arrayLenghtSave;i++) {
+            //   // const _id = policyRatings[i].id;
+            //   // console.log({_alias})
+            //   // console.log(search)
+            //   // const valores = await InsurancePoliciesModel.find({_id: _id});
+            //   // valores?._id;
+            //   // const valoresClientes = await ClientsModel.find({externalId: search});
+            //   // valores.forEach(item=>{ 
+            //   //   policyViewSelect.push(
+            //   //     {
+            //   //       id: item._id,
+            //   //       alias: item.alias
+            //   //     }
+            //   //   );
+            //   // });
+            // }
+            // console.log(policyViewSelect);
+            // policyRatings.forEach(item=>{ 
+            //   policyViewSelect.push(
+            //   {
+            //    "_id":item.id
+            //   });
+            // });
+            res.send(policyRatings);
+            // console.log(policyViewSelect);
         });
         // devolviendo las polizas de un cliente externo
         this.ViewPoliciesExternal = (_req, res) => __awaiter(this, void 0, void 0, function* () {

@@ -179,21 +179,22 @@ class ImpulsaController {
         // vizualisar clientes
         this.ViewClients = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            // if (_req.)
-            // var phone = _req.params.phoneNumber;
-            const isClientExist = yield Client_1.ClientsModel.find({});
-            if (!isClientExist) {
-                res.json({
-                    message: 'No hay clientes registrados'
-                });
-            }
-            else if (isClientExist) {
-                res.status(200).json(isClientExist);
-            }
-            else {
-                res.json({
-                    mensaje: 'ocurrio un error'
-                });
+            if (_req.accepted) {
+                // var phone = _req.params.phoneNumber;
+                const isClientExist = yield Client_1.ClientsModel.find({});
+                if (!isClientExist) {
+                    res.json({
+                        message: 'No hay clientes registrados'
+                    });
+                }
+                else if (isClientExist) {
+                    res.status(200).json(isClientExist);
+                }
+                else {
+                    res.json({
+                        mensaje: 'ocurrio un error'
+                    });
+                }
             }
         });
         // visaualizar cliente por telefono
