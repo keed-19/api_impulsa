@@ -562,7 +562,10 @@ class UserController {
       // console.log({save});
     }
 
-    res.json(policyViewSelect);
+    res.status(200).json({
+      message: 'Todo salio bien',
+      status: 200
+    });
     
     
     // // esto y funciona
