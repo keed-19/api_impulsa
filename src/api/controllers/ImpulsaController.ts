@@ -182,7 +182,7 @@ class ImpulsaController {
     // vizualisar clientes
     public ViewClients = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
-
+      // if (_req.)
       // var phone = _req.params.phoneNumber;
 
       const isClientExist = await ClientsModel.find({});

@@ -298,8 +298,8 @@ class UserController {
                         });
                     }
                     // console.log(mostrar);
-                    console.log(arrayLenght);
-                    console.log(mostrar);
+                    // console.log(arrayLenght)
+                    // console.log(mostrar)
                     if (misPolizas.id === undefined && arrayLenght == 0) {
                         yield res.status(400).json({
                             message: 'No tienes pólizas ni estas asociado a otras pólizas',
@@ -313,7 +313,7 @@ class UserController {
                         yield res.status(200).json([misPolizas]);
                     }
                     else if (ClientProp != undefined) {
-                        yield res.status(200).json([misPolizas, mostrar]);
+                        yield res.status(200).json([[misPolizas], mostrar]);
                     }
                 }
                 else {

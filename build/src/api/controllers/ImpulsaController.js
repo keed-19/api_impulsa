@@ -179,6 +179,7 @@ class ImpulsaController {
         // vizualisar clientes
         this.ViewClients = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
+            // if (_req.)
             // var phone = _req.params.phoneNumber;
             const isClientExist = yield Client_1.ClientsModel.find({});
             if (!isClientExist) {
