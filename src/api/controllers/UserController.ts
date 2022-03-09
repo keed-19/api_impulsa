@@ -516,22 +516,27 @@ class UserController {
     //ejemplo de peticion desde la movil
     // const arregloPeticion = _req.body.data;
     // console.log(arregloPeticion);
-    var policyViewSelect:Array<any>=[] 
+    
+    const IdClient = _req.body.IdClient;
+    const Idpoliza = _req.body.data;
 
-    const clientId = _req.body.clientId;
-    var policyRatings:Array<any>=[
-      {"id": "6226333ef66c1c0fe0cc6dfd"},
-      {"id": "62263463b920af7b1ec9b5f3"},
-    ];
+    // console.log(IdClient,Idpoliza);
+    // const valoresEnviados = ["6226333ef66c1c0fe0cc6dfd", "62263463b920af7b1ec9b5f3"];
 
-    const arrayLenght = policyRatings.length;
+    // let sliceRoles = valoresEnviados.length;
+    var policyViewSelect:Array<any>=[]
+    let fromRoles = Array.from(Idpoliza);
+
+    const arrayLenght = fromRoles.length;
     for (var i=0; i<arrayLenght;i++) {
-      const _id = policyRatings[i].id;
-      // console.log(search)
+      const _id = fromRoles[i];
+      // const idp = {id: _id as String}
+      // console.log(idp)
       const valores = await InsurancePoliciesModel.find({_id: _id});
-      // valores?._id;
+      // console.log(valores);
+      // // valores?._id;
       
-      // const valoresClientes = await ClientsModel.find({externalId: search});
+      // // const valoresClientes = await ClientsModel.find({externalId: search});
       valores.forEach(item=>{ 
         policyViewSelect.push(
           {
@@ -544,41 +549,61 @@ class UserController {
 
     const arrayLenghtSave = await policyViewSelect.length;
     for (var i=0; i<arrayLenghtSave;i++) {
-      const _id = policyViewSelect[i].id as String;
-      const _alias = policyViewSelect[i].alias;
-      const save = {clientId,_id,_alias}
-      console.log({save});
+      const externalId = policyViewSelect[i].id;
+      const externalIdPolicy = externalId.slice(1, -1);
+      const alias = policyViewSelect[i].alias;
+      const save = {IdClient,externalIdPolicy,alias}
+      const savePolicy = new ExternalPolicyClinetModel(save);
+      try {
+        await savePolicy.save();
+      } catch (error) {
+        return res.json(error)
+      }
+      // console.log({save});
     }
 
-    // const arrayLenghtSave = policyViewSelect.length;
-    // for (var i=0; i<arrayLenghtSave;i++) {
-    //   // const _id = policyRatings[i].id;
-    //   // console.log({_alias})
+    res.json(policyViewSelect);
+    
+    
+    // // esto y funciona
+    // var policyRatings:Array<any>=[
+    //   {"id": "6226333ef66c1c0fe0cc6dfd"},
+    //   {"id": "62263463b920af7b1ec9b5f3"},
+    // ];
+
+    // const arrayLenght = policyRatings.length;
+    // for (var i=0; i<arrayLenght;i++) {
+    //   const _id = policyRatings[i].id;
     //   // console.log(search)
-    //   // const valores = await InsurancePoliciesModel.find({_id: _id});
+    //   const valores = await InsurancePoliciesModel.find({_id: _id});
     //   // valores?._id;
       
     //   // const valoresClientes = await ClientsModel.find({externalId: search});
-    //   // valores.forEach(item=>{ 
-    //   //   policyViewSelect.push(
-    //   //     {
-    //   //       id: item._id,
-    //   //       alias: item.alias
-    //   //     }
-    //   //   );
-    //   // });
-    // }
-    // console.log(policyViewSelect);
-
-    // policyRatings.forEach(item=>{ 
-    //   policyViewSelect.push(
-    //   {
-    //    "_id":item.id
+    //   valores.forEach(item=>{ 
+    //     policyViewSelect.push(
+    //       {
+    //         id: JSON.stringify(item._id),
+    //         alias: item.alias
+    //       }
+    //     );
     //   });
-    // });
+    // }
 
-    res.send(policyRatings);
-    // console.log(policyViewSelect);
+    // const arrayLenghtSave = await policyViewSelect.length;
+    // for (var i=0; i<arrayLenghtSave;i++) {
+    //   const externalId = policyViewSelect[i].id;
+    //   const externalIdPolicy = externalId.slice(1, -1);
+    //   const alias = policyViewSelect[i].alias;
+    //   const save = {IdClient,externalIdPolicy,alias}
+    //   const savePolicy = new ExternalPolicyClinetModel(save);
+    //   try {
+    //     await savePolicy.save();
+    //   } catch (error) {
+    //     return res.json(error)
+    //   }
+    //   // console.log({save});
+    // }
+    // res.json(policyViewSelect);
   }
 
   // devolviendo las polizas de un cliente externo
