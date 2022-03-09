@@ -529,7 +529,7 @@ class UserController {
 
     const arrayLenght = fromRoles.length;
     for (var i=0; i<arrayLenght;i++) {
-      const _id = fromRoles[i];
+      const _id = fromRoles[i] as Object;
       // const idp = {id: _id as String}
       // console.log(idp)
       const valores = await InsurancePoliciesModel.find({_id: _id});
