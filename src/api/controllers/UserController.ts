@@ -332,9 +332,9 @@ class UserController {
             status: 400
           });
         } else if(misPolizas.id===undefined) {
-          await res.status(200).json(mostrar);
+          await res.status(200).json([mostrar]);
         } else if(arrayLenght==0) {
-          await res.status(200).json(misPolizas);
+          await res.status(200).json([misPolizas]);
         } else if(ClientProp != undefined) {
           await res.status(200).json([misPolizas,mostrar]);
         }
@@ -473,42 +473,51 @@ class UserController {
     } else if (user.verificationCode == code) {
 
       const isPoliceExist = await InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient });
-      const external = isPoliceExist?.externalIdClient;
+      // const external = isPoliceExist?.externalIdClient;
 
-      // res.status(200).json({
-      //   data: isPoliceExist,
-      //   status: 200
-      // });
+      res.status(200).json({
+        data: isPoliceExist,
+        status: 200
+      });
       // instantiating the models
 
-      const externalClient = new ExternalPolicyClinetModel({
-        IdClient: user._id,
-        externalIdClient: external
-      });
+      // const externalClient = new ExternalPolicyClinetModel({
+      //   IdClient: user._id,
+      //   externalIdClient: external
+      // });
 
-      try {
-        // save models with data of RegisterRequestModel
-        const savedClient = await externalClient.save();
-        const Policies = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
+      // try {
+      //   // save models with data of RegisterRequestModel
+      //   const savedClient = await externalClient.save();
+      //   const Policies = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
 
-        if (savedClient) {
-          res.status(200).json({
-            externalIdClient: external,
-            status: 200
-          });
-        }
-      } catch (error) {
-        res.status(400).json({
-          error,
-          status: 400
-        });
-      }
+      //   if (savedClient) {
+      //     res.status(200).json({
+      //       externalIdClient: external,
+      //       status: 200
+      //     });
+      //   }
+      // } catch (error) {
+      //   res.status(400).json({
+      //     error,
+      //     status: 400
+      //   });
+      // }
     } else {
       res.status(203).json({
         message: 'Verifica tu código',
         status: 203
       });
     }
+  }
+
+  //seleccionar las polizas que el cliente decea ver
+  public selectPolicy = async (_req:Request, res:Response) => {
+    //ejemplo de peticion desde la movil
+    // var policyRatings:Array<any>=["id:'654sdf65', id:'kjkjn798797f'"]
+
+    const arregloPeticion = _req.body.data;
+    console.log(arregloPeticion);
   }
 
   // devolviendo las polizas de un cliente externo
