@@ -395,7 +395,10 @@ class UserController {
         const Id = isPolicyMeExist._id;
         try {
           await InsurancePoliciesModel.findByIdAndUpdate(Id,update);
-          res.send('Actualizacion correcta');
+          res.status(200).json({
+            message: 'Actualización correcta',
+            status: 200
+          });
         } catch (error) {
           res.send(error);
         }
@@ -421,7 +424,10 @@ class UserController {
         const Id = isPolicyExternalExist._id;
         try {
           await ExternalPolicyClinetModel.findByIdAndUpdate(Id,update);
-          res.send('Actualizacion correcta');
+          res.status(200).json({
+            message: 'Actualización correcta',
+            status: 200
+          });
         } catch (error) {
           res.send(error);
         }
