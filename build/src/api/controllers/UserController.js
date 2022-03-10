@@ -504,6 +504,7 @@ class UserController {
                 const alias = policyViewSelect[j].alias;
                 const policyType = policyViewSelect[j].policyType;
                 const save = { IdClient, externalIdPolicy, alias, policyType };
+                console.log(save);
                 const savePolicy = new ExternalPolicyClinet_1.ExternalPolicyClinetModel(save);
                 try {
                     yield savePolicy.save();
