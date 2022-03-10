@@ -335,8 +335,8 @@ class UserController {
         // ver pdf de un cliente
         this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            const externalId = _req.params.externalId;
-            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalId: externalId });
+            const id = _req.params.id;
+            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id });
             if (isPolicyExist) {
                 const name = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.fileUrl;
                 try {

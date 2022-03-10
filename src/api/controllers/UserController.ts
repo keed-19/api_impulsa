@@ -356,9 +356,9 @@ class UserController {
   public ViewPDF = async (_req : Request, res : Response) => {
     res.set('Access-Control-Allow-Origin', '*');
 
-    const externalId = _req.params.externalId;
+    const id = _req.params.id;
 
-    const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId});
+    const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: id});
     if (isPolicyExist) {
 
       const name = isPolicyExist?.fileUrl;

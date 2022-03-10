@@ -32,7 +32,7 @@ UserRoute.get('/app/policyDetail/:id', UserController.seePolicyInformation);
 UserRoute.post('/app/selectPolicy', UserController.selectPolicy);
 
 // vizualisar un pdf en especifico
-UserRoute.get('/app/policie/:externalId', UserController.ViewPDF);
+UserRoute.get('/app/policie/:id', UserController.ViewPDF);
 
 // Editar el alias de una poliza
 UserRoute.put('/app/updateAlias', UserController.UpdateAlias);
