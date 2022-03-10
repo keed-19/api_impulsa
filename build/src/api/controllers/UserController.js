@@ -457,11 +457,11 @@ class UserController {
         this.ViewPoliciesExternal = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             /** frond end acces origin */
             res.set('Access-Control-Allow-Origin', '*');
-            const externalIdClient = _req.body.externalIdClient; // para ver las polizas del usuario externo
+            const externalIdClient = _req.params.externalIdClient; // para ver las polizas del usuario externo
             /** Search RegisterRequest with id parameter */
-            const policyExternal = yield InsurancePolicy_1.InsurancePoliciesModel.findById({ externalIdClient: externalIdClient });
+            const policyExternal = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
             if (!policyExternal) {
-                res.status(404).json({ message: 'No se encuantra el usuario' });
+                res.status(404).json({ message: 'No se encuantran resultados' });
             }
             else if (policyExternal) {
                 res.status(200).json({
