@@ -526,6 +526,7 @@ class UserController {
             policyType: item.policyType
           }
         );
+        console.log(policyViewSelect)
       });
     }
 

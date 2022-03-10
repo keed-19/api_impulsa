@@ -494,6 +494,7 @@ class UserController {
                         alias: item.alias,
                         policyType: item.policyType
                     });
+                    console.log(policyViewSelect);
                 });
             }
             const arrayLenghtSave = yield policyViewSelect.length;
