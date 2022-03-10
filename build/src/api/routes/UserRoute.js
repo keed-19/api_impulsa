@@ -7,6 +7,7 @@ const express_1 = require("express");
 const ImpulsaController_1 = __importDefault(require("../controllers/ImpulsaController"));
 const UserController_1 = __importDefault(require("../controllers/UserController"));
 const middleware_1 = __importDefault(require("../middlewares/middleware"));
+// import syncMiddleware from '../middlewares/syncMiddleware';
 const saveFile_1 = require("../services/saveFile");
 const UserRoute = (0, express_1.Router)();
 UserRoute.post('/users', UserController_1.default.register);
@@ -23,15 +24,15 @@ UserRoute.get('/forwardcode/:externalId', UserController_1.default.ReenvioConfir
 UserRoute.get('/app/policies/:id', UserController_1.default.ViewPolicies);
 // ver poliza inf
 UserRoute.get('/app/policyDetail/:id', UserController_1.default.seePolicyInformation);
-//seleccionar polizas a ver
+// seleccionar polizas a ver
 UserRoute.post('/app/selectPolicy', UserController_1.default.selectPolicy);
 // vizualisar un pdf en especifico
 UserRoute.get('/app/policie/:id', UserController_1.default.ViewPDF);
 // Editar el alias de una poliza
 UserRoute.put('/app/updateAlias', UserController_1.default.UpdateAlias);
-//todo: provando nueva funcionalidad
+// todo: provando nueva funcionalidad
 UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController_1.default.PolicyNumberSendSMS);
-//comprobando el codigo 
+// comprobando el codigo
 UserRoute.post('/app/verificar', UserController_1.default.VerifyClient);
 // visualizando las polizas externas
 // UserRoute.get('/app/policies/external/:externalIdClient', UserController.ViewPoliciesExternal);
@@ -67,13 +68,13 @@ UserRoute.put('/sync/clients/:externalId', ImpulsaController_1.default.UpdateCli
  * FUNCIONALIDADES IMPULSA
  * CRUD DE ASEGURADORAS
 */
-//guardar aseguradora
+// guardar aseguradora
 UserRoute.post('/sync/insurances', ImpulsaController_1.default.SaveInsurance);
-//ver aseguradoras
+// ver aseguradoras
 UserRoute.get('/sync/insurances', ImpulsaController_1.default.ViewInsurances);
-//ver aseguradora
+// ver aseguradora
 UserRoute.get('/sync/insurances/:externalId', ImpulsaController_1.default.ViewInsurance);
-//eliminar aseguradora
+// eliminar aseguradora
 UserRoute.delete('/sync/delete/insurances/:externalId', ImpulsaController_1.default.DeleteInsurance);
 // actualizar aseguradora
 UserRoute.put('/sync/update/insurances/:externalId', ImpulsaController_1.default.UpdateInsurance);

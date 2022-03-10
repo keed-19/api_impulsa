@@ -47,14 +47,13 @@ class ImpulsaController {
 
       const externalId = _req.params.externalId;
 
-      const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId});
+      const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
       if (isPolicyExist) {
-
         const name = isPolicyExist?.fileUrl;
 
         try {
           const data = fs.readFileSync('src/uploads/' + name);
-    
+
           res.setHeader('Content-Type', 'application/pdf');
           // res.contentType("application/pdf");
           res.send(data);
@@ -78,7 +77,7 @@ class ImpulsaController {
       } else if (file.mimetype === 'application/pdf') {
         /** search Number phone in the data base */
         const isUserExist = await ClientsModel.findOne({ externalId: _req.params.externalIdClient });
-        
+
         if (isUserExist) {
           const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: _req.body.externalId });
 
@@ -88,34 +87,32 @@ class ImpulsaController {
               status: 400
             });
           } else {
-
             const isNumberPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: _req.body.policyNumber });
 
-            if (isNumberPolicyExist){
+            if (isNumberPolicyExist) {
               res.status(400).json({
                 message: 'El número de la poliza debe ser único',
                 status: 400
               });
-            }else{
+            } else {
               // creando el alias del modelo
 
               const tipe = _req.body.policyType.toUpperCase();
               const number = _req.body.policyNumber;
 
-              //asignando la aseguradora a la poliza
+              // asignando la aseguradora a la poliza
               const insuranceId = _req.body.insuranceId;
 
               const isInsuranceExist = await InsuranceModel.findOne({ insuranceId: insuranceId });
-              
+
               if (isInsuranceExist) {
                 const aseguradora = isInsuranceExist?.name;
-                //construyendo el alias momentario
+                // construyendo el alias momentario
                 const alias = `${aseguradora}-${tipe}-${number}`;
 
                 // este codigo corta una cadena string de acuerdo a la necesidad
                 // const extraida = tipe.substring(0, 3);
                 // const alias = `${extraida}-${number}`;
-
 
                 // instantiating the model for save data
                 const user = new InsurancePoliciesModel({
@@ -159,7 +156,7 @@ class ImpulsaController {
                 res.status(400).json({
                   message: 'No se encuentra la aseguradora',
                   status: 400
-                })
+                });
               }
             }
           }
@@ -182,22 +179,19 @@ class ImpulsaController {
     // vizualisar clientes
     public ViewClients = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
-      try {
-        const isClientExist = await ClientsModel.find({});
 
-        if (!isClientExist) {
-          res.json({
-            message: 'No hay clientes registrados'
-          });
-        } else if (isClientExist) {
-          res.status(200).json(isClientExist);
-        } else {
-          res.json({
-            mensaje: 'ocurrio un error'
-          });
-        }
-      } catch (error) {
-       res.status(400).json(error); 
+      const isClientExist = await ClientsModel.find({});
+
+      if (!isClientExist) {
+        res.json({
+          message: 'No hay clientes registrados'
+        });
+      } else if (isClientExist) {
+        res.status(200).json(isClientExist);
+      } else {
+        res.json({
+          mensaje: 'ocurrio un error'
+        });
       }
     }
 
@@ -231,12 +225,12 @@ class ImpulsaController {
     public SaveClient = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
 
-      if(_req.body.phoneNumber===null) {
+      if (_req.body.phoneNumber === null) {
         return res.status(208).json({
           error: 'El número telefónico es requerido',
           status: 208
         });
-      } else if(_req.body.externalId===null) {
+      } else if (_req.body.externalId === null) {
         return res.status(208).json({
           error: 'El exterlId es requerido',
           status: 208
@@ -335,11 +329,11 @@ class ImpulsaController {
       const _id = _req.params.externalId;
       const update = _req.body;
 
-      if (_req.body.externalId != null){
+      if (_req.body.externalId != null) {
         res.status(400).json({
           message: 'El externalId no se puede editar',
           status: 400
-        })
+        });
       } else {
         const mostrar = await ClientsModel.findOne({ externalId: _id });
 
@@ -349,7 +343,7 @@ class ImpulsaController {
           const isExistPhoneNumber = await ClientsModel.findOne({ phoneNumber: update.phoneNumber });
           const isExistExternalId = await ClientsModel.findOne({ externalId: update.externalId });
 
-          if(isExistExternalId){
+          if (isExistExternalId) {
             res.status(400).json({
               message: 'El ExternalId ya esta registrado en la base de datos',
               status: 400
@@ -389,18 +383,16 @@ class ImpulsaController {
         fileUrl: file?.filename
       };
 
-      if (_req.body.externalId != null){
+      if (_req.body.externalId != null) {
         res.status(400).json({
           message: 'El externalId no se puede editar',
           status: 400
-        })
+        });
       } else {
-
         if (!file) {
           const error = new Error('Se necesita el archivo para realizar la actualización');
           return error;
         } else if (file.mimetype === 'application/pdf') {
-          
           const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
 
           if (isPolicyExist) {
@@ -433,8 +425,8 @@ class ImpulsaController {
       }
     }
 
-    /** 
-     * crud de aseguradoras 
+    /**
+     * crud de aseguradoras
     */
 
     // guardar poliza
@@ -443,17 +435,17 @@ class ImpulsaController {
       const phoneNumber = _req.body.phoneNumber;
       const phone = phoneNumber.replace(/\s+/g, '');
 
-      if(_req.body.phoneNumber === null) {
+      if (_req.body.phoneNumber === null) {
         return res.status(400).json({
           error: 'El número telefónico es requerido',
           status: 400
         });
-      } else if(_req.body.externalId === null) {
+      } else if (_req.body.externalId === null) {
         return res.status(400).json({
           error: 'El exterlId es requerido',
           status: 400
         });
-      } else if(_req.body.name === null) {
+      } else if (_req.body.name === null) {
         return res.status(400).json({
           error: 'El nombre es requerido',
           status: 400
@@ -501,7 +493,7 @@ class ImpulsaController {
       }
     }
 
-    //ver las aseguradoras
+    // ver las aseguradoras
     public ViewInsurances = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
 
@@ -548,7 +540,7 @@ class ImpulsaController {
       }
     }
 
-    //eliminar aseguradora
+    // eliminar aseguradora
     public DeleteInsurance = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       const externalId = _req.params.externalId;
@@ -575,11 +567,11 @@ class ImpulsaController {
       const _id = _req.params.externalId;
       const update = _req.body;
 
-      if (_req.body.externalId != null){
+      if (_req.body.externalId != null) {
         res.status(400).json({
           message: 'El externalId no se puede editar',
           status: 400
-        })
+        });
       } else {
         const mostrar = await InsuranceModel.findOne({ externalId: _id });
 

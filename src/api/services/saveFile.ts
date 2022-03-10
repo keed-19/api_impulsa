@@ -1,5 +1,5 @@
 import multer from 'multer';
-import mimeTypes from 'mime-types';
+// import mimeTypes from 'mime-types';
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

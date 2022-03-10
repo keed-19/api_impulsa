@@ -8,7 +8,7 @@ interface Clients {
     phoneNumber : String;
     birthday : Date;
     externalId : Number;
-    verificationCode : Number;//token de verificacion para las polizas externas
+    verificationCode : Number;// token de verificacion para las polizas externas
 }
 
 const shema = new Schema<Clients>({

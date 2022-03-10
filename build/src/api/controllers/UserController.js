@@ -108,7 +108,7 @@ class UserController {
                 });
             }
         });
-        //reenvio de codigo a cliente externo
+        // reenvio de codigo a cliente externo
         this.ReenvioConfirmacionClientExternal = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             const Id = _req.params.externalId;
             const externalId = parseInt(Id);
@@ -239,11 +239,11 @@ class UserController {
             const _id = _req.params.id;
             try {
                 const isClientExist = yield Client_1.ClientsModel.findById(_id);
-                //buscar polizas propias
+                // buscar polizas propias
                 const externalIdPropio = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.externalId;
                 const polizasPropias = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdPropio });
                 const id = _id;
-                //buscar polizas asociadas
+                // buscar polizas asociadas
                 const polizasExternas = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: id });
                 // console.log(polizasExternas);
                 if (!isClientExist) {
@@ -253,12 +253,12 @@ class UserController {
                     });
                 }
                 else if (isClientExist && polizasPropias && polizasExternas) {
-                    //mapear las polizas asociadas para mandarlas en la respuesta
-                    var policyRatings = [];
-                    var policyMe = [];
-                    var mostrar = [];
-                    var mostrarPolizas = [];
-                    var valoresExternal = {};
+                    // mapear las polizas asociadas para mandarlas en la respuesta
+                    const policyRatings = [];
+                    const policyMe = [];
+                    // const mostrar:Array<any> = [];
+                    const mostrarPolizas = [];
+                    let valoresExternal = {};
                     const ClientProp = yield Client_1.ClientsModel.findOne({ externalId: externalIdPropio });
                     const policyProp = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp.externalId });
                     policyProp.forEach(item => {
@@ -279,11 +279,10 @@ class UserController {
                         });
                     });
                     const arrayLenght = policyRatings.length;
-                    for (var i = 0; i < arrayLenght; i++) {
+                    for (let i = 0; i < arrayLenght; i++) {
                         const search = policyRatings[i].externalIdPolicy;
                         // console.log(search)
                         const valores = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ externalIdPolicy: search });
-                        console.log(valores);
                         const externalId = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: search });
                         const externalIdc = yield (externalId === null || externalId === void 0 ? void 0 : externalId.externalIdClient);
                         const cleinteencontrado = yield Client_1.ClientsModel.findOne({ externalId: externalIdc });
@@ -301,8 +300,7 @@ class UserController {
                         };
                         valoresExternal = mostrar;
                     }
-                    console.log(arrayLenght);
-                    if (misPolizas.id === undefined && arrayLenght == 0) {
+                    if (misPolizas.id === undefined && arrayLenght === 0) {
                         yield res.status(400).json({
                             message: 'No tienes pólizas ni estas asociado a otras pólizas',
                             status: 400
@@ -311,10 +309,10 @@ class UserController {
                     else if (misPolizas.id === undefined) {
                         yield res.status(200).json([[valoresExternal]]);
                     }
-                    else if (arrayLenght == 0) {
+                    else if (arrayLenght === 0) {
                         yield res.status(200).json([[misPolizas]]);
                     }
-                    else if (ClientProp != undefined) {
+                    else if (ClientProp !== undefined) {
                         yield res.status(200).json([[misPolizas], [valoresExternal]]);
                     }
                 }
@@ -362,8 +360,6 @@ class UserController {
             };
             const isPolicyMeExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: _id });
             const isPolicyExternalExist = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: _id });
-            console.log(isPolicyMeExist);
-            console.log(isPolicyExternalExist);
             if (isPolicyMeExist && !isPolicyExternalExist) {
                 const Id = isPolicyMeExist._id;
                 try {
@@ -397,8 +393,7 @@ class UserController {
                 });
             }
         });
-        //todo: provando el endpoint para devolver las polizas asociadas de un cliente a otro
-        //listo
+        // listo
         this.PolicyNumberSendSMS = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             const policyNumber = _req.params.policyNumber;
             const NumberPolice = parseInt(policyNumber);
@@ -433,46 +428,24 @@ class UserController {
             }
         });
         // verificacion de codigo
-        //todo: pendiente por generar el modelo de relacion de la polizas externas con el aias
         this.VerifyClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             /** frond end acces origin */
             res.set('Access-Control-Allow-Origin', '*');
-            const _id = _req.body.id; //id del cliente que quiere ver polizas externas
-            const externalIdClient = _req.body.externalIdClient; //para ver las polizas del usuario externo
+            const _id = _req.body.id; // id del cliente que quiere ver polizas externas
+            const externalIdClient = _req.body.externalIdClient; // para ver las polizas del usuario externo
             const code = _req.body.code;
             /** Search RegisterRequest with id parameter */
             const user = yield Client_1.ClientsModel.findById({ _id: _id });
             if (!user) {
                 res.status(404).json({ message: 'No se encuantra el usuario' });
             }
-            else if (user.verificationCode == code) {
+            else if (user.verificationCode === code) {
                 const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient });
                 // const external = isPoliceExist?.externalIdClient;
                 res.status(200).json({
                     data: isPoliceExist,
                     status: 200
                 });
-                // instantiating the models
-                // const externalClient = new ExternalPolicyClinetModel({
-                //   IdClient: user._id,
-                //   externalIdClient: external
-                // });
-                // try {
-                //   // save models with data of RegisterRequestModel
-                //   const savedClient = await externalClient.save();
-                //   const Policies = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
-                //   if (savedClient) {
-                //     res.status(200).json({
-                //       externalIdClient: external,
-                //       status: 200
-                //     });
-                //   }
-                // } catch (error) {
-                //   res.status(400).json({
-                //     error,
-                //     status: 400
-                //   });
-                // }
             }
             else {
                 res.status(203).json({
@@ -481,35 +454,20 @@ class UserController {
                 });
             }
         });
-        //seleccionar las polizas que el cliente decea ver
+        // seleccionar las polizas que el cliente decea ver
         this.selectPolicy = (_req, res) => __awaiter(this, void 0, void 0, function* () {
-            //ejemplo de peticion desde la movil
-            // const arregloPeticion = _req.body.data;
-            // console.log(arregloPeticion);
+            // eslint-disable-next-line no-var
             var policyViewSelect = [];
             const IdClient = _req.body.idClient;
-            console.log(IdClient);
             const Idpoliza = _req.body.data;
-            // policyViewSelect = [Idpoliza];
-            // console.log(Idpoliza);
-            // console.log(policyViewSelect.length);
-            // res.json(policyViewSelect);
-            // // console.log(IdClient,Idpoliza);
-            // const valoresEnviados = ["6226333ef66c1c0fe0cc6dfd", "62263463b920af7b1ec9b5f3"];
-            let sliceRoles = Idpoliza.length;
-            var policyViewSelect = [];
-            let fromRoles = Array.from(Idpoliza);
+            const fromRoles = Array.from(Idpoliza);
             console.log(fromRoles);
             const arrayLenght = fromRoles.length;
             console.log(arrayLenght);
+            // eslint-disable-next-line no-var
             for (var i = 0; i < arrayLenght; i++) {
                 const _id = fromRoles[i];
-                // const idp = {id: _id as String}
-                // console.log(idp)
                 const valores = yield InsurancePolicy_1.InsurancePoliciesModel.find({ _id: _id });
-                // console.log(valores);
-                // // valores?._id;
-                // // const valoresClientes = await ClientsModel.find({externalId: search});
                 valores.forEach(item => {
                     policyViewSelect.push({
                         id: JSON.stringify(item._id),
@@ -519,11 +477,12 @@ class UserController {
                 });
             }
             const arrayLenghtSave = yield policyViewSelect.length;
-            for (var i = 0; i < arrayLenghtSave; i++) {
-                const externalId = policyViewSelect[i].id;
+            // eslint-disable-next-line no-var
+            for (var j = 0; j < arrayLenghtSave; j++) {
+                const externalId = policyViewSelect[j].id;
                 const externalIdPolicy = externalId.slice(1, -1);
-                const alias = policyViewSelect[i].alias;
-                const policyType = policyViewSelect[i].policyType;
+                const alias = policyViewSelect[j].alias;
+                const policyType = policyViewSelect[j].policyType;
                 const save = { IdClient, externalIdPolicy, alias, policyType };
                 const savePolicy = new ExternalPolicyClinet_1.ExternalPolicyClinetModel(save);
                 try {
@@ -532,75 +491,11 @@ class UserController {
                 catch (error) {
                     return res.json(error);
                 }
-                // console.log({save});
             }
             res.status(200).json({
                 message: 'Todo salio bien',
                 status: 200
             });
-            //   // esto y funciona
-            //   var policyRatings:Array<any>=[
-            //     {"id": "6226333ef66c1c0fe0cc6dfd"},
-            //     {"id": "62263463b920af7b1ec9b5f3"},
-            //   ];
-            //   const arrayLenght = policyRatings.length;
-            //   for (var i=0; i<arrayLenght;i++) {
-            //     const _id = policyRatings[i].id;
-            //     // console.log(search)
-            //     const valores = await InsurancePoliciesModel.find({_id: _id});
-            //     // valores?._id;
-            //     // const valoresClientes = await ClientsModel.find({externalId: search});
-            //     valores.forEach(item=>{ 
-            //       policyViewSelect.push(
-            //         {
-            //           id: JSON.stringify(item._id),
-            //           alias: item.alias
-            //         }
-            //       );
-            //     });
-            //   }
-            //   const arrayLenghtSave = await policyViewSelect.length;
-            //   for (var i=0; i<arrayLenghtSave;i++) {
-            //     const externalId = policyViewSelect[i].id;
-            //     const externalIdPolicy = externalId.slice(1, -1);
-            //     const alias = policyViewSelect[i].alias;
-            //     const save = {IdClient,externalIdPolicy,alias}
-            //     const savePolicy = new ExternalPolicyClinetModel(save);
-            //     try {
-            //       await savePolicy.save();
-            //     } catch (error) {
-            //       return res.json(error)
-            //     }
-            //     // console.log({save});
-            //   }
-            //   res.json(policyViewSelect);
-            // }
-            // // devolviendo las polizas de un cliente externo
-            // public ViewPoliciesExternal = async (_req : Request, res : Response) => {
-            //   res.set('Access-Control-Allow-Origin', '*');
-            //   const externalIdClient = _req.params.externalIdClient;
-            //   const isPoliceExist = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
-            //   if (!isPoliceExist) {
-            //     res.status(400).json({
-            //       message: 'No estas asociado a ninguna poliza aún',
-            //       status: 400
-            //     });
-            //   } else if (isPoliceExist) {
-            //     // const url = isUserExist;
-            //     const validator = isObjEmpty(isPoliceExist as object);
-            //     if (validator === true) {
-            //       return res.status(400).json({
-            //         data: [],
-            //         status: 400 
-            //       });
-            //     }
-            //     res.status(200).json(isPoliceExist);
-            //   } else {
-            //     res.status(400).json({
-            //       mensaje: 'ocurrio un error',
-            //       status: 400
-            //     });
-            //   }
         });
         // ver informacion de una poliza
         this.seePolicyInformation = (_req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -707,14 +602,13 @@ function ramdomReenvioClinet(phone) {
     }).then(message => console.log(message.sid));
     return (cadenaReenvio);
 }
-function isObjEmpty(obj) {
-    for (const prop in obj) {
-        // eslint-disable-next-line no-prototype-builtins
-        if (obj.hasOwnProperty(prop))
-            return false;
-    }
-    return true;
-}
+// function isObjEmpty (obj:Object) {
+//   for (const prop in obj) {
+//     // eslint-disable-next-line no-prototype-builtins
+//     if (obj.hasOwnProperty(prop)) return false;
+//   }
+//   return true;
+// }
 function sendSMSClientPolicy(phone) {
     // generating 4 random numbers
     const val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);

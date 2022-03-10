@@ -112,13 +112,13 @@ class UserController {
     }
   }
 
-  //reenvio de codigo a cliente externo
+  // reenvio de codigo a cliente externo
   public ReenvioConfirmacionClientExternal = async (_req:Request, res:Response) => {
     const Id = _req.params.externalId;
     const externalId = parseInt(Id);
     console.log(externalId);
     const isClientExist = await ClientsModel.findOne({ externalId: externalId });
-    if (isClientExist){
+    if (isClientExist) {
       const phone = isClientExist?.phoneNumber as String;
       const id = isClientExist?._id;
       ramdomReenvioClinet(phone);
@@ -253,29 +253,29 @@ class UserController {
     try {
       const isClientExist = await ClientsModel.findById(_id);
 
-      //buscar polizas propias
+      // buscar polizas propias
       const externalIdPropio = isClientExist?.externalId;
-      const polizasPropias = await InsurancePoliciesModel.find({externalIdClient: externalIdPropio});
+      const polizasPropias = await InsurancePoliciesModel.find({ externalIdClient: externalIdPropio });
       const id = _id as String;
-      //buscar polizas asociadas
-      const polizasExternas = await ExternalPolicyClinetModel.find({IdClient: id});
+      // buscar polizas asociadas
+      const polizasExternas = await ExternalPolicyClinetModel.find({ IdClient: id });
       // console.log(polizasExternas);
-      if(!isClientExist) {
+      if (!isClientExist) {
         res.status(400).json({
           message: 'No eres cliente de impulsa',
           status: 400
         });
-      } else if(isClientExist && polizasPropias && polizasExternas) {
-        //mapear las polizas asociadas para mandarlas en la respuesta
-        var policyRatings:Array<any>=[];
-        var policyMe:Array<any>=[];
-        var mostrar:Array<any>=[];
-        var mostrarPolizas:Array<any>=[];
-        var valoresExternal = {};
+      } else if (isClientExist && polizasPropias && polizasExternas) {
+        // mapear las polizas asociadas para mandarlas en la respuesta
+        const policyRatings:Array<any> = [];
+        const policyMe:Array<any> = [];
+        // const mostrar:Array<any> = [];
+        const mostrarPolizas:Array<any> = [];
+        let valoresExternal = {};
 
-        const ClientProp = await ClientsModel.findOne({externalId: externalIdPropio});
-        const policyProp = await InsurancePoliciesModel.find({externalIdClient: ClientProp?.externalId});
-        policyProp.forEach(item=>{ 
+        const ClientProp = await ClientsModel.findOne({ externalId: externalIdPropio });
+        const policyProp = await InsurancePoliciesModel.find({ externalIdClient: ClientProp?.externalId });
+        policyProp.forEach(item => {
           policyMe.push(
             {
               id: item._id,
@@ -289,9 +289,9 @@ class UserController {
           id: ClientProp?.externalId,
           Nombre: ClientProp?.firstName,
           polizas: policyMe
-        }
+        };
 
-        polizasExternas.forEach(item=>{ 
+        polizasExternas.forEach(item => {
           policyRatings.push(
             {
               externalIdPolicy: item.externalIdPolicy
@@ -299,15 +299,14 @@ class UserController {
           );
         });
         const arrayLenght = policyRatings.length;
-        for (var i=0; i<arrayLenght;i++) {
+        for (let i = 0; i < arrayLenght; i++) {
           const search = policyRatings[i].externalIdPolicy;
           // console.log(search)
-          const valores = await ExternalPolicyClinetModel.find({externalIdPolicy: search});
-          console.log(valores)
-          const externalId = await InsurancePoliciesModel.findOne({_id: search});
+          const valores = await ExternalPolicyClinetModel.find({ externalIdPolicy: search });
+          const externalId = await InsurancePoliciesModel.findOne({ _id: search });
           const externalIdc = await externalId?.externalIdClient;
-          const cleinteencontrado = await ClientsModel.findOne({ externalId: externalIdc })
-          valores.forEach(item=>{ 
+          const cleinteencontrado = await ClientsModel.findOne({ externalId: externalIdc });
+          valores.forEach(item => {
             mostrarPolizas.push(
               {
                 id: item._id,
@@ -321,23 +320,21 @@ class UserController {
             id: cleinteencontrado?.externalId,
             Nombre: cleinteencontrado?.firstName,
             polizas: mostrarPolizas
-          }
-          valoresExternal=mostrar;
+          };
+          valoresExternal = mostrar;
         }
-        console.log(arrayLenght)
-        if (misPolizas.id===undefined && arrayLenght==0) {
+        if (misPolizas.id === undefined && arrayLenght === 0) {
           await res.status(400).json({
             message: 'No tienes pólizas ni estas asociado a otras pólizas',
             status: 400
           });
-        } else if(misPolizas.id===undefined) {
+        } else if (misPolizas.id === undefined) {
           await res.status(200).json([[valoresExternal]]);
-        } else if(arrayLenght==0) {
+        } else if (arrayLenght === 0) {
           await res.status(200).json([[misPolizas]]);
-        } else if(ClientProp != undefined) {
-          await res.status(200).json([[misPolizas],[valoresExternal]]);
+        } else if (ClientProp !== undefined) {
+          await res.status(200).json([[misPolizas], [valoresExternal]]);
         }
-
       } else {
         res.status(400).json({
           message: 'Ocurrio un error',
@@ -358,14 +355,13 @@ class UserController {
 
     const id = _req.params.id;
 
-    const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: id});
+    const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: id });
     if (isPolicyExist) {
-
       const name = isPolicyExist?.fileUrl;
 
       try {
         const data = fs.readFileSync('src/uploads/' + name);
-  
+
         res.setHeader('Content-Type', 'application/pdf');
         // res.contentType("application/pdf");
         res.send(data);
@@ -381,58 +377,55 @@ class UserController {
   // actualizar alias de poliza personal
   public UpdateAlias = async (_req : Request, res : Response) => {
     res.set('Access-Control-Allow-Origin', '*');
-      const _id = _req.body.id;
-      const update = {
-        alias: _req.body.alias
+    const _id = _req.body.id;
+    const update = {
+      alias: _req.body.alias
+    };
+
+    const isPolicyMeExist = await InsurancePoliciesModel.findOne({ _id: _id });
+    const isPolicyExternalExist = await ExternalPolicyClinetModel.findOne({ _id: _id });
+
+    if (isPolicyMeExist && !isPolicyExternalExist) {
+      const Id = isPolicyMeExist._id;
+      try {
+        await InsurancePoliciesModel.findByIdAndUpdate(Id, update);
+        res.status(200).json({
+          message: 'Actualización correcta',
+          status: 200
+        });
+      } catch (error) {
+        res.send(error);
       }
-
-      const isPolicyMeExist = await InsurancePoliciesModel.findOne({ _id: _id });
-      const isPolicyExternalExist = await ExternalPolicyClinetModel.findOne({ _id: _id });
-      console.log(isPolicyMeExist)
-      console.log(isPolicyExternalExist)
-
-      if (isPolicyMeExist && !isPolicyExternalExist) {
-        const Id = isPolicyMeExist._id;
-        try {
-          await InsurancePoliciesModel.findByIdAndUpdate(Id,update);
-          res.status(200).json({
-            message: 'Actualización correcta',
-            status: 200
-          });
-        } catch (error) {
-          res.send(error);
-        }
-      } else if(!isPolicyMeExist && isPolicyExternalExist) {
-        const Id = isPolicyExternalExist._id;
-        try {
-          await ExternalPolicyClinetModel.findByIdAndUpdate(Id,update);
-          res.status(200).json({
-            message: 'Actualización correcta',
-            status: 200
-          });
-        } catch (error) {
-          res.send(error);
-        }
-      }else {
-        res.status(400).json({
-          message: 'No estas asociado a ninguna póliza',
-          status: 400
-        })
+    } else if (!isPolicyMeExist && isPolicyExternalExist) {
+      const Id = isPolicyExternalExist._id;
+      try {
+        await ExternalPolicyClinetModel.findByIdAndUpdate(Id, update);
+        res.status(200).json({
+          message: 'Actualización correcta',
+          status: 200
+        });
+      } catch (error) {
+        res.send(error);
       }
-  } 
+    } else {
+      res.status(400).json({
+        message: 'No estas asociado a ninguna póliza',
+        status: 400
+      });
+    }
+  }
 
-  //todo: provando el endpoint para devolver las polizas asociadas de un cliente a otro
-  //listo
+  // listo
   public PolicyNumberSendSMS = async (_req:Request, res:Response) => {
     const policyNumber = _req.params.policyNumber;
     const NumberPolice = parseInt(policyNumber);
     const _id = _req.params.clientId as Object;
 
-    const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: NumberPolice});
-    
+    const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: NumberPolice });
+
     if (isPolicyExist) {
       const client = await ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
-      
+
       if (client) {
         sendSMSClientPolicy(client.phoneNumber);
         const update = { verificationCode: CodeValidator };
@@ -461,20 +454,18 @@ class UserController {
   }
 
   // verificacion de codigo
-  //todo: pendiente por generar el modelo de relacion de la polizas externas con el aias
   public VerifyClient = async (_req:Request, res:Response) => {
     /** frond end acces origin */
     res.set('Access-Control-Allow-Origin', '*');
-    const _id = _req.body.id as Object;//id del cliente que quiere ver polizas externas
-    const externalIdClient = _req.body.externalIdClient;//para ver las polizas del usuario externo
+    const _id = _req.body.id as Object;// id del cliente que quiere ver polizas externas
+    const externalIdClient = _req.body.externalIdClient;// para ver las polizas del usuario externo
     const code = _req.body.code as Number;
 
     /** Search RegisterRequest with id parameter */
     const user = await ClientsModel.findById({ _id: _id });
     if (!user) {
       res.status(404).json({ message: 'No se encuantra el usuario' });
-    } else if (user.verificationCode == code) {
-
+    } else if (user.verificationCode === code) {
       const isPoliceExist = await InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient });
       // const external = isPoliceExist?.externalIdClient;
 
@@ -482,30 +473,6 @@ class UserController {
         data: isPoliceExist,
         status: 200
       });
-      // instantiating the models
-
-      // const externalClient = new ExternalPolicyClinetModel({
-      //   IdClient: user._id,
-      //   externalIdClient: external
-      // });
-
-      // try {
-      //   // save models with data of RegisterRequestModel
-      //   const savedClient = await externalClient.save();
-      //   const Policies = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
-
-      //   if (savedClient) {
-      //     res.status(200).json({
-      //       externalIdClient: external,
-      //       status: 200
-      //     });
-      //   }
-      // } catch (error) {
-      //   res.status(400).json({
-      //     error,
-      //     status: 400
-      //   });
-      // }
     } else {
       res.status(203).json({
         message: 'Verifica tu código',
@@ -514,41 +481,23 @@ class UserController {
     }
   }
 
-  //seleccionar las polizas que el cliente decea ver
+  // seleccionar las polizas que el cliente decea ver
   public selectPolicy = async (_req:Request, res:Response) => {
-    //ejemplo de peticion desde la movil
-    // const arregloPeticion = _req.body.data;
-    // console.log(arregloPeticion);
-    var policyViewSelect:Array<any>=[]
-    
+    // eslint-disable-next-line no-var
+    var policyViewSelect:Array<any> = [];
+
     const IdClient = _req.body.idClient;
-    console.log(IdClient);
     const Idpoliza = _req.body.data;
-    // policyViewSelect = [Idpoliza];
-    // console.log(Idpoliza);
-    // console.log(policyViewSelect.length);
-    // res.json(policyViewSelect);
-
-    // // console.log(IdClient,Idpoliza);
-    // const valoresEnviados = ["6226333ef66c1c0fe0cc6dfd", "62263463b920af7b1ec9b5f3"];
-
-    let sliceRoles = Idpoliza.length;
-    var policyViewSelect:Array<any>=[]
-    let fromRoles = Array.from(Idpoliza);
+    const fromRoles = Array.from(Idpoliza);
     console.log(fromRoles);
 
     const arrayLenght = fromRoles.length;
     console.log(arrayLenght);
-    for (var i=0; i<arrayLenght;i++) {
+    // eslint-disable-next-line no-var
+    for (var i = 0; i < arrayLenght; i++) {
       const _id = fromRoles[i];
-      // const idp = {id: _id as String}
-      // console.log(idp)
-      const valores = await InsurancePoliciesModel.find({_id: _id});
-      // console.log(valores);
-      // // valores?._id;
-      
-      // // const valoresClientes = await ClientsModel.find({externalId: search});
-      valores.forEach(item=>{ 
+      const valores = await InsurancePoliciesModel.find({ _id: _id });
+      valores.forEach(item => {
         policyViewSelect.push(
           {
             id: JSON.stringify(item._id),
@@ -560,104 +509,25 @@ class UserController {
     }
 
     const arrayLenghtSave = await policyViewSelect.length;
-    for (var i=0; i<arrayLenghtSave;i++) {
-      const externalId = policyViewSelect[i].id;
+    // eslint-disable-next-line no-var
+    for (var j = 0; j < arrayLenghtSave; j++) {
+      const externalId = policyViewSelect[j].id;
       const externalIdPolicy = externalId.slice(1, -1);
-      const alias = policyViewSelect[i].alias;
-      const policyType = policyViewSelect[i].policyType;
-      const save = {IdClient,externalIdPolicy,alias,policyType}
+      const alias = policyViewSelect[j].alias;
+      const policyType = policyViewSelect[j].policyType;
+      const save = { IdClient, externalIdPolicy, alias, policyType };
       const savePolicy = new ExternalPolicyClinetModel(save);
       try {
         await savePolicy.save();
       } catch (error) {
-        return res.json(error)
+        return res.json(error);
       }
-      // console.log({save});
     }
 
     res.status(200).json({
       message: 'Todo salio bien',
       status: 200
     });
-    
-
-
-
-
-
-
-    
-  //   // esto y funciona
-  //   var policyRatings:Array<any>=[
-  //     {"id": "6226333ef66c1c0fe0cc6dfd"},
-  //     {"id": "62263463b920af7b1ec9b5f3"},
-  //   ];
-
-  //   const arrayLenght = policyRatings.length;
-  //   for (var i=0; i<arrayLenght;i++) {
-  //     const _id = policyRatings[i].id;
-  //     // console.log(search)
-  //     const valores = await InsurancePoliciesModel.find({_id: _id});
-  //     // valores?._id;
-      
-  //     // const valoresClientes = await ClientsModel.find({externalId: search});
-  //     valores.forEach(item=>{ 
-  //       policyViewSelect.push(
-  //         {
-  //           id: JSON.stringify(item._id),
-  //           alias: item.alias
-  //         }
-  //       );
-  //     });
-  //   }
-
-  //   const arrayLenghtSave = await policyViewSelect.length;
-  //   for (var i=0; i<arrayLenghtSave;i++) {
-  //     const externalId = policyViewSelect[i].id;
-  //     const externalIdPolicy = externalId.slice(1, -1);
-  //     const alias = policyViewSelect[i].alias;
-  //     const save = {IdClient,externalIdPolicy,alias}
-  //     const savePolicy = new ExternalPolicyClinetModel(save);
-  //     try {
-  //       await savePolicy.save();
-  //     } catch (error) {
-  //       return res.json(error)
-  //     }
-  //     // console.log({save});
-  //   }
-  //   res.json(policyViewSelect);
-  // }
-
-  // // devolviendo las polizas de un cliente externo
-  // public ViewPoliciesExternal = async (_req : Request, res : Response) => {
-  //   res.set('Access-Control-Allow-Origin', '*');
-
-  //   const externalIdClient = _req.params.externalIdClient;
-
-  //   const isPoliceExist = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
-
-  //   if (!isPoliceExist) {
-  //     res.status(400).json({
-  //       message: 'No estas asociado a ninguna poliza aún',
-  //       status: 400
-  //     });
-  //   } else if (isPoliceExist) {
-  //     // const url = isUserExist;
-  //     const validator = isObjEmpty(isPoliceExist as object);
-
-  //     if (validator === true) {
-  //       return res.status(400).json({
-  //         data: [],
-  //         status: 400 
-  //       });
-  //     }
-  //     res.status(200).json(isPoliceExist);
-  //   } else {
-  //     res.status(400).json({
-  //       mensaje: 'ocurrio un error',
-  //       status: 400
-  //     });
-  //   }
   }
 
   // ver informacion de una poliza
@@ -666,10 +536,10 @@ class UserController {
 
     const _id = _req.params.id;
 
-    const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: _id});
-    if(isPolicyExist){
+    const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: _id });
+    if (isPolicyExist) {
       const externalIdClient = isPolicyExist?.externalIdClient;
-      const isClientExist = await ClientsModel.findOne({ externalId: externalIdClient});
+      const isClientExist = await ClientsModel.findOne({ externalId: externalIdClient });
       const cleintedetail = {
         firstName: isClientExist?.firstName
       };
@@ -686,7 +556,6 @@ class UserController {
       });
     }
   }
-  
 }
 
 /**
@@ -773,15 +642,15 @@ function ramdomReenvioClinet (phone:String) {
   return (cadenaReenvio);
 }
 
-function isObjEmpty (obj:Object) {
-  for (const prop in obj) {
-    // eslint-disable-next-line no-prototype-builtins
-    if (obj.hasOwnProperty(prop)) return false;
-  }
-  return true;
-}
+// function isObjEmpty (obj:Object) {
+//   for (const prop in obj) {
+//     // eslint-disable-next-line no-prototype-builtins
+//     if (obj.hasOwnProperty(prop)) return false;
+//   }
+//   return true;
+// }
 
-function sendSMSClientPolicy(phone: String) {
+function sendSMSClientPolicy (phone: String) {
   // generating 4 random numbers
   const val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
   const val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);

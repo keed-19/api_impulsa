@@ -103,12 +103,12 @@ class ImpulsaController {
                             // creando el alias del modelo
                             const tipe = _req.body.policyType.toUpperCase();
                             const number = _req.body.policyNumber;
-                            //asignando la aseguradora a la poliza
+                            // asignando la aseguradora a la poliza
                             const insuranceId = _req.body.insuranceId;
                             const isInsuranceExist = yield Insurance_1.InsuranceModel.findOne({ insuranceId: insuranceId });
                             if (isInsuranceExist) {
                                 const aseguradora = isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name;
-                                //construyendo el alias momentario
+                                // construyendo el alias momentario
                                 const alias = `${aseguradora}-${tipe}-${number}`;
                                 // este codigo corta una cadena string de acuerdo a la necesidad
                                 // const extraida = tipe.substring(0, 3);
@@ -179,24 +179,19 @@ class ImpulsaController {
         // vizualisar clientes
         this.ViewClients = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            try {
-                const isClientExist = yield Client_1.ClientsModel.find({});
-                if (!isClientExist) {
-                    res.json({
-                        message: 'No hay clientes registrados'
-                    });
-                }
-                else if (isClientExist) {
-                    res.status(200).json(isClientExist);
-                }
-                else {
-                    res.json({
-                        mensaje: 'ocurrio un error'
-                    });
-                }
+            const isClientExist = yield Client_1.ClientsModel.find({});
+            if (!isClientExist) {
+                res.json({
+                    message: 'No hay clientes registrados'
+                });
             }
-            catch (error) {
-                res.status(400).json(error);
+            else if (isClientExist) {
+                res.status(200).json(isClientExist);
+            }
+            else {
+                res.json({
+                    mensaje: 'ocurrio un error'
+                });
             }
         });
         // visaualizar cliente por telefono
@@ -491,7 +486,7 @@ class ImpulsaController {
                 }
             }
         });
-        //ver las aseguradoras
+        // ver las aseguradoras
         this.ViewInsurances = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             // var phone = _req.params.phoneNumber;
@@ -534,7 +529,7 @@ class ImpulsaController {
                 });
             }
         });
-        //eliminar aseguradora
+        // eliminar aseguradora
         this.DeleteInsurance = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const externalId = _req.params.externalId;

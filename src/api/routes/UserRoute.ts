@@ -2,7 +2,7 @@ import { Router } from 'express';
 import ImpulsaController from '../controllers/ImpulsaController';
 import UserController from '../controllers/UserController';
 import UserMiddleware from '../middlewares/middleware';
-import syncMiddleware from '../middlewares/syncMiddleware';
+// import syncMiddleware from '../middlewares/syncMiddleware';
 import { Upload } from '../services/saveFile';
 const UserRoute: Router = Router();
 
@@ -28,7 +28,7 @@ UserRoute.get('/app/policies/:id', UserController.ViewPolicies);
 // ver poliza inf
 UserRoute.get('/app/policyDetail/:id', UserController.seePolicyInformation);
 
-//seleccionar polizas a ver
+// seleccionar polizas a ver
 UserRoute.post('/app/selectPolicy', UserController.selectPolicy);
 
 // vizualisar un pdf en especifico
@@ -37,10 +37,10 @@ UserRoute.get('/app/policie/:id', UserController.ViewPDF);
 // Editar el alias de una poliza
 UserRoute.put('/app/updateAlias', UserController.UpdateAlias);
 
-//todo: provando nueva funcionalidad
+// todo: provando nueva funcionalidad
 UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController.PolicyNumberSendSMS);
 
-//comprobando el codigo 
+// comprobando el codigo
 UserRoute.post('/app/verificar', UserController.VerifyClient);
 
 // visualizando las polizas externas
@@ -92,20 +92,19 @@ UserRoute.put('/sync/clients/:externalId', ImpulsaController.UpdateClient);
  * CRUD DE ASEGURADORAS
 */
 
-//guardar aseguradora
+// guardar aseguradora
 UserRoute.post('/sync/insurances', ImpulsaController.SaveInsurance);
 
-//ver aseguradoras
+// ver aseguradoras
 UserRoute.get('/sync/insurances', ImpulsaController.ViewInsurances);
 
-//ver aseguradora
+// ver aseguradora
 UserRoute.get('/sync/insurances/:externalId', ImpulsaController.ViewInsurance);
 
-//eliminar aseguradora
+// eliminar aseguradora
 UserRoute.delete('/sync/delete/insurances/:externalId', ImpulsaController.DeleteInsurance);
 
 // actualizar aseguradora
 UserRoute.put('/sync/update/insurances/:externalId', ImpulsaController.UpdateInsurance);
-
 
 export default UserRoute;
