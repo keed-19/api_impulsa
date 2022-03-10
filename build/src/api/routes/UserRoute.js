@@ -7,7 +7,6 @@ const express_1 = require("express");
 const ImpulsaController_1 = __importDefault(require("../controllers/ImpulsaController"));
 const UserController_1 = __importDefault(require("../controllers/UserController"));
 const middleware_1 = __importDefault(require("../middlewares/middleware"));
-const syncMiddleware_1 = __importDefault(require("../middlewares/syncMiddleware"));
 const saveFile_1 = require("../services/saveFile");
 const UserRoute = (0, express_1.Router)();
 UserRoute.post('/users', UserController_1.default.register);
@@ -33,7 +32,7 @@ UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController_1.de
 //comprobando el codigo 
 UserRoute.post('/app/verificar', UserController_1.default.VerifyClient);
 // visualizando las polizas externas
-UserRoute.get('/app/policies/external/:externalIdClient', UserController_1.default.ViewPoliciesExternal);
+// UserRoute.get('/app/policies/external/:externalIdClient', UserController.ViewPoliciesExternal);
 /**
  * CRUD DE POLIZAS
 */
@@ -52,7 +51,8 @@ UserRoute.put('/sync/policies/:externalId', saveFile_1.Upload.single('myFile'), 
  * CRUD DE CLIENTES
 */
 // visualizar Clientes
-UserRoute.get('/sync/clients', syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewClients);
+// UserRoute.get('/sync/clients', syncMiddleware.veryfyCredential, ImpulsaController.ViewClients);
+UserRoute.get('/sync/clients', ImpulsaController_1.default.ViewClients);
 // vizualisar cliente por numero de telefono
 UserRoute.get('/sync/clients/:externalId', ImpulsaController_1.default.ViewClient);
 // guardando clientes desde impulsa

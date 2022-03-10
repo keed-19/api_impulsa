@@ -41,7 +41,7 @@ UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController.Poli
 UserRoute.post('/app/verificar', UserController.VerifyClient);
 
 // visualizando las polizas externas
-UserRoute.get('/app/policies/external/:externalIdClient', UserController.ViewPoliciesExternal);
+// UserRoute.get('/app/policies/external/:externalIdClient', UserController.ViewPoliciesExternal);
 
 /**
  * CRUD DE POLIZAS
@@ -68,7 +68,8 @@ UserRoute.put('/sync/policies/:externalId', Upload.single('myFile'), ImpulsaCont
 */
 
 // visualizar Clientes
-UserRoute.get('/sync/clients', syncMiddleware.veryfyCredential, ImpulsaController.ViewClients);
+// UserRoute.get('/sync/clients', syncMiddleware.veryfyCredential, ImpulsaController.ViewClients);
+UserRoute.get('/sync/clients', ImpulsaController.ViewClients);
 
 // vizualisar cliente por numero de telefono
 
