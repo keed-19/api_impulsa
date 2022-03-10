@@ -290,7 +290,7 @@ class UserController {
                         valores.forEach(item => {
                             mostrarPolizas.push({
                                 id: item._id,
-                                alias: item.alias,
+                                Alias: item.alias,
                                 policyType: item.policyType
                             });
                         });
