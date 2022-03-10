@@ -432,16 +432,10 @@ class UserController {
             /** frond end acces origin */
             res.set('Access-Control-Allow-Origin', '*');
             const _id = _req.body.id; // id del cliente que quiere ver polizas externas
-            const externalIdClient = _req.body.externalIdClient; // para ver las polizas del usuario externo
-            const code = _req.body.code;
+            const code = parseInt(_req.body.code);
             /** Search RegisterRequest with id parameter */
             const user = yield Client_1.ClientsModel.findById({ _id: _id });
-            if (!user) {
-                res.status(404).json({ message: 'No se encuantra el usuario' });
-            }
-            else if (user.verificationCode === code) {
-                const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient });
-                // const external = isPoliceExist?.externalIdClient;
+            if ((user === null || user === void 0 ? void 0 : user.verificationCode) === code) {
                 res.status(200).json({
                     message: 'Las pólizas se sincronizaron de manera correcta',
                     status: 200
@@ -453,6 +447,10 @@ class UserController {
                     status: 203
                 });
             }
+            // if (!user) {
+            //   res.status(404).json({ message: 'No se encuantra el usuario' });
+            // } else {
+            // }
         });
         this.ViewPoliciesExternal = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             /** frond end acces origin */
