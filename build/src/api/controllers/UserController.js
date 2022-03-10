@@ -264,7 +264,8 @@ class UserController {
                     policyProp.forEach(item => {
                         policyMe.push({
                             id: item._id,
-                            Alias: item.alias
+                            Alias: item.alias,
+                            policyType: item.policyType
                         });
                     });
                     const misPolizas = {
@@ -289,7 +290,8 @@ class UserController {
                         valores.forEach(item => {
                             mostrarPolizas.push({
                                 id: item._id,
-                                alias: item.alias
+                                alias: item.alias,
+                                policyType: item.policyType
                             });
                         });
                         const mostrar = {
@@ -523,7 +525,8 @@ class UserController {
                 valores.forEach(item => {
                     policyViewSelect.push({
                         id: JSON.stringify(item._id),
-                        alias: item.alias
+                        alias: item.alias,
+                        policyType: item.policyType
                     });
                 });
             }
@@ -532,7 +535,8 @@ class UserController {
                 const externalId = policyViewSelect[i].id;
                 const externalIdPolicy = externalId.slice(1, -1);
                 const alias = policyViewSelect[i].alias;
-                const save = { IdClient, externalIdPolicy, alias };
+                const policyType = policyViewSelect[i].policyType;
+                const save = { IdClient, externalIdPolicy, alias, policyType };
                 const savePolicy = new ExternalPolicyClinet_1.ExternalPolicyClinetModel(save);
                 try {
                     yield savePolicy.save();

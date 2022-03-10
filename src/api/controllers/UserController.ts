@@ -279,7 +279,8 @@ class UserController {
           policyMe.push(
             {
               id: item._id,
-              Alias: item.alias
+              Alias: item.alias,
+              policyType: item.policyType
             }
           );
         });
@@ -310,7 +311,8 @@ class UserController {
             mostrarPolizas.push(
               {
                 id: item._id,
-                alias: item.alias
+                alias: item.alias,
+                policyType: item.policyType
               }
             );
           });
@@ -562,7 +564,8 @@ class UserController {
         policyViewSelect.push(
           {
             id: JSON.stringify(item._id),
-            alias: item.alias
+            alias: item.alias,
+            policyType: item.policyType
           }
         );
       });
@@ -573,7 +576,8 @@ class UserController {
       const externalId = policyViewSelect[i].id;
       const externalIdPolicy = externalId.slice(1, -1);
       const alias = policyViewSelect[i].alias;
-      const save = {IdClient,externalIdPolicy,alias}
+      const policyType = policyViewSelect[i].policyType;
+      const save = {IdClient,externalIdPolicy,alias,policyType}
       const savePolicy = new ExternalPolicyClinetModel(save);
       try {
         await savePolicy.save();
