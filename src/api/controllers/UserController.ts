@@ -470,7 +470,29 @@ class UserController {
       // const external = isPoliceExist?.externalIdClient;
 
       res.status(200).json({
-        data: isPoliceExist,
+        message: 'Las pólizas se sincronizaron de manera correcta',
+        status: 200
+      });
+    } else {
+      res.status(203).json({
+        message: 'Verifica tu código',
+        status: 203
+      });
+    }
+  }
+
+  public ViewPoliciesExternal = async (_req:Request, res:Response) => {
+    /** frond end acces origin */
+    res.set('Access-Control-Allow-Origin', '*');
+    const externalIdClient = _req.body.externalIdClient;// para ver las polizas del usuario externo
+
+    /** Search RegisterRequest with id parameter */
+    const policyExternal = await InsurancePoliciesModel.findById({ externalIdClient: externalIdClient });
+    if (!policyExternal) {
+      res.status(404).json({ message: 'No se encuantra el usuario' });
+    } else if (policyExternal) {
+      res.status(200).json({
+        data: policyExternal,
         status: 200
       });
     } else {

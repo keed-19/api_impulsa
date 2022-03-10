@@ -35,7 +35,7 @@ UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController_1.de
 // comprobando el codigo
 UserRoute.post('/app/verificar', UserController_1.default.VerifyClient);
 // visualizando las polizas externas
-// UserRoute.get('/app/policies/external/:externalIdClient', UserController.ViewPoliciesExternal);
+UserRoute.get('/app/policies/external/:externalIdClient', UserController_1.default.ViewPoliciesExternal);
 /**
  * CRUD DE POLIZAS
 */
