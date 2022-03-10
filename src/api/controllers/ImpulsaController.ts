@@ -182,9 +182,7 @@ class ImpulsaController {
     // vizualisar clientes
     public ViewClients = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
-      if (_req.accepted) {
-        // var phone = _req.params.phoneNumber;
-
+      try {
         const isClientExist = await ClientsModel.find({});
 
         if (!isClientExist) {
@@ -198,6 +196,8 @@ class ImpulsaController {
             mensaje: 'ocurrio un error'
           });
         }
+      } catch (error) {
+       res.status(400).json(error); 
       }
     }
 

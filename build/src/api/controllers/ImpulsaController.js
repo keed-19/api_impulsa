@@ -179,8 +179,7 @@ class ImpulsaController {
         // vizualisar clientes
         this.ViewClients = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            if (_req.accepted) {
-                // var phone = _req.params.phoneNumber;
+            try {
                 const isClientExist = yield Client_1.ClientsModel.find({});
                 if (!isClientExist) {
                     res.json({
@@ -195,6 +194,9 @@ class ImpulsaController {
                         mensaje: 'ocurrio un error'
                     });
                 }
+            }
+            catch (error) {
+                res.status(400).json(error);
             }
         });
         // visaualizar cliente por telefono
