@@ -25,6 +25,9 @@ UserRoute.get('/forwardcode/:externalId', UserController.ReenvioConfirmacionClie
 // lista de polizas para un cliente
 UserRoute.get('/app/policies/:id', UserController.ViewPolicies);
 
+// ver poliza inf
+UserRoute.get('/app/policyDetail/:id', UserController.seePolicyInformation);
+
 //seleccionar polizas a ver
 UserRoute.post('/app/selectPolicy', UserController.selectPolicy);
 

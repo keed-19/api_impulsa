@@ -21,6 +21,8 @@ UserRoute.get('/codigoR/:id', UserController_1.default.ReenvioConfirmacion);
 UserRoute.get('/forwardcode/:externalId', UserController_1.default.ReenvioConfirmacionClientExternal);
 // lista de polizas para un cliente
 UserRoute.get('/app/policies/:id', UserController_1.default.ViewPolicies);
+// ver poliza inf
+UserRoute.get('/app/policyDetail/:id', UserController_1.default.seePolicyInformation);
 //seleccionar polizas a ver
 UserRoute.post('/app/selectPolicy', UserController_1.default.selectPolicy);
 // vizualisar un pdf en especifico

@@ -376,24 +376,6 @@ class UserController {
                 catch (error) {
                     res.send(error);
                 }
-                // if (Id == externalIdClient) {
-                //   const _id = isPolicyExist._id;
-                //   try {
-                //     await InsurancePoliciesModel.findByIdAndUpdate(_id,update);
-                //     res.status(200).json({
-                //       message: 'Actualización del alias correcto',
-                //       status: 200
-                //     })
-                //   } catch (error) {
-                //     return res.status(400).json(error);
-                //   }
-                // } else {
-                //   res.status(400).json({
-                //     message: 'No se encontro la póliza',
-                //     id: Id,
-                //     status: 400
-                //   });
-                // }
             }
             else if (!isPolicyMeExist && isPolicyExternalExist) {
                 const Id = isPolicyExternalExist._id;
@@ -619,6 +601,30 @@ class UserController {
             //       status: 400
             //     });
             //   }
+        });
+        // ver informacion de una poliza
+        this.seePolicyInformation = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            const _id = _req.params.id;
+            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: _id });
+            if (isPolicyExist) {
+                const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
+                const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
+                const cleintedetail = {
+                    firstName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.firstName
+                };
+                res.status(200).json({
+                    data: isPolicyExist,
+                    client: cleintedetail,
+                    status: 200
+                });
+            }
+            else {
+                res.status(400).json({
+                    message: 'No se encuentra la póliza',
+                    status: 400
+                });
+            }
         });
     }
     /** Function to get users from database */

@@ -402,24 +402,6 @@ class UserController {
         } catch (error) {
           res.send(error);
         }
-        // if (Id == externalIdClient) {
-        //   const _id = isPolicyExist._id;
-        //   try {
-        //     await InsurancePoliciesModel.findByIdAndUpdate(_id,update);
-        //     res.status(200).json({
-        //       message: 'Actualización del alias correcto',
-        //       status: 200
-        //     })
-        //   } catch (error) {
-        //     return res.status(400).json(error);
-        //   }
-        // } else {
-        //   res.status(400).json({
-        //     message: 'No se encontro la póliza',
-        //     id: Id,
-        //     status: 400
-        //   });
-        // }
       } else if(!isPolicyMeExist && isPolicyExternalExist) {
         const Id = isPolicyExternalExist._id;
         try {
@@ -676,6 +658,33 @@ class UserController {
   //       status: 400
   //     });
   //   }
+  }
+
+  // ver informacion de una poliza
+  public seePolicyInformation = async (_req: Request, res: Response) => {
+    res.set('Access-Control-Allow-Origin', '*');
+
+    const _id = _req.params.id;
+
+    const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: _id});
+    if(isPolicyExist){
+      const externalIdClient = isPolicyExist?.externalIdClient;
+      const isClientExist = await ClientsModel.findOne({ externalId: externalIdClient});
+      const cleintedetail = {
+        firstName: isClientExist?.firstName
+      };
+
+      res.status(200).json({
+        data: isPolicyExist,
+        client: cleintedetail,
+        status: 200
+      });
+    } else {
+      res.status(400).json({
+        message: 'No se encuentra la póliza',
+        status: 400
+      });
+    }
   }
   
 }
