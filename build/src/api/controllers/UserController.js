@@ -322,7 +322,12 @@ class UserController {
                             const mostrar = [{
                                     _id: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.externalId,
                                     Nombre: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.firstName,
-                                    polizas: [policyExternalClient]
+                                    polizas: [{
+                                            _id: policyExternalClient === null || policyExternalClient === void 0 ? void 0 : policyExternalClient.externalIdPolicy,
+                                            alias: policyExternalClient === null || policyExternalClient === void 0 ? void 0 : policyExternalClient.alias,
+                                            policyType: policyExternalClient === null || policyExternalClient === void 0 ? void 0 : policyExternalClient.policyType,
+                                            status: policyExternalClient === null || policyExternalClient === void 0 ? void 0 : policyExternalClient.status
+                                        }]
                                 }];
                             mostrarPolizasexter.push(mostrar);
                             // console.log(policyExternalClient)

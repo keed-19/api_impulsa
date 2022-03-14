@@ -347,7 +347,12 @@ class UserController {
             const mostrar =[{
               _id: ExternalClient?.externalId,
               Nombre: ExternalClient?.firstName,
-              polizas: [policyExternalClient]
+              polizas: [{
+                _id: policyExternalClient?.externalIdPolicy,
+                alias: policyExternalClient?.alias,
+                policyType: policyExternalClient?.policyType,
+                status: policyExternalClient?.status
+              }]
             }];
             mostrarPolizasexter.push(mostrar);
             // console.log(policyExternalClient)
