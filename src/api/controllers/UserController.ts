@@ -367,12 +367,12 @@ class UserController {
           const usersFiltered = resp.reduce((acc: any, user: any) => {
             // let policyExtracted = {} as any;
         
-            const userRepeated = acc.filter((propsUser: { id: number }) => propsUser.id === user.id);
+            const userRepeated = acc.filter((propsUser: { _id: number }) => propsUser._id === user._id);
         
             if (userRepeated.length === 0) {
               acc.push(user);
             } else {
-              const indexRepeated = acc.findIndex((element: any) => element.id === user.id);
+              const indexRepeated = acc.findIndex((element: any) => element._id === user._id);
               console.log(`index Repetido: ${indexRepeated}`);
         
               const policyExtracted = user.polizas;
