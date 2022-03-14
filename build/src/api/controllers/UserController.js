@@ -88,6 +88,7 @@ class UserController {
         });
         // reenvio de codigo de verificacion
         this.ReenvioConfirmacion = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
             const _id = _req.params._id;
             try {
                 const updateRequest = yield RegisterRequest_1.RegisterRequestModel.findOne(_id);
@@ -110,26 +111,35 @@ class UserController {
         });
         // reenvio de codigo a cliente externo
         this.ReenvioConfirmacionClientExternal = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
             const Id = _req.params.externalId;
             const _id = _req.params.id;
             const externalId = parseInt(Id);
             // console.log(externalId);
-            const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalId });
-            if (isClientExist) {
-                const phone = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.phoneNumber;
-                const id = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist._id;
-                ramdomReenvioClinet(phone);
-                const updateClient = { verificationCode: cadenaReenvio };
-                yield Client_1.ClientsModel.findByIdAndUpdate(_id, updateClient);
-                // const updateRequestNow = await RegisterRequestModel.findOne(_id);
-                res.status(200).json({
-                    message: 'El código se reenvió con éxito',
-                    status: 200
-                });
+            try {
+                const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalId });
+                if (isClientExist) {
+                    const phone = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.phoneNumber;
+                    // const id = isClientExist?._id;
+                    ramdomReenvioClinet(phone);
+                    const updateClient = { verificationCode: cadenaReenvio };
+                    yield Client_1.ClientsModel.findByIdAndUpdate(_id, updateClient);
+                    // const updateRequestNow = await RegisterRequestModel.findOne(_id);
+                    res.status(200).json({
+                        message: 'El código se reenvió con éxito',
+                        status: 200
+                    });
+                }
+                else {
+                    res.status(400).json({
+                        message: 'No se encuentra el cliente',
+                        status: 400
+                    });
+                }
             }
-            else {
+            catch (error) {
                 res.status(400).json({
-                    message: 'No se encuentra el cliente',
+                    message: 'Ocuerrio un error. ' + error,
                     status: 400
                 });
             }
@@ -397,37 +407,45 @@ class UserController {
             const update = {
                 alias: _req.body.alias
             };
-            const isPolicyMeExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: _id });
-            const isPolicyExternalExist = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: _id });
-            if (isPolicyMeExist && !isPolicyExternalExist) {
-                const Id = isPolicyMeExist._id;
-                try {
-                    yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(Id, update);
-                    res.status(200).json({
-                        message: 'Actualización correcta',
-                        status: 200
+            try {
+                const isPolicyMeExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: _id });
+                const isPolicyExternalExist = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: _id });
+                if (isPolicyMeExist && !isPolicyExternalExist) {
+                    const Id = isPolicyMeExist._id;
+                    try {
+                        yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(Id, update);
+                        res.status(200).json({
+                            message: 'Actualización correcta',
+                            status: 200
+                        });
+                    }
+                    catch (error) {
+                        res.send(error);
+                    }
+                }
+                else if (!isPolicyMeExist && isPolicyExternalExist) {
+                    const Id = isPolicyExternalExist._id;
+                    try {
+                        yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findByIdAndUpdate(Id, update);
+                        res.status(200).json({
+                            message: 'Actualización correcta',
+                            status: 200
+                        });
+                    }
+                    catch (error) {
+                        res.send(error);
+                    }
+                }
+                else {
+                    res.status(400).json({
+                        message: 'No estas asociado a ninguna póliza',
+                        status: 400
                     });
                 }
-                catch (error) {
-                    res.send(error);
-                }
             }
-            else if (!isPolicyMeExist && isPolicyExternalExist) {
-                const Id = isPolicyExternalExist._id;
-                try {
-                    yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findByIdAndUpdate(Id, update);
-                    res.status(200).json({
-                        message: 'Actualización correcta',
-                        status: 200
-                    });
-                }
-                catch (error) {
-                    res.send(error);
-                }
-            }
-            else {
+            catch (error) {
                 res.status(400).json({
-                    message: 'No estas asociado a ninguna póliza',
+                    message: 'Ocurrio un error: ' + error,
                     status: 400
                 });
             }
@@ -437,31 +455,39 @@ class UserController {
             const policyNumber = _req.params.policyNumber;
             const NumberPolice = parseInt(policyNumber);
             const _id = _req.params.clientId;
-            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: NumberPolice });
-            if (isPolicyExist) {
-                const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
-                if (client) {
-                    sendSMSClientPolicy(client.phoneNumber);
-                    const update = { verificationCode: CodeValidator };
-                    const clienteActualizado = yield Client_1.ClientsModel.findByIdAndUpdate(_id, update);
-                    if (clienteActualizado) {
-                        const clientExternalId = client.externalId;
-                        res.status(200).json({
-                            clientExternalId,
-                            status: 200
-                        });
-                    }
-                    else {
-                        res.status(400).json({
-                            message: 'Ocurrio un error',
-                            status: 400
-                        });
+            try {
+                const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: NumberPolice });
+                if (isPolicyExist) {
+                    const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
+                    if (client) {
+                        sendSMSClientPolicy(client.phoneNumber);
+                        const update = { verificationCode: CodeValidator };
+                        const clienteActualizado = yield Client_1.ClientsModel.findByIdAndUpdate(_id, update);
+                        if (clienteActualizado) {
+                            const clientExternalId = client.externalId;
+                            res.status(200).json({
+                                clientExternalId,
+                                status: 200
+                            });
+                        }
+                        else {
+                            res.status(400).json({
+                                message: 'Ocurrio un error',
+                                status: 400
+                            });
+                        }
                     }
                 }
+                else {
+                    res.status(400).json({
+                        message: 'Póliza no encontrada',
+                        status: 400
+                    });
+                }
             }
-            else {
+            catch (error) {
                 res.status(400).json({
-                    message: 'Póliza no encontrada',
+                    message: 'Ocurrio un error: ' + error,
                     status: 400
                 });
             }
@@ -472,44 +498,56 @@ class UserController {
             res.set('Access-Control-Allow-Origin', '*');
             const _id = _req.body.id; // id del cliente que quiere ver polizas externas
             const code = parseInt(_req.body.code);
-            /** Search RegisterRequest with id parameter */
-            const user = yield Client_1.ClientsModel.findById({ _id: _id });
-            if ((user === null || user === void 0 ? void 0 : user.verificationCode) === code) {
-                res.status(200).json({
-                    message: 'Las pólizas se sincronizaron de manera correcta',
-                    status: 200
+            try {
+                /** Search RegisterRequest with id parameter */
+                const user = yield Client_1.ClientsModel.findById({ _id: _id });
+                if ((user === null || user === void 0 ? void 0 : user.verificationCode) === code) {
+                    res.status(200).json({
+                        message: 'Las pólizas se sincronizaron de manera correcta',
+                        status: 200
+                    });
+                }
+                else {
+                    res.status(203).json({
+                        message: 'Verifica tu código',
+                        status: 203
+                    });
+                }
+            }
+            catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 400
                 });
             }
-            else {
-                res.status(203).json({
-                    message: 'Verifica tu código',
-                    status: 203
-                });
-            }
-            // if (!user) {
-            //   res.status(404).json({ message: 'No se encuantra el usuario' });
-            // } else {
-            // }
         });
         this.ViewPoliciesExternal = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             /** frond end acces origin */
             res.set('Access-Control-Allow-Origin', '*');
             const externalIdClient = _req.params.externalIdClient; // para ver las polizas del usuario externo
-            /** Search RegisterRequest with id parameter */
-            const policyExternal = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
-            if (!policyExternal) {
-                res.status(404).json({ message: 'No se encuantran resultados' });
+            try {
+                /** Search RegisterRequest with id parameter */
+                const policyExternal = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
+                if (!policyExternal) {
+                    res.status(404).json({ message: 'No se encuantran resultados' });
+                }
+                else if (policyExternal) {
+                    res.status(200).json({
+                        data: policyExternal,
+                        status: 200
+                    });
+                }
+                else {
+                    res.status(203).json({
+                        message: 'Verifica tu código',
+                        status: 203
+                    });
+                }
             }
-            else if (policyExternal) {
-                res.status(200).json({
-                    data: policyExternal,
-                    status: 200
-                });
-            }
-            else {
-                res.status(203).json({
-                    message: 'Verifica tu código',
-                    status: 203
+            catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error',
+                    status: 400
                 });
             }
         });
@@ -519,46 +557,54 @@ class UserController {
             var policyViewSelect = [];
             const IdClient = _req.body.idClient;
             const Idpoliza = _req.body.data;
-            const fromRoles = Array.from(Idpoliza);
-            console.log(fromRoles);
-            const arrayLenght = fromRoles.length;
-            // console.log(arrayLenght);
-            // eslint-disable-next-line no-var
-            for (var i = 0; i < arrayLenght; i++) {
-                const _id = fromRoles[i];
-                const valores = yield InsurancePolicy_1.InsurancePoliciesModel.find({ _id: _id });
-                valores.forEach(item => {
-                    policyViewSelect.push({
-                        id: JSON.stringify(item._id),
-                        alias: item.alias,
-                        policyType: item.policyType,
-                        externalIdClient: item.externalIdClient
+            try {
+                const fromRoles = Array.from(Idpoliza);
+                console.log(fromRoles);
+                const arrayLenght = fromRoles.length;
+                // console.log(arrayLenght);
+                // eslint-disable-next-line no-var
+                for (var i = 0; i < arrayLenght; i++) {
+                    const _id = fromRoles[i];
+                    const valores = yield InsurancePolicy_1.InsurancePoliciesModel.find({ _id: _id });
+                    valores.forEach(item => {
+                        policyViewSelect.push({
+                            id: JSON.stringify(item._id),
+                            alias: item.alias,
+                            policyType: item.policyType,
+                            externalIdClient: item.externalIdClient
+                        });
+                        // console.log(policyViewSelect)
                     });
-                    // console.log(policyViewSelect)
+                }
+                const arrayLenghtSave = yield policyViewSelect.length;
+                // eslint-disable-next-line no-var
+                for (var j = 0; j < arrayLenghtSave; j++) {
+                    const externalId = policyViewSelect[j].id;
+                    const externalIdPolicy = externalId.slice(1, -1);
+                    const alias = policyViewSelect[j].alias;
+                    const policyType = policyViewSelect[j].policyType;
+                    const externalIdClient = policyViewSelect[j].externalIdClient;
+                    const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient };
+                    // console.log(save);
+                    const savePolicy = new ExternalPolicyClinet_1.ExternalPolicyClinetModel(save);
+                    try {
+                        yield savePolicy.save();
+                    }
+                    catch (error) {
+                        return res.json(error);
+                    }
+                }
+                res.status(200).json({
+                    message: 'Todo salio bien',
+                    status: 200
                 });
             }
-            const arrayLenghtSave = yield policyViewSelect.length;
-            // eslint-disable-next-line no-var
-            for (var j = 0; j < arrayLenghtSave; j++) {
-                const externalId = policyViewSelect[j].id;
-                const externalIdPolicy = externalId.slice(1, -1);
-                const alias = policyViewSelect[j].alias;
-                const policyType = policyViewSelect[j].policyType;
-                const externalIdClient = policyViewSelect[j].externalIdClient;
-                const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient };
-                // console.log(save);
-                const savePolicy = new ExternalPolicyClinet_1.ExternalPolicyClinetModel(save);
-                try {
-                    yield savePolicy.save();
-                }
-                catch (error) {
-                    return res.json(error);
-                }
+            catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 400
+                });
             }
-            res.status(200).json({
-                message: 'Todo salio bien',
-                status: 200
-            });
         });
         // ver informacion de una poliza
         this.seePolicyInformation = (_req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -596,6 +642,7 @@ class UserController {
                             _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
                             alias: isPolicyExternalExist === null || isPolicyExternalExist === void 0 ? void 0 : isPolicyExternalExist.alias,
                             status: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.status,
+                            policyType: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyType,
                             policyNumber: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyNumber,
                             effectiveDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.effectiveDate,
                             expirationDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.expirationDate,
