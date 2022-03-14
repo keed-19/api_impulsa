@@ -20,7 +20,7 @@ UserRoute.post('/verificar', UserController.ComprobarCod);
 UserRoute.get('/codigoR/:id', UserController.ReenvioConfirmacion);
 
 // reenvio a cliente externo
-UserRoute.get('/forwardcode/:externalId', UserController.ReenvioConfirmacionClientExternal);
+UserRoute.get('/forwardcode/:externalId/:id', UserController.ReenvioConfirmacionClientExternal);
 
 // lista de polizas para un cliente
 UserRoute.get('/app/policies/:id', UserController.ViewPolicies);

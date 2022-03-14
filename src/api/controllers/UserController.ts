@@ -116,8 +116,9 @@ class UserController {
   // reenvio de codigo a cliente externo
   public ReenvioConfirmacionClientExternal = async (_req:Request, res:Response) => {
     const Id = _req.params.externalId;
+    const _id = _req.params.id as Object;
     const externalId = parseInt(Id);
-    console.log(externalId);
+    // console.log(externalId);
     const isClientExist = await ClientsModel.findOne({ externalId: externalId });
     if (isClientExist) {
       const phone = isClientExist?.phoneNumber as String;
@@ -125,7 +126,7 @@ class UserController {
       ramdomReenvioClinet(phone);
 
       const updateClient = { verificationCode: cadenaReenvio };
-      await ClientsModel.findByIdAndUpdate(id, updateClient);
+      await ClientsModel.findByIdAndUpdate(_id, updateClient);
       // const updateRequestNow = await RegisterRequestModel.findOne(_id);
       res.status(200).json({
         message: 'El código se reenvió con éxito',
@@ -570,8 +571,7 @@ class UserController {
             id: JSON.stringify(item._id),
             alias: item.alias,
             policyType: item.policyType,
-            externalIdClient: item.externalIdClient,
-            status: item.status
+            externalIdClient: item.externalIdClient
           }
         );
         // console.log(policyViewSelect)
@@ -585,9 +585,8 @@ class UserController {
       const externalIdPolicy = externalId.slice(1, -1);
       const alias = policyViewSelect[j].alias;
       const policyType = policyViewSelect[j].policyType;
-      const status = policyViewSelect[j].status;
       const externalIdClient= policyViewSelect[j].externalIdClient;
-      const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient, status };
+      const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient };
       // console.log(save);
       const savePolicy = new ExternalPolicyClinetModel(save);
       try {
@@ -625,9 +624,12 @@ class UserController {
           status: 200
         });
       } else {
-        const isPolicyExist = await ExternalPolicyClinetModel.findOne({ _id: _id });
+        const isPolicyExternalExist = await ExternalPolicyClinetModel.findOne({ _id: _id });
+        const externalIdPolicy = isPolicyExternalExist?.externalIdPolicy;
         
-        if (isPolicyExist) {
+        if (isPolicyExternalExist) {
+          const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: externalIdPolicy });
+
           const externalIdClient = isPolicyExist?.externalIdClient;
           const isClientExist = await ClientsModel.findOne({ externalId: externalIdClient });
           const cleintedetail = {
@@ -635,9 +637,18 @@ class UserController {
             middleName: isClientExist?.middleName,
             lastName: isClientExist?.lastName
           };
+
+          const policyDetail = {
+            _id: isPolicyExist?._id,
+            alias: isPolicyExternalExist?.alias,
+            status: isPolicyExist?.status,
+            policyNumber: isPolicyExist?.policyNumber,
+            effectiveDate: isPolicyExist?.effectiveDate,
+            expirationDate: isPolicyExist?.expirationDate,
+          }
           
           res.status(200).json({
-            data: isPolicyExist,
+            data: policyDetail,
             client: cleintedetail,
             status: 200
           });

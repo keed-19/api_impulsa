@@ -19,7 +19,7 @@ UserRoute.post('/verificar', UserController_1.default.ComprobarCod);
 // reenviar codigo de verificacion
 UserRoute.get('/codigoR/:id', UserController_1.default.ReenvioConfirmacion);
 // reenvio a cliente externo
-UserRoute.get('/forwardcode/:externalId', UserController_1.default.ReenvioConfirmacionClientExternal);
+UserRoute.get('/forwardcode/:externalId/:id', UserController_1.default.ReenvioConfirmacionClientExternal);
 // lista de polizas para un cliente
 UserRoute.get('/app/policies/:id', UserController_1.default.ViewPolicies);
 // ver poliza inf

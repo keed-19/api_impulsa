@@ -111,15 +111,16 @@ class UserController {
         // reenvio de codigo a cliente externo
         this.ReenvioConfirmacionClientExternal = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             const Id = _req.params.externalId;
+            const _id = _req.params.id;
             const externalId = parseInt(Id);
-            console.log(externalId);
+            // console.log(externalId);
             const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalId });
             if (isClientExist) {
                 const phone = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.phoneNumber;
                 const id = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist._id;
                 ramdomReenvioClinet(phone);
                 const updateClient = { verificationCode: cadenaReenvio };
-                yield Client_1.ClientsModel.findByIdAndUpdate(id, updateClient);
+                yield Client_1.ClientsModel.findByIdAndUpdate(_id, updateClient);
                 // const updateRequestNow = await RegisterRequestModel.findOne(_id);
                 res.status(200).json({
                     message: 'El código se reenvió con éxito',
@@ -531,8 +532,7 @@ class UserController {
                         id: JSON.stringify(item._id),
                         alias: item.alias,
                         policyType: item.policyType,
-                        externalIdClient: item.externalIdClient,
-                        status: item.status
+                        externalIdClient: item.externalIdClient
                     });
                     // console.log(policyViewSelect)
                 });
@@ -544,9 +544,8 @@ class UserController {
                 const externalIdPolicy = externalId.slice(1, -1);
                 const alias = policyViewSelect[j].alias;
                 const policyType = policyViewSelect[j].policyType;
-                const status = policyViewSelect[j].status;
                 const externalIdClient = policyViewSelect[j].externalIdClient;
-                const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient, status };
+                const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient };
                 // console.log(save);
                 const savePolicy = new ExternalPolicyClinet_1.ExternalPolicyClinetModel(save);
                 try {
@@ -582,8 +581,10 @@ class UserController {
                     });
                 }
                 else {
-                    const isPolicyExist = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: _id });
-                    if (isPolicyExist) {
+                    const isPolicyExternalExist = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: _id });
+                    const externalIdPolicy = isPolicyExternalExist === null || isPolicyExternalExist === void 0 ? void 0 : isPolicyExternalExist.externalIdPolicy;
+                    if (isPolicyExternalExist) {
+                        const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: externalIdPolicy });
                         const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
                         const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
                         const cleintedetail = {
@@ -591,8 +592,16 @@ class UserController {
                             middleName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.middleName,
                             lastName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.lastName
                         };
+                        const policyDetail = {
+                            _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
+                            alias: isPolicyExternalExist === null || isPolicyExternalExist === void 0 ? void 0 : isPolicyExternalExist.alias,
+                            status: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.status,
+                            policyNumber: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyNumber,
+                            effectiveDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.effectiveDate,
+                            expirationDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.expirationDate,
+                        };
                         res.status(200).json({
-                            data: isPolicyExist,
+                            data: policyDetail,
                             client: cleintedetail,
                             status: 200
                         });
