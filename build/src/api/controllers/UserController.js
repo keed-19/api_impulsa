@@ -693,22 +693,30 @@ class UserController {
         this.seePolicyInformation = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const _id = _req.params.id;
-            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: _id });
-            if (isPolicyExist) {
-                const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
-                const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
-                const cleintedetail = {
-                    firstName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.firstName
-                };
-                res.status(200).json({
-                    data: isPolicyExist,
-                    client: cleintedetail,
-                    status: 200
-                });
+            try {
+                const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: _id });
+                if (isPolicyExist) {
+                    const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
+                    const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
+                    const cleintedetail = {
+                        firstName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.firstName
+                    };
+                    res.status(200).json({
+                        data: isPolicyExist,
+                        client: cleintedetail,
+                        status: 200
+                    });
+                }
+                else {
+                    res.status(400).json({
+                        message: 'No se encuentra la póliza',
+                        status: 400
+                    });
+                }
             }
-            else {
-                res.status(400).json({
-                    message: 'No se encuentra la póliza',
+            catch (error) {
+                res.status(400).send({
+                    message: 'Ocurrio un error: ' + error,
                     status: 400
                 });
             }

@@ -747,25 +747,31 @@ class UserController {
     res.set('Access-Control-Allow-Origin', '*');
 
     const _id = _req.params.id;
+    try {
+      const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: _id });
+      if (isPolicyExist) {
+        const externalIdClient = isPolicyExist?.externalIdClient;
+        const isClientExist = await ClientsModel.findOne({ externalId: externalIdClient });
+        const cleintedetail = {
+          firstName: isClientExist?.firstName
+        };
 
-    const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: _id });
-    if (isPolicyExist) {
-      const externalIdClient = isPolicyExist?.externalIdClient;
-      const isClientExist = await ClientsModel.findOne({ externalId: externalIdClient });
-      const cleintedetail = {
-        firstName: isClientExist?.firstName
-      };
-
-      res.status(200).json({
-        data: isPolicyExist,
-        client: cleintedetail,
-        status: 200
-      });
-    } else {
-      res.status(400).json({
-        message: 'No se encuentra la póliza',
-        status: 400
-      });
+        res.status(200).json({
+          data: isPolicyExist,
+          client: cleintedetail,
+          status: 200
+        });
+      } else {
+        res.status(400).json({
+          message: 'No se encuentra la póliza',
+          status: 400
+        });
+      }
+    } catch (error) {
+     res.status(400).send({
+       message: 'Ocurrio un error: ' + error,
+       status:400
+     }) 
     }
   }
 }
