@@ -8,7 +8,6 @@ import { RegisterRequestModel } from '../models/RegisterRequest';
 import { UsersModel } from '../models/User';
 import fs from 'fs';
 import { ExternalPolicyClinetModel } from '../models/ExternalPolicyClinet';
-import mimeTypes from 'mime-types';
 
 /** Variable for verification code */
 let cadena = '';
@@ -427,7 +426,39 @@ class UserController {
           status: 400
         });
       }
-    }
+    } else {
+      try {
+        const isPolicyExternalExist = await ExternalPolicyClinetModel.findOne({ _id: id });
+        const _id = isPolicyExternalExist?.externalIdPolicy;
+        const isPolicyExistOrigin = await InsurancePoliciesModel.findOne({ _id: _id });
+        if (isPolicyExistOrigin) {
+          const name = isPolicyExistOrigin?.fileUrl;
+    
+          try {
+            const data = fs.readFileSync('src/uploads/' + name);
+    
+            res.setHeader('Content-Type', 'application/pdf');
+            // res.contentType("application/pdf");
+            res.send(data);
+          } catch (error) {
+            res.status(400).send({
+              message: 'No se ecuentra la póliza: ' + error,
+              status: 400
+            });
+          }
+        } else {
+          res.status(400).json({
+            message: 'No se encuentra la póliza',
+            status: 400
+          })
+        }
+      } catch (error) {
+       res.status(400).json({
+         message: 'Ocurrio un error: ' + error,
+         status: 400
+       });
+      }
+      }
   }
 
   // actualizar alias de poliza personal
@@ -817,12 +848,11 @@ function sendSMSClientPolicy (phone: String) {
   const client = new Twilio(accountSid, authToken);
 
   // send code verification
-  // client.messages.create({
-  //   body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
-  //   from: '+19378602978',
-  //   to: `+52${phone}`
-  // }).then(message => console.log(message.sid));
+  client.messages.create({
+    body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
+    from: '+19378602978',
+    to: `+52${phone}`
+  }).then(message => console.log(message.sid));
   return (CodeValidator);
 }
 export default new UserController();
-

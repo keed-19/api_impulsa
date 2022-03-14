@@ -56,6 +56,7 @@ UserRoute.put('/sync/policies/:externalId', saveFile_1.Upload.single('myFile'), 
 // visualizar Clientes
 // UserRoute.get('/sync/clients', syncMiddleware.veryfyCredential, ImpulsaController.ViewClients);
 UserRoute.get('/sync/clients', ImpulsaController_1.default.ViewClients);
+// UserRoute.get('/sync/clients', [syncMiddleware.veryfyCredential,ImpulsaController.ViewClients]);
 // vizualisar cliente por numero de telefono
 UserRoute.get('/sync/clients/:externalId', ImpulsaController_1.default.ViewClient);
 // guardando clientes desde impulsa

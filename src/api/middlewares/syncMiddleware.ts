@@ -1,8 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import {sign, verify} from 'jsonwebtoken';
-import multer from "multer";
-import mimeTypes from 'mime-types';
-import { NetworkContext } from 'twilio/lib/rest/supersim/v1/network';
 
 class SyncMiddleware {
 
@@ -21,7 +17,7 @@ class SyncMiddleware {
                     res.send(error);
                 }
             } else {
-                return res.send('Revise sus credenciales');
+                return res.send('Las credenciales no son correctas');
             }
         } catch (error){
             res.status(400).json(error);

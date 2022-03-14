@@ -2,6 +2,7 @@ import { Router } from 'express';
 import ImpulsaController from '../controllers/ImpulsaController';
 import UserController from '../controllers/UserController';
 import UserMiddleware from '../middlewares/middleware';
+import syncMiddleware from '../middlewares/syncMiddleware';
 // import syncMiddleware from '../middlewares/syncMiddleware';
 import { Upload } from '../services/saveFile';
 const UserRoute: Router = Router();
@@ -73,6 +74,7 @@ UserRoute.put('/sync/policies/:externalId', Upload.single('myFile'), ImpulsaCont
 // visualizar Clientes
 // UserRoute.get('/sync/clients', syncMiddleware.veryfyCredential, ImpulsaController.ViewClients);
 UserRoute.get('/sync/clients', ImpulsaController.ViewClients);
+// UserRoute.get('/sync/clients', [syncMiddleware.veryfyCredential,ImpulsaController.ViewClients]);
 
 // vizualisar cliente por numero de telefono
 

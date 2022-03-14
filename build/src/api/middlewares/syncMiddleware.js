@@ -29,7 +29,7 @@ class SyncMiddleware {
                     }
                 }
                 else {
-                    return res.send('Revise sus credenciales');
+                    return res.send('Las credenciales no son correctas');
                 }
             }
             catch (error) {

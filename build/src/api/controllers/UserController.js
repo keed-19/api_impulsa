@@ -399,6 +399,40 @@ class UserController {
                     });
                 }
             }
+            else {
+                try {
+                    const isPolicyExternalExist = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: id });
+                    const _id = isPolicyExternalExist === null || isPolicyExternalExist === void 0 ? void 0 : isPolicyExternalExist.externalIdPolicy;
+                    const isPolicyExistOrigin = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: _id });
+                    if (isPolicyExistOrigin) {
+                        const name = isPolicyExistOrigin === null || isPolicyExistOrigin === void 0 ? void 0 : isPolicyExistOrigin.fileUrl;
+                        try {
+                            const data = fs_1.default.readFileSync('src/uploads/' + name);
+                            res.setHeader('Content-Type', 'application/pdf');
+                            // res.contentType("application/pdf");
+                            res.send(data);
+                        }
+                        catch (error) {
+                            res.status(400).send({
+                                message: 'No se ecuentra la póliza: ' + error,
+                                status: 400
+                            });
+                        }
+                    }
+                    else {
+                        res.status(400).json({
+                            message: 'No se encuentra la póliza',
+                            status: 400
+                        });
+                    }
+                }
+                catch (error) {
+                    res.status(400).json({
+                        message: 'Ocurrio un error: ' + error,
+                        status: 400
+                    });
+                }
+            }
         });
         // actualizar alias de poliza personal
         this.UpdateAlias = (_req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -770,11 +804,11 @@ function sendSMSClientPolicy(phone) {
     // instantiating twilio
     const client = new twilio_1.Twilio(accountSid, authToken);
     // send code verification
-    // client.messages.create({
-    //   body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
-    //   from: '+19378602978',
-    //   to: `+52${phone}`
-    // }).then(message => console.log(message.sid));
+    client.messages.create({
+        body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
+        from: '+19378602978',
+        to: `+52${phone}`
+    }).then(message => console.log(message.sid));
     return (CodeValidator);
 }
 exports.default = new UserController();
