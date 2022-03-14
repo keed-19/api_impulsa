@@ -570,7 +570,7 @@ class UserController {
             if (isPolicyExist) {
                 const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
                 if (client) {
-                    // sendSMSClientPolicy(client.phoneNumber);
+                    sendSMSClientPolicy(client.phoneNumber);
                     const update = { verificationCode: CodeValidator };
                     const clienteActualizado = yield Client_1.ClientsModel.findByIdAndUpdate(_id, update);
                     if (clienteActualizado) {
@@ -825,11 +825,11 @@ function sendSMSClientPolicy(phone) {
     // instantiating twilio
     const client = new twilio_1.Twilio(accountSid, authToken);
     // send code verification
-    client.messages.create({
-        body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
-        from: '+19378602978',
-        to: `+52${phone}`
-    }).then(message => console.log(message.sid));
+    // client.messages.create({
+    //   body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
+    //   from: '+19378602978',
+    //   to: `+52${phone}`
+    // }).then(message => console.log(message.sid));
     return (CodeValidator);
 }
 exports.default = new UserController();
