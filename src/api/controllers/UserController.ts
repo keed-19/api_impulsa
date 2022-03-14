@@ -614,7 +614,7 @@ class UserController {
       const client = await ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
 
       if (client) {
-        sendSMSClientPolicy(client.phoneNumber);
+        // sendSMSClientPolicy(client.phoneNumber);
         const update = { verificationCode: CodeValidator };
         const clienteActualizado = await ClientsModel.findByIdAndUpdate(_id, update);
 
@@ -700,7 +700,7 @@ class UserController {
     console.log(fromRoles);
 
     const arrayLenght = fromRoles.length;
-    console.log(arrayLenght);
+    // console.log(arrayLenght);
     // eslint-disable-next-line no-var
     for (var i = 0; i < arrayLenght; i++) {
       const _id = fromRoles[i];
@@ -715,7 +715,7 @@ class UserController {
             status: item.status
           }
         );
-        console.log(policyViewSelect)
+        // console.log(policyViewSelect)
       });
     }
 

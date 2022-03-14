@@ -570,7 +570,7 @@ class UserController {
             if (isPolicyExist) {
                 const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
                 if (client) {
-                    sendSMSClientPolicy(client.phoneNumber);
+                    // sendSMSClientPolicy(client.phoneNumber);
                     const update = { verificationCode: CodeValidator };
                     const clienteActualizado = yield Client_1.ClientsModel.findByIdAndUpdate(_id, update);
                     if (clienteActualizado) {
@@ -651,7 +651,7 @@ class UserController {
             const fromRoles = Array.from(Idpoliza);
             console.log(fromRoles);
             const arrayLenght = fromRoles.length;
-            console.log(arrayLenght);
+            // console.log(arrayLenght);
             // eslint-disable-next-line no-var
             for (var i = 0; i < arrayLenght; i++) {
                 const _id = fromRoles[i];
@@ -664,7 +664,7 @@ class UserController {
                         externalIdClient: item.externalIdClient,
                         status: item.status
                     });
-                    console.log(policyViewSelect);
+                    // console.log(policyViewSelect)
                 });
             }
             const arrayLenghtSave = yield policyViewSelect.length;
