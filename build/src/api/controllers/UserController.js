@@ -299,13 +299,6 @@ class UserController {
                                 IdClient: item.IdClient
                             });
                         });
-                        // esta respuesta esta correcta pero sin validar
-                        // const mostrar = [{
-                        //   id: Client?.externalId,
-                        //   Nombre: Client?.firstName,
-                        //   polizas: policyExternalClient
-                        // }]
-                        // mostrarArray.push(mostrar);
                     }
                     // console.log(mostrarPolizas)
                     console.log(mostrarPolizas.length);
@@ -322,12 +315,7 @@ class UserController {
                             const mostrar = [{
                                     _id: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.externalId,
                                     Nombre: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.firstName,
-                                    polizas: [{
-                                            _id: policyExternalClient === null || policyExternalClient === void 0 ? void 0 : policyExternalClient.externalIdPolicy,
-                                            alias: policyExternalClient === null || policyExternalClient === void 0 ? void 0 : policyExternalClient.alias,
-                                            policyType: policyExternalClient === null || policyExternalClient === void 0 ? void 0 : policyExternalClient.policyType,
-                                            status: policyExternalClient === null || policyExternalClient === void 0 ? void 0 : policyExternalClient.status
-                                        }]
+                                    polizas: [policyExternalClient]
                                 }];
                             mostrarPolizasexter.push(mostrar);
                             // console.log(policyExternalClient)
@@ -338,7 +326,6 @@ class UserController {
                     }
                     // console.log(uniqueArrayExter)
                     const respuestaGeneral = [[misPolizas], mostrarPolizasexter];
-                    // const respuestaGeneral = [[misPolizas],mostrarArray];
                     const plano = respuestaGeneral.reduce((acc, el) => acc.concat(el), []);
                     const plano2 = plano.reduce((acc, el) => acc.concat(el), []);
                     // res.send(plano2);
@@ -381,128 +368,6 @@ class UserController {
                 });
             }
         });
-        // este funciona bien pero aun falta .ver polizas de un cliente
-        // public ViewPolicies = async (_req : Request, res : Response) => {
-        //   res.set('Access-Control-Allow-Origin', '*');
-        //   const _id = _req.params.id as Object;
-        //   try {
-        //     const isClientExist = await ClientsModel.findById(_id);
-        //     // buscar polizas propias
-        //     const externalIdPropio = isClientExist?.externalId;
-        //     const polizasPropias = await InsurancePoliciesModel.find({ externalIdClient: externalIdPropio });
-        //     const id = _id as String;
-        //     // buscar polizas asociadas
-        //     const polizasExternas = await ExternalPolicyClinetModel.find({ IdClient: id });
-        //     // console.log(polizasExternas);
-        //     if (!isClientExist) {
-        //       res.status(400).json({
-        //         message: 'No eres cliente de impulsa',
-        //         status: 400
-        //       });
-        //     } else if (isClientExist && polizasPropias && polizasExternas) {
-        //       // mapear las polizas asociadas para mandarlas en la respuesta
-        //       const policyRatings:Array<any> = [];
-        //       const policyMe:Array<any> = [];
-        //       // const mostrar:Array<any> = [];
-        //       const mostrarPolizas:Array<any> = [];
-        //       let valoresExternal = {};
-        //       const ClientProp = await ClientsModel.findOne({ externalId: externalIdPropio });
-        //       const policyProp = await InsurancePoliciesModel.find({ externalIdClient: ClientProp?.externalId });
-        //       policyProp.forEach(item => {
-        //         policyMe.push(
-        //           {
-        //             id: item._id,
-        //             Alias: item.alias,
-        //             policyType: item.policyType
-        //           }
-        //         );
-        //       });
-        //       const misPolizas = {
-        //         id: ClientProp?.externalId,
-        //         Nombre: ClientProp?.firstName,
-        //         polizas: policyMe
-        //       };
-        //       // polizasExternas.forEach(item => {
-        //       //   policyRatings.push(
-        //       //     {
-        //       //       externalIdPolicy: item.externalIdPolicy,
-        //       //       policyType: item.policyType,
-        //       //       externalIdClient: item.externalIdClient
-        //       //     }
-        //       //   );
-        //       // });
-        //       const arrayLenght = polizasExternas.length;
-        //       console.log(polizasExternas)
-        //       console.log(arrayLenght)
-        //       for (let i = 0; i < arrayLenght; i++) {
-        //         const externalIdPolicy = polizasExternas[i].externalIdPolicy;
-        //         const alias = polizasExternas[i].alias;
-        //         const policyType = polizasExternas[i].policyType;
-        //         const externalIdClient = polizasExternas[i].externalIdClient;
-        //         const Client = await ClientsModel.findOne({ externalId: externalIdClient });
-        //         const mostrarvista = {
-        //           id: Client?.externalId,
-        //           Nombre: Client?.firstName,
-        //           polizas: {
-        //             id: externalIdPolicy,
-        //             Alias: alias,
-        //             policyType: policyType
-        //           }
-        //         }
-        //         mostrarPolizas.push(mostrarvista)
-        //         console.log(mostrarvista)
-        //       }
-        //       // console.log(polizasExternas.length)
-        //       res.send([[misPolizas],mostrarPolizas]);
-        //       // const arrayLenght = policyRatings.length;
-        //       // for (let i = 0; i < arrayLenght; i++) {
-        //       //   const search = policyRatings[i].externalIdPolicy;
-        //       //   // console.log(search)
-        //       //   const valores = await ExternalPolicyClinetModel.find({ externalIdPolicy: search });
-        //       //   const externalId = await InsurancePoliciesModel.findOne({ _id: search });
-        //       //   const externalIdc = await externalId?.externalIdClient;
-        //       //   const cleinteencontrado = await ClientsModel.findOne({ externalId: externalIdc });
-        //       //   valores.forEach(item => {
-        //       //     mostrarPolizas.push(
-        //       //       {
-        //       //         id: item._id,
-        //       //         Alias: item.alias,
-        //       //         policyType: item.policyType
-        //       //       }
-        //       //     );
-        //       //   });
-        //       //   const mostrar = {
-        //       //     id: cleinteencontrado?.externalId,
-        //       //     Nombre: cleinteencontrado?.firstName,
-        //       //     polizas: mostrarPolizas
-        //       //   };
-        //       //   valoresExternal = mostrar;
-        //       // }
-        //       // if (misPolizas.id === undefined && arrayLenght === 0) {
-        //       //   await res.status(400).json({
-        //       //     message: 'No tienes pólizas ni estas asociado a otras pólizas',
-        //       //     status: 400
-        //       //   });
-        //       // } else if (misPolizas.id === undefined) {
-        //       //   await res.status(200).json([[valoresExternal]]);
-        //       // } else if (arrayLenght === 0) {
-        //       //   await res.status(200).json([[misPolizas]]);
-        //       // } else if (ClientProp !== undefined) {
-        //       //   await res.status(200).json([[misPolizas], [valoresExternal]]);
-        //       // }
-        //     } else {
-        //       res.status(400).json({
-        //         message: 'Ocurrio un error',
-        //         status: 400
-        //       });
-        //     }
-        //   } catch (error) {
-        //     res.status(400).json({
-        //       message: 'Ocurrio un error: ' + error,
-        //       status: 400
-        //     });
-        //   }
-        // }
         // ver pdf de un cliente
         this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
@@ -706,7 +571,9 @@ class UserController {
                     const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
                     const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
                     const cleintedetail = {
-                        firstName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.firstName
+                        firstName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.firstName,
+                        middleName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.middleName,
+                        lastName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.lastName
                     };
                     res.status(200).json({
                         data: isPolicyExist,
@@ -715,10 +582,27 @@ class UserController {
                     });
                 }
                 else {
-                    res.status(400).json({
-                        message: 'No se encuentra la póliza',
-                        status: 400
-                    });
+                    const isPolicyExist = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: _id });
+                    if (isPolicyExist) {
+                        const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
+                        const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
+                        const cleintedetail = {
+                            firstName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.firstName,
+                            middleName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.middleName,
+                            lastName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.lastName
+                        };
+                        res.status(200).json({
+                            data: isPolicyExist,
+                            client: cleintedetail,
+                            status: 200
+                        });
+                    }
+                    else {
+                        res.status(400).json({
+                            message: 'No se encuentra la póliza',
+                            status: 400
+                        });
+                    }
                 }
             }
             catch (error) {
