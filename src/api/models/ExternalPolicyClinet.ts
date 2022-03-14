@@ -7,6 +7,7 @@ interface ExternalPolicyClient {
     externalIdPolicy : String;// poliza a la que se estara editando su alias
     alias : String;// alias q vera reflejado el cliente que no es dueño de la poliza
     policyType: String;
+    status: String;
 
 }
 
@@ -16,6 +17,7 @@ const shema = new Schema<ExternalPolicyClient>({
   externalIdPolicy: { type: String, required: false },
   alias: { type: String, required: false },
   policyType: { type: String, required: false },
+  status: { type: String, required: false }
 });
 
 const ExternalPolicyClinetModel = model<ExternalPolicyClient>('ExternalPolicyClient', shema);

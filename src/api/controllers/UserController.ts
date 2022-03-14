@@ -278,9 +278,10 @@ class UserController {
         policyProp.forEach(item => {
           policyMe.push(
             {
-              id: item._id,
+              _id: item._id,
               alias: item.alias,
-              policyType: item.policyType
+              policyType: item.policyType,
+              status: item.status
             }
           );
         });
@@ -344,7 +345,7 @@ class UserController {
             const ExternalClient = await ClientsModel.findOne({ externalId: externalIdClient });
 
             const mostrar =[{
-              id: ExternalClient?.externalId,
+              _id: ExternalClient?.externalId,
               Nombre: ExternalClient?.firstName,
               polizas: [policyExternalClient]
             }];
@@ -709,7 +710,8 @@ class UserController {
           {
             id: JSON.stringify(item._id),
             alias: item.alias,
-            policyType: item.policyType
+            policyType: item.policyType,
+            status: item.status
           }
         );
         console.log(policyViewSelect)
@@ -723,8 +725,9 @@ class UserController {
       const externalIdPolicy = externalId.slice(1, -1);
       const alias = policyViewSelect[j].alias;
       const policyType = policyViewSelect[j].policyType;
-      const save = { IdClient, externalIdPolicy, alias, policyType };
-      console.log(save);
+      const status = policyViewSelect[j].status;
+      const save = { IdClient, externalIdPolicy, alias, policyType, status };
+      // console.log(save);
       const savePolicy = new ExternalPolicyClinetModel(save);
       try {
         await savePolicy.save();

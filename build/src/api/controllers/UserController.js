@@ -262,9 +262,10 @@ class UserController {
                     const policyProp = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp.externalId });
                     policyProp.forEach(item => {
                         policyMe.push({
-                            id: item._id,
+                            _id: item._id,
                             alias: item.alias,
-                            policyType: item.policyType
+                            policyType: item.policyType,
+                            status: item.status
                         });
                     });
                     const misPolizas = {
@@ -319,7 +320,7 @@ class UserController {
                             const policyExternalClient = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: id });
                             const ExternalClient = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
                             const mostrar = [{
-                                    id: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.externalId,
+                                    _id: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.externalId,
                                     Nombre: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.firstName,
                                     polizas: [policyExternalClient]
                                 }];
@@ -659,7 +660,8 @@ class UserController {
                     policyViewSelect.push({
                         id: JSON.stringify(item._id),
                         alias: item.alias,
-                        policyType: item.policyType
+                        policyType: item.policyType,
+                        status: item.status
                     });
                     console.log(policyViewSelect);
                 });
@@ -671,8 +673,9 @@ class UserController {
                 const externalIdPolicy = externalId.slice(1, -1);
                 const alias = policyViewSelect[j].alias;
                 const policyType = policyViewSelect[j].policyType;
-                const save = { IdClient, externalIdPolicy, alias, policyType };
-                console.log(save);
+                const status = policyViewSelect[j].status;
+                const save = { IdClient, externalIdPolicy, alias, policyType, status };
+                // console.log(save);
                 const savePolicy = new ExternalPolicyClinet_1.ExternalPolicyClinetModel(save);
                 try {
                     yield savePolicy.save();
