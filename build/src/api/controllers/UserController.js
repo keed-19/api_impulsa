@@ -263,7 +263,7 @@ class UserController {
                     policyProp.forEach(item => {
                         policyMe.push({
                             id: item._id,
-                            Alias: item.alias,
+                            alias: item.alias,
                             policyType: item.policyType
                         });
                     });
