@@ -270,7 +270,7 @@ class UserController {
         // mapear las polizas asociadas para mandarlas en la respuesta
         const policyRatings:Array<any> = [];
         const policyMe:Array<any> = [];
-        let mostrarArray:Array<any> = [];
+        // let mostrarArray:Array<any> = [];
         const mostrarPolizas:Array<any> = [];
 
         const ClientProp = await ClientsModel.findOne({ externalId: externalIdPropio });
@@ -286,7 +286,7 @@ class UserController {
         });
 
         const misPolizas = {
-          id: ClientProp?._id,
+          _id: ClientProp?._id,
           Nombre: ClientProp?.firstName,
           polizas: policyMe
         };

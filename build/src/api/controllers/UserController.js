@@ -256,7 +256,7 @@ class UserController {
                     // mapear las polizas asociadas para mandarlas en la respuesta
                     const policyRatings = [];
                     const policyMe = [];
-                    let mostrarArray = [];
+                    // let mostrarArray:Array<any> = [];
                     const mostrarPolizas = [];
                     const ClientProp = yield Client_1.ClientsModel.findOne({ externalId: externalIdPropio });
                     const policyProp = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp.externalId });
@@ -268,7 +268,7 @@ class UserController {
                         });
                     });
                     const misPolizas = {
-                        id: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp._id,
+                        _id: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp._id,
                         Nombre: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp.firstName,
                         polizas: policyMe
                     };
