@@ -711,6 +711,7 @@ class UserController {
             id: JSON.stringify(item._id),
             alias: item.alias,
             policyType: item.policyType,
+            externalIdClient: item.externalIdClient,
             status: item.status
           }
         );
@@ -726,7 +727,8 @@ class UserController {
       const alias = policyViewSelect[j].alias;
       const policyType = policyViewSelect[j].policyType;
       const status = policyViewSelect[j].status;
-      const save = { IdClient, externalIdPolicy, alias, policyType, status };
+      const externalIdClient= policyViewSelect[j].externalIdClient;
+      const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient, status };
       // console.log(save);
       const savePolicy = new ExternalPolicyClinetModel(save);
       try {
