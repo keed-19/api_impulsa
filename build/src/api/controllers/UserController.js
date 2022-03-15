@@ -20,6 +20,7 @@ const RegisterRequest_1 = require("../models/RegisterRequest");
 const User_1 = require("../models/User");
 const fs_1 = __importDefault(require("fs"));
 const ExternalPolicyClinet_1 = require("../models/ExternalPolicyClinet");
+const Insurance_1 = require("../models/Insurance");
 /** Variable for verification code */
 let cadena = '';
 let cadenaReenvio = '';
@@ -651,13 +652,28 @@ class UserController {
                 if (isPolicyExist) {
                     const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
                     const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
+                    //buscando la aseguradora para mostrar los datos
+                    const insurance = parseInt(isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.insuranceId);
+                    const isInsuranceExist = yield Insurance_1.InsuranceModel.findOne({ externalId: insurance });
+                    // console.log(isInsuranceExist);
                     const cleintedetail = {
                         firstName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.firstName,
                         middleName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.middleName,
                         lastName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.lastName
                     };
+                    const policyDetail = {
+                        _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
+                        name: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name,
+                        phoneNumber: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.phoneNumber,
+                        alias: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.alias,
+                        status: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.status,
+                        policyType: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyType,
+                        policyNumber: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyNumber,
+                        effectiveDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.effectiveDate,
+                        expirationDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.expirationDate
+                    };
                     res.status(200).json({
-                        data: isPolicyExist,
+                        data: policyDetail,
                         client: cleintedetail,
                         status: 200
                     });
@@ -667,6 +683,10 @@ class UserController {
                     const externalIdPolicy = isPolicyExternalExist === null || isPolicyExternalExist === void 0 ? void 0 : isPolicyExternalExist.externalIdPolicy;
                     if (isPolicyExternalExist) {
                         const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: externalIdPolicy });
+                        //buscando los detalles de aseguradora de la poliza
+                        const insurance = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.insuranceId;
+                        const isInsuranceExist = yield Insurance_1.InsuranceModel.findOne({ externalId: insurance });
+                        console.log(isInsuranceExist);
                         const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
                         const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
                         const cleintedetail = {
@@ -676,6 +696,8 @@ class UserController {
                         };
                         const policyDetail = {
                             _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
+                            name: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name,
+                            phoneNumber: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.phoneNumber,
                             alias: isPolicyExternalExist === null || isPolicyExternalExist === void 0 ? void 0 : isPolicyExternalExist.alias,
                             status: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.status,
                             policyType: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyType,

@@ -8,6 +8,7 @@ import { RegisterRequestModel } from '../models/RegisterRequest';
 import { UsersModel } from '../models/User';
 import fs from 'fs';
 import { ExternalPolicyClinetModel } from '../models/ExternalPolicyClinet';
+import { InsuranceModel } from '../models/Insurance';
 
 /** Variable for verification code */
 let cadena = '';
@@ -681,14 +682,28 @@ class UserController {
       if (isPolicyExist) {
         const externalIdClient = isPolicyExist?.externalIdClient;
         const isClientExist = await ClientsModel.findOne({ externalId: externalIdClient });
+        //buscando la aseguradora para mostrar los datos
+        const insurance = parseInt(isPolicyExist?.insuranceId);
+        const isInsuranceExist = await InsuranceModel.findOne({ externalId: insurance });
+        // console.log(isInsuranceExist);
         const cleintedetail = {
           firstName: isClientExist?.firstName,
           middleName: isClientExist?.middleName,
           lastName: isClientExist?.lastName
         };
-
+        const policyDetail = {
+          _id: isPolicyExist?._id,
+          name: isInsuranceExist?.name,
+          phoneNumber: isInsuranceExist?.phoneNumber,
+          alias: isPolicyExist?.alias,
+          status: isPolicyExist?.status,
+          policyType: isPolicyExist?.policyType,
+          policyNumber: isPolicyExist?.policyNumber,
+          effectiveDate: isPolicyExist?.effectiveDate,
+          expirationDate: isPolicyExist?.expirationDate
+        };
         res.status(200).json({
-          data: isPolicyExist,
+          data: policyDetail,
           client: cleintedetail,
           status: 200
         });
@@ -698,6 +713,11 @@ class UserController {
 
         if (isPolicyExternalExist) {
           const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: externalIdPolicy });
+
+          //buscando los detalles de aseguradora de la poliza
+          const insurance = isPolicyExist?.insuranceId;
+          const isInsuranceExist = await InsuranceModel.findOne({ externalId: insurance });
+          console.log(isInsuranceExist);
 
           const externalIdClient = isPolicyExist?.externalIdClient;
           const isClientExist = await ClientsModel.findOne({ externalId: externalIdClient });
@@ -709,6 +729,8 @@ class UserController {
 
           const policyDetail = {
             _id: isPolicyExist?._id,
+            name: isInsuranceExist?.name,
+            phoneNumber: isInsuranceExist?.phoneNumber,
             alias: isPolicyExternalExist?.alias,
             status: isPolicyExist?.status,
             policyType: isPolicyExist?.policyType,

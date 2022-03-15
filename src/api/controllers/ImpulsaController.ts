@@ -109,14 +109,9 @@ class ImpulsaController {
                 const aseguradora = isInsuranceExist?.name;
                 // construyendo el alias momentario
                 const alias = `${aseguradora}-${tipe}-${number}`;
-
-                // este codigo corta una cadena string de acuerdo a la necesidad
-                // const extraida = tipe.substring(0, 3);
-                // const alias = `${extraida}-${number}`;
-
                 // instantiating the model for save data
                 const user = new InsurancePoliciesModel({
-                  insuranceId: aseguradora,
+                  insuranceId: insuranceId,
                   policyNumber: number,
                   policyType: tipe,
                   alias: alias,
