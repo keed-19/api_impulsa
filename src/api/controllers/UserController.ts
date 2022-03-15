@@ -141,10 +141,10 @@ class UserController {
         });
       }
     } catch (error) {
-     res.status(400).json({
-       message: 'Ocuerrio un error. '+error,
-       status: 400
-     });
+      res.status(400).json({
+        message: 'Ocuerrio un error. ' + error,
+        status: 400
+      });
     }
   }
 
@@ -309,7 +309,7 @@ class UserController {
             }
           );
         });
-        const uniqueArray = policyRatings.filter((thing,index) => {
+        const uniqueArray = policyRatings.filter((thing, index) => {
           return index === policyRatings.findIndex(obj => {
             return JSON.stringify(obj) === JSON.stringify(thing);
           });
@@ -333,7 +333,7 @@ class UserController {
           });
         }
         // console.log(mostrarPolizas)
-        console.log(mostrarPolizas.length)
+        console.log(mostrarPolizas.length);
         const mostrarPolizasexter:Array<any> = [];
         for (let j = 0; j < mostrarPolizas.length; j++) {
           // console.log(mostrarPolizas[j])
@@ -341,11 +341,11 @@ class UserController {
           const IdClientSee = mostrarPolizas[j].IdClient;
           const externalIdClient = mostrarPolizas[j].externalIdClient;
           const idp = _id as String;
-          if (idp===IdClientSee) {
+          if (idp === IdClientSee) {
             const policyExternalClient = await ExternalPolicyClinetModel.findOne({ _id: id });
             const ExternalClient = await ClientsModel.findOne({ externalId: externalIdClient });
 
-            const mostrar =[{
+            const mostrar = [{
               _id: ExternalClient?.externalId,
               Nombre: ExternalClient?.firstName,
               polizas: [policyExternalClient]
@@ -353,12 +353,12 @@ class UserController {
             mostrarPolizasexter.push(mostrar);
             // console.log(policyExternalClient)
           } else {
-            console.log('este no: ', mostrarPolizas[j])
+            console.log('este no: ', mostrarPolizas[j]);
           }
         }
         // console.log(uniqueArrayExter)
 
-        const respuestaGeneral = [[misPolizas],mostrarPolizasexter];
+        const respuestaGeneral = [[misPolizas], mostrarPolizasexter];
         const plano = respuestaGeneral.reduce((acc: any, el: any) => acc.concat(el), []);
         const plano2 = plano.reduce((acc: any, el: any) => acc.concat(el), []);
         // res.send(plano2);
@@ -366,15 +366,15 @@ class UserController {
         const newUsers = (resp: any) => {
           const usersFiltered = resp.reduce((acc: any, user: any) => {
             // let policyExtracted = {} as any;
-        
+
             const userRepeated = acc.filter((propsUser: { _id: number }) => propsUser._id === user._id);
-        
+
             if (userRepeated.length === 0) {
               acc.push(user);
             } else {
               const indexRepeated = acc.findIndex((element: any) => element._id === user._id);
               console.log(`index Repetido: ${indexRepeated}`);
-        
+
               const policyExtracted = user.polizas;
               console.log(`Polizas Extraidas de ${user.Nombre}: `, policyExtracted);
               console.log();
@@ -385,11 +385,11 @@ class UserController {
             return acc;
           }, []);
           return usersFiltered;
-        }
-        
+        };
+
         // console.log(newUsers(plano2))
         const verRespuesta = newUsers(plano2);
-        res.json(verRespuesta)
+        res.json(verRespuesta);
       } else {
         res.status(400).json({
           message: 'Ocurrio un error',
@@ -433,10 +433,10 @@ class UserController {
         const isPolicyExistOrigin = await InsurancePoliciesModel.findOne({ _id: _id });
         if (isPolicyExistOrigin) {
           const name = isPolicyExistOrigin?.fileUrl;
-    
+
           try {
             const data = fs.readFileSync('src/uploads/' + name);
-    
+
             res.setHeader('Content-Type', 'application/pdf');
             // res.contentType("application/pdf");
             res.send(data);
@@ -450,15 +450,15 @@ class UserController {
           res.status(400).json({
             message: 'No se encuentra la póliza',
             status: 400
-          })
+          });
         }
       } catch (error) {
-       res.status(400).json({
-         message: 'Ocurrio un error: ' + error,
-         status: 400
-       });
+        res.status(400).json({
+          message: 'Ocurrio un error: ' + error,
+          status: 400
+        });
       }
-      }
+    }
   }
 
   // actualizar alias de poliza personal
@@ -469,7 +469,6 @@ class UserController {
       alias: _req.body.alias
     };
     try {
-    
       const isPolicyMeExist = await InsurancePoliciesModel.findOne({ _id: _id });
       const isPolicyExternalExist = await ExternalPolicyClinetModel.findOne({ _id: _id });
 
@@ -502,10 +501,10 @@ class UserController {
         });
       }
     } catch (error) {
-     res.status(400).json({
-       message: 'Ocurrio un error: '+error,
-       status: 400
-     }) 
+      res.status(400).json({
+        message: 'Ocurrio un error: ' + error,
+        status: 400
+      });
     }
   }
 
@@ -527,9 +526,11 @@ class UserController {
 
           if (clienteActualizado) {
             const clientExternalId = client.externalId;
+            const phoneNumber = client.phoneNumber;
 
             res.status(200).json({
               clientExternalId,
+              phoneNumber,
               status: 200
             });
           } else {
@@ -546,10 +547,10 @@ class UserController {
         });
       }
     } catch (error) {
-     res.status(400).json({
-       message: 'Ocurrio un error: '+error,
-       status: 400
-     });
+      res.status(400).json({
+        message: 'Ocurrio un error: ' + error,
+        status: 400
+      });
     }
   }
 
@@ -574,10 +575,10 @@ class UserController {
         });
       }
     } catch (error) {
-     res.status(400).json({
-       message: 'Ocurrio un error: ' + error,
-       status: 400
-     });
+      res.status(400).json({
+        message: 'Ocurrio un error: ' + error,
+        status: 400
+      });
     }
   }
 
@@ -603,10 +604,10 @@ class UserController {
         });
       }
     } catch (error) {
-     res.status(400).json({
-       message: 'Ocurrio un error',
-       status: 400
-     });
+      res.status(400).json({
+        message: 'Ocurrio un error',
+        status: 400
+      });
     }
   }
 
@@ -618,7 +619,6 @@ class UserController {
     const IdClient = _req.body.idClient;
     const Idpoliza = _req.body.data;
     try {
-    
       const fromRoles = Array.from(Idpoliza);
       console.log(fromRoles);
 
@@ -648,7 +648,7 @@ class UserController {
         const externalIdPolicy = externalId.slice(1, -1);
         const alias = policyViewSelect[j].alias;
         const policyType = policyViewSelect[j].policyType;
-        const externalIdClient= policyViewSelect[j].externalIdClient;
+        const externalIdClient = policyViewSelect[j].externalIdClient;
         const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient };
         // console.log(save);
         const savePolicy = new ExternalPolicyClinetModel(save);
@@ -664,10 +664,10 @@ class UserController {
         status: 200
       });
     } catch (error) {
-     res.status(400).json({
-       message: 'Ocurrio un error: '+error,
-       status: 400
-     });
+      res.status(400).json({
+        message: 'Ocurrio un error: ' + error,
+        status: 400
+      });
     }
   }
 
@@ -686,7 +686,7 @@ class UserController {
           middleName: isClientExist?.middleName,
           lastName: isClientExist?.lastName
         };
-        
+
         res.status(200).json({
           data: isPolicyExist,
           client: cleintedetail,
@@ -695,7 +695,7 @@ class UserController {
       } else {
         const isPolicyExternalExist = await ExternalPolicyClinetModel.findOne({ _id: _id });
         const externalIdPolicy = isPolicyExternalExist?.externalIdPolicy;
-        
+
         if (isPolicyExternalExist) {
           const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: externalIdPolicy });
 
@@ -714,9 +714,9 @@ class UserController {
             policyType: isPolicyExist?.policyType,
             policyNumber: isPolicyExist?.policyNumber,
             effectiveDate: isPolicyExist?.effectiveDate,
-            expirationDate: isPolicyExist?.expirationDate,
-          }
-          
+            expirationDate: isPolicyExist?.expirationDate
+          };
+
           res.status(200).json({
             data: policyDetail,
             client: cleintedetail,
@@ -730,10 +730,10 @@ class UserController {
         }
       }
     } catch (error) {
-     res.status(400).send({
-       message: 'Ocurrio un error: ' + error,
-       status:400
-     }) 
+      res.status(400).send({
+        message: 'Ocurrio un error: ' + error,
+        status: 400
+      });
     }
   }
 }
@@ -822,14 +822,6 @@ function ramdomReenvioClinet (phone:String) {
   return (cadenaReenvio);
 }
 
-// function isObjEmpty (obj:Object) {
-//   for (const prop in obj) {
-//     // eslint-disable-next-line no-prototype-builtins
-//     if (obj.hasOwnProperty(prop)) return false;
-//   }
-//   return true;
-// }
-
 function sendSMSClientPolicy (phone: String) {
   // generating 4 random numbers
   const val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
@@ -855,4 +847,5 @@ function sendSMSClientPolicy (phone: String) {
   }).then(message => console.log(message.sid));
   return (CodeValidator);
 }
+
 export default new UserController();

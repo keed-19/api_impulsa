@@ -7,6 +7,7 @@ const express_1 = require("express");
 const ImpulsaController_1 = __importDefault(require("../controllers/ImpulsaController"));
 const UserController_1 = __importDefault(require("../controllers/UserController"));
 const middleware_1 = __importDefault(require("../middlewares/middleware"));
+const syncMiddleware_1 = __importDefault(require("../middlewares/syncMiddleware"));
 // import syncMiddleware from '../middlewares/syncMiddleware';
 const saveFile_1 = require("../services/saveFile");
 const UserRoute = (0, express_1.Router)();
@@ -40,43 +41,44 @@ UserRoute.get('/app/policies/external/:externalIdClient', UserController_1.defau
  * CRUD DE POLIZAS
 */
 // obteniendo los PDF de un cliente
-UserRoute.get('/sync/policies/:externalId', ImpulsaController_1.default.ViewPolicies);
+UserRoute.get('/sync/policies/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewPolicies]);
 // vizualisar un pdf en especifico
-UserRoute.get('/sync/policie/:externalId', ImpulsaController_1.default.ViewPDF);
+UserRoute.get('/sync/policie/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewPDF]);
 // guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
-UserRoute.post('/sync/policies/client/:externalIdClient', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.SavePolice);
+// UserRoute.post('/sync/policies/client/:externalIdClient', Upload.single('myFile'), ImpulsaController.SavePolice);
+UserRoute.post('/sync/policies/client/:externalIdClient', [syncMiddleware_1.default.veryfyCredential, saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.SavePolice]);
 // eliminar pdf con el numero de poliza
-UserRoute.delete('/sync/policies/:externalId', ImpulsaController_1.default.DeletePolice);
+UserRoute.delete('/sync/policies/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.DeletePolice]);
 // actualizar polizas
-UserRoute.put('/sync/policies/:externalId', saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.UpdatePoliza);
+UserRoute.put('/sync/policies/:externalId', saveFile_1.Upload.single('myFile'), [syncMiddleware_1.default.veryfyCredential, saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.UpdatePoliza]);
 /**
  * FUNCIONALIDADES IMPULSA
  * CRUD DE CLIENTES
 */
 // visualizar Clientes
 // UserRoute.get('/sync/clients', syncMiddleware.veryfyCredential, ImpulsaController.ViewClients);
-UserRoute.get('/sync/clients', ImpulsaController_1.default.ViewClients);
-// UserRoute.get('/sync/clients', [syncMiddleware.veryfyCredential,ImpulsaController.ViewClients]);
+// UserRoute.get('/sync/clients', ImpulsaController.ViewClients);
+UserRoute.get('/sync/clients', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewClients]);
 // vizualisar cliente por numero de telefono
-UserRoute.get('/sync/clients/:externalId', ImpulsaController_1.default.ViewClient);
+UserRoute.get('/sync/clients/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewClient]);
 // guardando clientes desde impulsa
-UserRoute.post('/sync/clients', ImpulsaController_1.default.SaveClient);
+UserRoute.post('/sync/clients', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.SaveClient]);
 // eliminando clientes
-UserRoute.delete('/sync/clients/:externalId', ImpulsaController_1.default.DeleteClient);
+UserRoute.delete('/sync/clients/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.DeleteClient]);
 // actualizar cliente
-UserRoute.put('/sync/clients/:externalId', ImpulsaController_1.default.UpdateClient);
+UserRoute.put('/sync/clients/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.UpdateClient]);
 /**
  * FUNCIONALIDADES IMPULSA
  * CRUD DE ASEGURADORAS
 */
 // guardar aseguradora
-UserRoute.post('/sync/insurances', ImpulsaController_1.default.SaveInsurance);
+UserRoute.post('/sync/insurances', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.SaveInsurance]);
 // ver aseguradoras
-UserRoute.get('/sync/insurances', ImpulsaController_1.default.ViewInsurances);
+UserRoute.get('/sync/insurances', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewInsurances]);
 // ver aseguradora
-UserRoute.get('/sync/insurances/:externalId', ImpulsaController_1.default.ViewInsurance);
+UserRoute.get('/sync/insurances/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewInsurance]);
 // eliminar aseguradora
-UserRoute.delete('/sync/delete/insurances/:externalId', ImpulsaController_1.default.DeleteInsurance);
+UserRoute.delete('/sync/delete/insurances/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.DeleteInsurance]);
 // actualizar aseguradora
-UserRoute.put('/sync/update/insurances/:externalId', ImpulsaController_1.default.UpdateInsurance);
+UserRoute.put('/sync/update/insurances/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.UpdateInsurance]);
 exports.default = UserRoute;

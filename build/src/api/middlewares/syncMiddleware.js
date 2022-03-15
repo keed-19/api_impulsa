@@ -17,19 +17,28 @@ class SyncMiddleware {
             const IMPULSA_API_SECRET = _req.header('IMPULSA_API_SECRET');
             try {
                 // Validamos si no hay token
-                if (!IMPULSA_API_KEY && !IMPULSA_API_SECRET) {
-                    return res.status(401).json({ error: 'Se necesitan las credenciales' });
+                if (IMPULSA_API_KEY === undefined && IMPULSA_API_SECRET === undefined) {
+                    return res.status(400).json({
+                        error: 'Se necesitan las credenciales',
+                        status: 400
+                    });
                 }
                 else if (IMPULSA_API_KEY === process.env.IMPULSA_API_KEY && IMPULSA_API_SECRET === process.env.IMPULSA_API_SECRET) {
                     try {
                         next();
                     }
                     catch (error) {
-                        res.send(error);
+                        res.status(400).json({
+                            message: 'Ocurrio un error: ' + error,
+                            status: 400
+                        });
                     }
                 }
                 else {
-                    return res.send('Las credenciales no son correctas');
+                    return res.json({
+                        message: 'Las credenciales son incorrectas',
+                        status: 400
+                    });
                 }
             }
             catch (error) {

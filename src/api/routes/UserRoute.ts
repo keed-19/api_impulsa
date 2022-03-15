@@ -52,19 +52,20 @@ UserRoute.get('/app/policies/external/:externalIdClient', UserController.ViewPol
 */
 
 // obteniendo los PDF de un cliente
-UserRoute.get('/sync/policies/:externalId', ImpulsaController.ViewPolicies);
+UserRoute.get('/sync/policies/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.ViewPolicies]);
 
 // vizualisar un pdf en especifico
-UserRoute.get('/sync/policie/:externalId', ImpulsaController.ViewPDF);
+UserRoute.get('/sync/policie/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.ViewPDF]);
 
 // guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
-UserRoute.post('/sync/policies/client/:externalIdClient', Upload.single('myFile'), ImpulsaController.SavePolice);
+// UserRoute.post('/sync/policies/client/:externalIdClient', Upload.single('myFile'), ImpulsaController.SavePolice);
+UserRoute.post('/sync/policies/client/:externalIdClient', [syncMiddleware.veryfyCredential, Upload.single('myFile'), ImpulsaController.SavePolice]);
 
 // eliminar pdf con el numero de poliza
-UserRoute.delete('/sync/policies/:externalId', ImpulsaController.DeletePolice);
+UserRoute.delete('/sync/policies/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.DeletePolice]);
 
 // actualizar polizas
-UserRoute.put('/sync/policies/:externalId', Upload.single('myFile'), ImpulsaController.UpdatePoliza);
+UserRoute.put('/sync/policies/:externalId', Upload.single('myFile'), [syncMiddleware.veryfyCredential, Upload.single('myFile'), ImpulsaController.UpdatePoliza]);
 
 /**
  * FUNCIONALIDADES IMPULSA
@@ -73,21 +74,21 @@ UserRoute.put('/sync/policies/:externalId', Upload.single('myFile'), ImpulsaCont
 
 // visualizar Clientes
 // UserRoute.get('/sync/clients', syncMiddleware.veryfyCredential, ImpulsaController.ViewClients);
-UserRoute.get('/sync/clients', ImpulsaController.ViewClients);
-// UserRoute.get('/sync/clients', [syncMiddleware.veryfyCredential,ImpulsaController.ViewClients]);
+// UserRoute.get('/sync/clients', ImpulsaController.ViewClients);
+UserRoute.get('/sync/clients', [syncMiddleware.veryfyCredential, ImpulsaController.ViewClients]);
 
 // vizualisar cliente por numero de telefono
 
-UserRoute.get('/sync/clients/:externalId', ImpulsaController.ViewClient);
+UserRoute.get('/sync/clients/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.ViewClient]);
 
 // guardando clientes desde impulsa
-UserRoute.post('/sync/clients', ImpulsaController.SaveClient);
+UserRoute.post('/sync/clients', [syncMiddleware.veryfyCredential, ImpulsaController.SaveClient]);
 
 // eliminando clientes
-UserRoute.delete('/sync/clients/:externalId', ImpulsaController.DeleteClient);
+UserRoute.delete('/sync/clients/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.DeleteClient]);
 
 // actualizar cliente
-UserRoute.put('/sync/clients/:externalId', ImpulsaController.UpdateClient);
+UserRoute.put('/sync/clients/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.UpdateClient]);
 
 /**
  * FUNCIONALIDADES IMPULSA
@@ -95,18 +96,18 @@ UserRoute.put('/sync/clients/:externalId', ImpulsaController.UpdateClient);
 */
 
 // guardar aseguradora
-UserRoute.post('/sync/insurances', ImpulsaController.SaveInsurance);
+UserRoute.post('/sync/insurances', [syncMiddleware.veryfyCredential, ImpulsaController.SaveInsurance]);
 
 // ver aseguradoras
-UserRoute.get('/sync/insurances', ImpulsaController.ViewInsurances);
+UserRoute.get('/sync/insurances', [syncMiddleware.veryfyCredential, ImpulsaController.ViewInsurances]);
 
 // ver aseguradora
-UserRoute.get('/sync/insurances/:externalId', ImpulsaController.ViewInsurance);
+UserRoute.get('/sync/insurances/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.ViewInsurance]);
 
 // eliminar aseguradora
-UserRoute.delete('/sync/delete/insurances/:externalId', ImpulsaController.DeleteInsurance);
+UserRoute.delete('/sync/delete/insurances/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.DeleteInsurance]);
 
 // actualizar aseguradora
-UserRoute.put('/sync/update/insurances/:externalId', ImpulsaController.UpdateInsurance);
+UserRoute.put('/sync/update/insurances/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.UpdateInsurance]);
 
 export default UserRoute;

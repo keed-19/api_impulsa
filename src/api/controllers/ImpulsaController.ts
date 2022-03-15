@@ -341,14 +341,8 @@ class ImpulsaController {
           const idclient = mostrar._id;
 
           const isExistPhoneNumber = await ClientsModel.findOne({ phoneNumber: update.phoneNumber });
-          const isExistExternalId = await ClientsModel.findOne({ externalId: update.externalId });
 
-          if (isExistExternalId) {
-            res.status(400).json({
-              message: 'El ExternalId ya esta registrado en la base de datos',
-              status: 400
-            });
-          } else if (isExistPhoneNumber) {
+          if (isExistPhoneNumber) {
             res.status(400).json({
               message: 'El número de teléfono ya esta registrado en la base de datos',
               status: 400
@@ -390,8 +384,11 @@ class ImpulsaController {
         });
       } else {
         if (!file) {
-          const error = new Error('Se necesita el archivo para realizar la actualización');
-          return error;
+          // const error = new Error('Se necesita el archivo para realizar la actualización');
+          return res.status(400).json({
+            message: 'Se necesita el archivo PDF para poder realizar la actualización',
+            status: 400
+          });
         } else if (file.mimetype === 'application/pdf') {
           const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
 

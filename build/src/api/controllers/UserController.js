@@ -499,8 +499,10 @@ class UserController {
                         const clienteActualizado = yield Client_1.ClientsModel.findByIdAndUpdate(_id, update);
                         if (clienteActualizado) {
                             const clientExternalId = client.externalId;
+                            const phoneNumber = client.phoneNumber;
                             res.status(200).json({
                                 clientExternalId,
+                                phoneNumber,
                                 status: 200
                             });
                         }
@@ -679,7 +681,7 @@ class UserController {
                             policyType: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyType,
                             policyNumber: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyNumber,
                             effectiveDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.effectiveDate,
-                            expirationDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.expirationDate,
+                            expirationDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.expirationDate
                         };
                         res.status(200).json({
                             data: policyDetail,
@@ -783,13 +785,6 @@ function ramdomReenvioClinet(phone) {
     }).then(message => console.log(message.sid));
     return (cadenaReenvio);
 }
-// function isObjEmpty (obj:Object) {
-//   for (const prop in obj) {
-//     // eslint-disable-next-line no-prototype-builtins
-//     if (obj.hasOwnProperty(prop)) return false;
-//   }
-//   return true;
-// }
 function sendSMSClientPolicy(phone) {
     // generating 4 random numbers
     const val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
