@@ -381,9 +381,9 @@ class ImpulsaController {
                     const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalId: externalId });
                     if (isPolicyExist) {
                         const _id = isPolicyExist._id;
+                        yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, update);
                         try {
                             yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, data);
-                            yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, update);
                             const updatePoliceNow = yield InsurancePolicy_1.InsurancePoliciesModel.findById(_id);
                             res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
                         }

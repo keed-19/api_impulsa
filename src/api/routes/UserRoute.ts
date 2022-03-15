@@ -65,7 +65,7 @@ UserRoute.post('/sync/policies/client/:externalIdClient', [syncMiddleware.veryfy
 UserRoute.delete('/sync/policies/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.DeletePolice]);
 
 // actualizar polizas
-UserRoute.put('/sync/policies/:externalId', Upload.single('myFile'), [syncMiddleware.veryfyCredential, Upload.single('myFile'), ImpulsaController.UpdatePoliza]);
+UserRoute.put('/sync/policies/:externalId', Upload.single('myFile'), [syncMiddleware.veryfyCredential, ImpulsaController.UpdatePoliza]);
 
 /**
  * FUNCIONALIDADES IMPULSA

@@ -693,8 +693,8 @@ class UserController {
         };
         const policyDetail = {
           _id: isPolicyExist?._id,
-          name: isInsuranceExist?.name,
-          phoneNumber: isInsuranceExist?.phoneNumber,
+          name: isInsuranceExist?.name,//nombre de la aseguradora
+          phoneNumber: isInsuranceExist?.phoneNumber,//numero de telefono de la  aseguradora
           alias: isPolicyExist?.alias,
           status: isPolicyExist?.status,
           policyType: isPolicyExist?.policyType,

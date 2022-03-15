@@ -50,7 +50,7 @@ UserRoute.post('/sync/policies/client/:externalIdClient', [syncMiddleware_1.defa
 // eliminar pdf con el numero de poliza
 UserRoute.delete('/sync/policies/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.DeletePolice]);
 // actualizar polizas
-UserRoute.put('/sync/policies/:externalId', saveFile_1.Upload.single('myFile'), [syncMiddleware_1.default.veryfyCredential, saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.UpdatePoliza]);
+UserRoute.put('/sync/policies/:externalId', saveFile_1.Upload.single('myFile'), [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.UpdatePoliza]);
 /**
  * FUNCIONALIDADES IMPULSA
  * CRUD DE CLIENTES

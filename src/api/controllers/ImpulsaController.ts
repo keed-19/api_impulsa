@@ -389,9 +389,9 @@ class ImpulsaController {
 
           if (isPolicyExist) {
             const _id = isPolicyExist._id;
+            await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
             try {
               await InsurancePoliciesModel.findByIdAndUpdate(_id, data);
-              await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
               const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
               res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
             } catch (error) {
