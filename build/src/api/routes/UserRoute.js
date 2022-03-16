@@ -29,6 +29,7 @@ UserRoute.get('/app/policyDetail/:id', UserController_1.default.seePolicyInforma
 UserRoute.post('/app/selectPolicy', UserController_1.default.selectPolicy);
 // vizualisar un pdf en especifico
 UserRoute.get('/app/policie/:id', UserController_1.default.ViewPDF);
+// UserRoute.get('/app/policie/:id', [middleware.veryfy, UserController.ViewPDF]);
 // Editar el alias de una poliza
 UserRoute.put('/app/updateAlias', UserController_1.default.UpdateAlias);
 // todo: provando nueva funcionalidad

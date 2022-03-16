@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import ImpulsaController from '../controllers/ImpulsaController';
 import UserController from '../controllers/UserController';
+import middleware from '../middlewares/middleware';
 import UserMiddleware from '../middlewares/middleware';
 import syncMiddleware from '../middlewares/syncMiddleware';
 // import syncMiddleware from '../middlewares/syncMiddleware';
@@ -34,6 +35,7 @@ UserRoute.post('/app/selectPolicy', UserController.selectPolicy);
 
 // vizualisar un pdf en especifico
 UserRoute.get('/app/policie/:id', UserController.ViewPDF);
+// UserRoute.get('/app/policie/:id', [middleware.veryfy, UserController.ViewPDF]);
 
 // Editar el alias de una poliza
 UserRoute.put('/app/updateAlias', UserController.UpdateAlias);

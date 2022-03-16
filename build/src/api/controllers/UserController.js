@@ -212,10 +212,13 @@ class UserController {
             else if (user.password === pass) {
                 // search user in model clients
                 const searchclient = yield Client_1.ClientsModel.findOne({ phoneNumber: numuser });
+                // var token = sign(user, process.env.TOKEN_SECRET as string, { expiresIn: 300 })
                 // creating  token
-                const token = (0, jsonwebtoken_1.sign)({
-                    user
-                }, process.env.TOKEN_SECRET);
+                // const token = sign({
+                //   data: user
+                // }, 'hola');
+                const token = (0, jsonwebtoken_1.sign)({ email: user.email, userId: user._id }, process.env.TOKEN_SECRET);
+                console.log(token);
                 // // creating message Twilio
                 // const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
                 // const authToken = process.env.TWILIO_AUTH_TOKEN as string;
@@ -239,7 +242,7 @@ class UserController {
                 });
             }
             else {
-                return res.status(203).json({
+                return res.status(200).json({
                     message: 'Credenciales incorrectas',
                     status: 203
                 });
@@ -664,6 +667,7 @@ class UserController {
                     const policyDetail = {
                         _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
                         name: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name,
+                        iconCode: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.iconCode,
                         phoneNumber: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.phoneNumber,
                         alias: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.alias,
                         status: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.status,

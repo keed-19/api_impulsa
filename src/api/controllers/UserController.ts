@@ -1,6 +1,6 @@
 /** Imports models and pluggins */
 import { Request, Response } from 'express';
-import { sign } from 'jsonwebtoken';
+import { sign, Secret } from 'jsonwebtoken';
 import { Twilio } from 'twilio';
 import { ClientsModel } from '../models/Client';
 import { InsurancePoliciesModel } from '../models/InsurancePolicy';
@@ -218,10 +218,15 @@ class UserController {
     } else if (user.password === pass) {
       // search user in model clients
       const searchclient = await ClientsModel.findOne({ phoneNumber: numuser });
+      // var token = sign(user, process.env.TOKEN_SECRET as string, { expiresIn: 300 })
       // creating  token
-      const token = sign({
-        user
-      }, process.env.TOKEN_SECRET as string);
+      // const token = sign({
+      //   data: user
+      // }, 'hola');
+      const token = sign(
+        { email: user.email, userId: user._id},
+        process.env.TOKEN_SECRET as string);
+      console.log (token)
 
       // // creating message Twilio
       // const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
@@ -248,7 +253,7 @@ class UserController {
         phoneNumber: user.username
       });
     } else {
-      return res.status(203).json({
+      return res.status(200).json({
         message: 'Credenciales incorrectas',
         status: 203
       });
@@ -694,6 +699,7 @@ class UserController {
         const policyDetail = {
           _id: isPolicyExist?._id,
           name: isInsuranceExist?.name,//nombre de la aseguradora
+          iconCode: isInsuranceExist?.iconCode,//logo de la  aseguradora
           phoneNumber: isInsuranceExist?.phoneNumber,//numero de telefono de la  aseguradora
           alias: isPolicyExist?.alias,
           status: isPolicyExist?.status,

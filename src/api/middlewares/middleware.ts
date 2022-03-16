@@ -1,25 +1,22 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import {sign, verify} from 'jsonwebtoken';
-import multer from "multer";
-import mimeTypes from 'mime-types';
 
 class UserMiddleware {
 
-    public veryfy = async(_req: Request, res: Response) =>{
+    public veryfy = async(_req: Request, res: Response, next: NextFunction) =>{
         // Obtenemos el token del header del request
         const token = _req.header('auth-token')
         // Validamos si no hay token
         if(!token) return res.status(401).json({error: 'Acceso denegado'})
         try {
             // Verificamos el token usando la dependencia de jwt y el método .verify
-            const verified = verify(token, process.env.TOKEN_SECRET as string)
+            const verified = verify(token, 'YXBpTG9naW5Qcm95ZWN0MDU=')
             // si el token es correcto nos devolvera los datos que pusimos en el token
             // _req.user = verified
             if(verified){
-                res.json({
-                    status:200,
-                    messaje:'Usuario correcto'
-                })
+                next();
+            } else {
+                res.json('Acceso denegado')
             }
         } catch (error){
             res.status(400).json({error: 'Token no valido, acceso denegado'})
