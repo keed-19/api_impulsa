@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const jsonwebtoken_1 = require("jsonwebtoken");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const twilio_1 = require("twilio");
 const Client_1 = require("../models/Client");
 const InsurancePolicy_1 = require("../models/InsurancePolicy");
@@ -25,6 +25,7 @@ const Insurance_1 = require("../models/Insurance");
 let cadena = '';
 let cadenaReenvio = '';
 let CodeValidator = '';
+let birthdayTransform = '';
 /** My class of user controller */
 class UserController {
     constructor() {
@@ -42,42 +43,59 @@ class UserController {
             /** Search RegisterRequest with id parameter */
             const user = yield RegisterRequest_1.RegisterRequestModel.findOne({ _id });
             if (!user) {
-                res.status(404).json({ message: 'Usuario no encontrado' });
+                res.status(400).json({ message: 'Usuario no encontrado', status: 400 });
             }
             else if (user && user.tokenTotp === code) {
-                // instantiating the models
-                const client = new Client_1.ClientsModel({
-                    firstName: user.firstName,
-                    middleName: user.middleName,
-                    lastName: user.lastName,
-                    birthday: user.birthday,
-                    phoneNumber: user.phoneNumber
-                });
-                try {
-                    // save models with data of RegisterRequestModel
-                    const savedClient = yield client.save();
-                    if (savedClient) {
-                        const saveuser = new User_1.UsersModel({
-                            username: user.phoneNumber,
-                            password: user.password,
-                            email: user.email,
-                            clientId: savedClient._id
-                        });
-                        yield saveuser.save();
-                    }
-                    // delete RegisterRequestModel
+                // verificando si ya es cliente de impulsa
+                const fullName = `${user.firstName} ${user.middleName} ${user.lastName}`;
+                const isClientExist = yield Client_1.ClientsModel.findOne({ fullName: fullName });
+                if (isClientExist) {
+                    const saveUser = new User_1.UsersModel({
+                        username: user.phoneNumber,
+                        password: user.password,
+                        email: user.email,
+                        clientId: isClientExist._id
+                    });
+                    yield saveUser.save();
                     yield user.remove();
-                    // send request
                     res.status(200).json({
-                        savedClient,
+                        isClientExist,
                         status: 200
                     });
                 }
-                catch (error) {
-                    res.status(404).json({
-                        error,
-                        status: 404
+                else {
+                    // instantiating the models
+                    const client = new Client_1.ClientsModel({
+                        fullName: fullName,
+                        incorporationOrBirthDate: user.birthday,
+                        phoneNumber: user.phoneNumber
                     });
+                    try {
+                        // save models with data of RegisterRequestModel
+                        const savedClient = yield client.save();
+                        if (savedClient) {
+                            const saveuser = new User_1.UsersModel({
+                                username: user.phoneNumber,
+                                password: user.password,
+                                email: user.email,
+                                clientId: savedClient._id
+                            });
+                            yield saveuser.save();
+                        }
+                        // delete RegisterRequestModel
+                        yield user.remove();
+                        // send request
+                        res.status(200).json({
+                            savedClient,
+                            status: 200
+                        });
+                    }
+                    catch (error) {
+                        res.status(203).json({
+                            message: 'Ocurrio un error: ' + error,
+                            status: 203
+                        });
+                    }
                 }
             }
             else {
@@ -94,7 +112,6 @@ class UserController {
             try {
                 const updateRequest = yield RegisterRequest_1.RegisterRequestModel.findOne(_id);
                 ramdomReenvio(updateRequest === null || updateRequest === void 0 ? void 0 : updateRequest.phoneNumber);
-                console.log(cadenaReenvio);
                 const update = { tokenTotp: cadenaReenvio };
                 yield RegisterRequest_1.RegisterRequestModel.updateOne(_id, update);
                 // const updateRequestNow = await RegisterRequestModel.findOne(_id);
@@ -145,6 +162,28 @@ class UserController {
                 });
             }
         });
+        // reenvio confirmacion de restablecer contra
+        this.ReenvioConfirmacionResPass = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            const phoneNumber = _req.params.phoneNumber;
+            try {
+                const updateRequest = yield Client_1.ClientsModel.findOne({ phoneNumber: phoneNumber });
+                ramdomReenvio(updateRequest === null || updateRequest === void 0 ? void 0 : updateRequest.phoneNumber);
+                const update = { verificationCode: cadenaReenvio };
+                yield Client_1.ClientsModel.findByIdAndUpdate(updateRequest === null || updateRequest === void 0 ? void 0 : updateRequest._id, update);
+                // const updateRequestNow = await RegisterRequestModel.findOne(_id);
+                res.status(200).json({
+                    message: 'El código se reenvió con éxito',
+                    status: 200
+                });
+            }
+            catch (error) {
+                res.status(203).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 203
+                });
+            }
+        });
         /**
           * Function to create RegisterRequestModel on database and save verific code SMS
           * This function accepts the personal data of the users
@@ -154,10 +193,47 @@ class UserController {
             /** search Number phone in the data base */
             const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
             if (isTelefonoExist) {
-                return res.status(208).json({
-                    message: 'El número de teléfono ya está registrado',
-                    status: 208
-                });
+                // si ya es cleinte de impulsa, entonces le vamos a dar acceso a hacer el registro de manera correcta
+                // comparamos los datos enviados, con los del cliente que ya esta registrado
+                const fullName = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
+                const fechaN = isTelefonoExist.incorporationOrBirthDate;
+                fecha(fechaN);
+                if (isTelefonoExist.fullName === fullName && birthdayTransform === _req.body.birthday) {
+                    ramdom(_req.body.phoneNumber);
+                    // instantiating the model for save data
+                    const user = new RegisterRequest_1.RegisterRequestModel({
+                        firstName: _req.body.firstName,
+                        middleName: _req.body.middleName,
+                        lastName: _req.body.lastName,
+                        birthday: _req.body.birthday,
+                        phoneNumber: _req.body.phoneNumber,
+                        password: _req.body.password,
+                        email: _req.body.email,
+                        tokenTotp: cadena
+                    });
+                    try {
+                        // save data
+                        const savedUser = yield user.save();
+                        // send request exit
+                        res.status(200).json({
+                            message: 'usuario registrado',
+                            status: 200,
+                            data: savedUser._id
+                        });
+                    }
+                    catch (error) {
+                        res.status(400).json({
+                            message: error,
+                            status: 400
+                        });
+                    }
+                }
+                else {
+                    return res.status(208).json({
+                        message: 'Los datos del cliente no coinciden con los del nuevo registro',
+                        status: 208
+                    });
+                }
             }
             else {
                 // send verification code to number phone of the user
@@ -217,8 +293,12 @@ class UserController {
                 // const token = sign({
                 //   data: user
                 // }, 'hola');
-                const token = (0, jsonwebtoken_1.sign)({ email: user.email, userId: user._id }, process.env.TOKEN_SECRET);
-                console.log(token);
+                const payload = {
+                    email: user.email,
+                    userId: user._id
+                };
+                const token = yield jsonwebtoken_1.default.sign(payload, process.env.TOKEN_SECRET || '', { expiresIn: '7d' });
+                // await console.log (verify(token,secret))
                 // // creating message Twilio
                 // const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
                 // const authToken = process.env.TWILIO_AUTH_TOKEN as string;
@@ -235,7 +315,7 @@ class UserController {
                 yield res.status(200).json({
                     status: 200,
                     data: { token },
-                    name: searchclient === null || searchclient === void 0 ? void 0 : searchclient.firstName,
+                    name: searchclient === null || searchclient === void 0 ? void 0 : searchclient.fullName,
                     external_id: searchclient === null || searchclient === void 0 ? void 0 : searchclient.externalId,
                     id: searchclient === null || searchclient === void 0 ? void 0 : searchclient._id,
                     phoneNumber: user.username
@@ -285,7 +365,7 @@ class UserController {
                     });
                     const misPolizas = {
                         _id: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp._id,
-                        Nombre: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp.firstName,
+                        Nombre: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp.fullName,
                         polizas: policyMe
                     };
                     polizasExternas.forEach(item => {
@@ -316,8 +396,9 @@ class UserController {
                         });
                     }
                     // console.log(mostrarPolizas)
-                    console.log(mostrarPolizas.length);
+                    // console.log(mostrarPolizas.length);
                     const mostrarPolizasexter = [];
+                    let validador = [];
                     for (let j = 0; j < mostrarPolizas.length; j++) {
                         // console.log(mostrarPolizas[j])
                         const id = mostrarPolizas[j].id;
@@ -327,9 +408,10 @@ class UserController {
                         if (idp === IdClientSee) {
                             const policyExternalClient = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: id });
                             const ExternalClient = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
+                            validador.push(policyExternalClient);
                             const mostrar = [{
                                     _id: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.externalId,
-                                    Nombre: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.firstName,
+                                    Nombre: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.fullName,
                                     polizas: [policyExternalClient]
                                 }];
                             mostrarPolizasexter.push(mostrar);
@@ -353,10 +435,7 @@ class UserController {
                             }
                             else {
                                 const indexRepeated = acc.findIndex((element) => element._id === user._id);
-                                console.log(`index Repetido: ${indexRepeated}`);
                                 const policyExtracted = user.polizas;
-                                console.log(`Polizas Extraidas de ${user.Nombre}: `, policyExtracted);
-                                console.log();
                                 for (const i in policyExtracted) {
                                     acc[indexRepeated].polizas.push(policyExtracted[i]);
                                 }
@@ -365,9 +444,17 @@ class UserController {
                         }, []);
                         return usersFiltered;
                     };
+                    // const valorar = JSON.parse(mostrarPolizasexter);
                     // console.log(newUsers(plano2))
+                    const valpoliceMy = yield isObjEmpty(policyMe);
+                    const valpoliceExt = yield isObjEmpty(validador);
                     const verRespuesta = newUsers(plano2);
-                    res.json(verRespuesta);
+                    if (valpoliceMy === true && valpoliceExt === true) {
+                        res.status(200).json([misPolizas]);
+                    }
+                    else {
+                        res.status(200).json(verRespuesta);
+                    }
                 }
                 else {
                     res.status(400).json({
@@ -599,7 +686,6 @@ class UserController {
             const Idpoliza = _req.body.data;
             try {
                 const fromRoles = Array.from(Idpoliza);
-                console.log(fromRoles);
                 const arrayLenght = fromRoles.length;
                 // console.log(arrayLenght);
                 // eslint-disable-next-line no-var
@@ -660,9 +746,7 @@ class UserController {
                     const isInsuranceExist = yield Insurance_1.InsuranceModel.findOne({ externalId: insurance });
                     // console.log(isInsuranceExist);
                     const cleintedetail = {
-                        firstName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.firstName,
-                        middleName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.middleName,
-                        lastName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.lastName
+                        fullName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.fullName
                     };
                     const policyDetail = {
                         _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
@@ -690,13 +774,11 @@ class UserController {
                         //buscando los detalles de aseguradora de la poliza
                         const insurance = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.insuranceId;
                         const isInsuranceExist = yield Insurance_1.InsuranceModel.findOne({ externalId: insurance });
-                        console.log(isInsuranceExist);
+                        // console.log(isInsuranceExist);
                         const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
                         const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
                         const cleintedetail = {
-                            firstName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.firstName,
-                            middleName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.middleName,
-                            lastName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.lastName
+                            fullName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.fullName
                         };
                         const policyDetail = {
                             _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
@@ -727,6 +809,100 @@ class UserController {
                 res.status(400).send({
                     message: 'Ocurrio un error: ' + error,
                     status: 400
+                });
+            }
+        });
+        // restablecer contraseña
+        this.restorePassSendSMS = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            const phoneNumber = _req.params.phoneNumber;
+            const isUserExist = yield User_1.UsersModel.findOne({ username: phoneNumber });
+            if (isUserExist) {
+                ramdom(phoneNumber);
+                const code = parseInt(cadena);
+                const update = { verificationCode: code };
+                try {
+                    yield Client_1.ClientsModel.findByIdAndUpdate(isUserExist.clientId, update);
+                    res.status(200).json({
+                        data: phoneNumber,
+                        message: 'El código se envio de manera exitosa',
+                        status: 200
+                    });
+                }
+                catch (error) {
+                    res.status(400).json({
+                        message: 'Ocuerrio un error',
+                        status: 400
+                    });
+                }
+            }
+            else {
+                res.status(203).json({
+                    message: 'No se encuentra el número de teléfono',
+                    status: 203
+                });
+            }
+        });
+        // comprobar cod de restablecer contra
+        this.restorePassComCod = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            const phoneNumber = _req.body.phoneNumber;
+            const code = parseInt(_req.body.code);
+            try {
+                /** Search RegisterRequest with id parameter */
+                const user = yield Client_1.ClientsModel.findOne({ phoneNumber: phoneNumber });
+                if ((user === null || user === void 0 ? void 0 : user.verificationCode) === code) {
+                    res.status(200).json({
+                        data: user._id,
+                        message: 'El código es correcto',
+                        status: 200
+                    });
+                }
+                else {
+                    res.status(203).json({
+                        message: 'Verifica tu código',
+                        status: 203
+                    });
+                }
+            }
+            catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 400
+                });
+            }
+        });
+        this.restorePass = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            const _id = _req.body.id;
+            const password = _req.body.password;
+            try {
+                const isUserExist = yield Client_1.ClientsModel.findById(_id);
+                if (isUserExist) {
+                    // buscando el usuario del cliente para actualizar la contraseña
+                    const search = isUserExist.phoneNumber;
+                    const isClientExist = yield User_1.UsersModel.findOne({ username: search });
+                    const _idUser = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist._id;
+                    const update = {
+                        password: password
+                    };
+                    yield User_1.UsersModel.findByIdAndUpdate(_idUser, update);
+                    res.status(200).json({
+                        message: 'Contraseña reestablecida exitosamente',
+                        status: 200
+                    });
+                }
+                else {
+                    res.status(203).json({
+                        message: 'No se encuentra el usuario',
+                        status: 203
+                    });
+                }
+            }
+            catch (error) {
+                res.status(203).json({
+                    message: 'Ocuerrio un error: ' + error,
+                    status: 203
                 });
             }
         });
@@ -831,5 +1007,26 @@ function sendSMSClientPolicy(phone) {
         to: `+52${phone}`
     }).then(message => console.log(message.sid));
     return (CodeValidator);
+}
+function isObjEmpty(obj) {
+    for (const prop in obj) {
+        // eslint-disable-next-line no-prototype-builtins
+        if (obj.hasOwnProperty(prop))
+            return false;
+    }
+    return true;
+}
+function fecha(birthday) {
+    var dd = birthday.getDate() + 1;
+    var mm = birthday.getMonth() + 1; //hoy es 0!
+    var yyyy = birthday.getFullYear();
+    if (dd < 10) {
+        dd = (0 + dd);
+    }
+    if (mm < 10) {
+        mm = (0 + mm);
+    }
+    birthdayTransform = yyyy + '-' + mm + '-' + dd;
+    return (birthdayTransform);
 }
 exports.default = new UserController();

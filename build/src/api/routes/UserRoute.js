@@ -19,6 +19,8 @@ UserRoute.post('/veryfic', middleware_1.default.veryfy);
 UserRoute.post('/verificar', UserController_1.default.ComprobarCod);
 // reenviar codigo de verificacion
 UserRoute.get('/codigoR/:id', UserController_1.default.ReenvioConfirmacion);
+// reenvioo de cod, pass
+UserRoute.get('/reenvio/:phoneNumber', UserController_1.default.ReenvioConfirmacionResPass);
 // reenvio a cliente externo
 UserRoute.get('/forwardcode/:externalId/:id', UserController_1.default.ReenvioConfirmacionClientExternal);
 // lista de polizas para un cliente
@@ -29,15 +31,24 @@ UserRoute.get('/app/policyDetail/:id', UserController_1.default.seePolicyInforma
 UserRoute.post('/app/selectPolicy', UserController_1.default.selectPolicy);
 // vizualisar un pdf en especifico
 UserRoute.get('/app/policie/:id', UserController_1.default.ViewPDF);
+// este endpoint ya valida el token de maneracorrecta
 // UserRoute.get('/app/policie/:id', [middleware.veryfy, UserController.ViewPDF]);
 // Editar el alias de una poliza
 UserRoute.put('/app/updateAlias', UserController_1.default.UpdateAlias);
-// todo: provando nueva funcionalidad
+// enviar codigo de seguridad a cliente externo
 UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController_1.default.PolicyNumberSendSMS);
 // comprobando el codigo
 UserRoute.post('/app/verificar', UserController_1.default.VerifyClient);
 // visualizando las polizas externas
 UserRoute.get('/app/policies/external/:externalIdClient', UserController_1.default.ViewPoliciesExternal);
+// restablecer contraseña
+UserRoute.get('/app/restorepassSMS/:phoneNumber', UserController_1.default.restorePassSendSMS);
+// COMPROVAR COD
+UserRoute.post('/app/restorepassVerify', UserController_1.default.restorePassComCod);
+// restablecer contraseña
+UserRoute.put('/app/restorepass', UserController_1.default.restorePass);
+// lista de aseguradoras
+UserRoute.get('/app/viewInsurances', ImpulsaController_1.default.ViewInsurances);
 /**
  * CRUD DE POLIZAS
 */

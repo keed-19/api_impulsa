@@ -219,6 +219,8 @@ class ImpulsaController {
     // guardar cliente
     public SaveClient = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
+      const phoneNumber = _req.body.phoneNumber;
+      const phone = phoneNumber.replace(/\s+/g, '');
 
       if (_req.body.phoneNumber === null) {
         return res.status(208).json({
@@ -231,7 +233,7 @@ class ImpulsaController {
           status: 208
         });
       } else {
-        const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
+        const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phone });
         const isEzternalIDExist = await ClientsModel.findOne({ externalId: _req.body.externalId });
 
         if (isTelefonoExist) {
@@ -247,11 +249,9 @@ class ImpulsaController {
         } else {
           // instantiating the model for save data
           const client = new ClientsModel({
-            firstName: _req.body.firstName,
-            middleName: _req.body.middleName,
-            lastName: _req.body.lastName,
-            birthday: _req.body.birthday,
-            phoneNumber: _req.body.phoneNumber,
+            fullName: _req.body.fullName,
+            incorporationOrBirthDate: _req.body.incorporationOrBirthDate,
+            phoneNumber: phone,
             externalId: _req.body.externalId
           });
 
@@ -425,7 +425,6 @@ class ImpulsaController {
     public SaveInsurance = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       const phoneNumber = _req.body.phoneNumber;
-      const phone = phoneNumber.replace(/\s+/g, '');
 
       if (_req.body.phoneNumber === null) {
         return res.status(400).json({
@@ -443,44 +442,52 @@ class ImpulsaController {
           status: 400
         });
       } else {
-        const isTelefonoExist = await InsuranceModel.findOne({ phoneNumber: phone });
-        const isExternalIDExist = await InsuranceModel.findOne({ externalId: _req.body.externalId });
-        const name = _req.body.name.toUpperCase();
+        try {
+          const phone = phoneNumber.replace(/\s+/g, '');
+          const isTelefonoExist = await InsuranceModel.findOne({ phoneNumber: phone });
+          const isExternalIDExist = await InsuranceModel.findOne({ externalId: _req.body.externalId });
+          const name = _req.body.name.toUpperCase();
 
-        if (isTelefonoExist) {
-          return res.status(208).json({
-            error: 'El numero telefonico ya se encuentra registrado en la base de datos',
-            status: 208
-          });
-        } else if (isExternalIDExist) {
-          return res.status(208).json({
-            error: 'El ExternalId ya se encuentra registrado en la base de datos y es un campo requerido',
-            status: 208
-          });
-        } else {
-          // instantiating the model for save data
-          const insurance = new InsuranceModel({
-            externalId: _req.body.externalId,
-            name: name,
-            phoneNumber: phone
-          });
-
-          try {
-            // save data
-            await insurance.save();
-
-            // send request exit
-            res.status(200).json({
-              message: 'Aseguradora registrada',
-              Client: insurance,
-              status: 200
+          if (isTelefonoExist) {
+            return res.status(208).json({
+              error: 'El numero telefonico ya se encuentra registrado en la base de datos',
+              status: 208
             });
-          } catch (error) {
-            res.status(404).json({
-              error,
-              status: 404
+          } else if (isExternalIDExist) {
+            return res.status(208).json({
+              error: 'El ExternalId ya se encuentra registrado en la base de datos y es un campo requerido',
+              status: 208
             });
+          } else {
+            // instantiating the model for save data
+            const insurance = new InsuranceModel({
+              externalId: _req.body.externalId,
+              name: name,
+              phoneNumber: phone
+            });
+
+            try {
+              // save data
+              await insurance.save();
+
+              // send request exit
+              res.status(200).json({
+                message: 'Aseguradora registrada',
+                Insurance: insurance,
+                status: 200
+              });
+            } catch (error) {
+              res.status(404).json({
+                error,
+                status: 404
+              });
+            }
           }
+        } catch (error) {
+          return res.status(400).json({
+            error: 'Ocurrio un error: ' + error,
+            status: 400
+          });
         }
       }
     }
