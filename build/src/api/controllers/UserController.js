@@ -230,7 +230,7 @@ class UserController {
                 }
                 else {
                     return res.status(208).json({
-                        message: 'Los datos del cliente no coinciden con los del nuevo registro',
+                        message: 'Los datos proporcionados no coinciden con los que están registrados en la base de datos',
                         status: 208
                     });
                 }
@@ -1026,7 +1026,7 @@ function fecha(birthday) {
     if (mm < 10) {
         mm = (0 + mm);
     }
-    birthdayTransform = yyyy + '-' + mm + '-' + dd;
+    birthdayTransform = dd + '-' + mm + '-' + yyyy;
     return (birthdayTransform);
 }
 exports.default = new UserController();
