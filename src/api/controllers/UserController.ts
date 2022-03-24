@@ -240,9 +240,9 @@ class UserController {
             });
           }
         } else {
-          return res.status(208).json({
+          return res.status(203).json({
             message: 'Los datos proporcionados no coinciden con los datos del cliente',
-            status: 208
+            status: 203
           });
         }
       } else {
