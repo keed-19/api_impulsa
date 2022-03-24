@@ -192,17 +192,57 @@ class UserController {
             res.set('Access-Control-Allow-Origin', '*');
             /** search Number phone in the data base */
             const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
-            if (isTelefonoExist) {
-                // si ya es cleinte de impulsa, entonces le vamos a dar acceso a hacer el registro de manera correcta
-                // comparamos los datos enviados, con los del cliente que ya esta registrado
-                const fullName = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
-                const fechaN = isTelefonoExist.incorporationOrBirthDate;
-                const fechaString = JSON.stringify(fechaN);
-                const fechaVlidador = fechaString.substring(1, 11);
-                console.log('recibo ', _req.body.birthday);
-                console.log(birthdayTransform);
-                console.log(isTelefonoExist.fullName, fullName);
-                if (isTelefonoExist.fullName === fullName && fechaVlidador === _req.body.birthday) {
+            const isUserExist = yield User_1.UsersModel.findOne({ username: _req.body.phoneNumber });
+            if (!isUserExist) {
+                if (isTelefonoExist) {
+                    // si ya es cleinte de impulsa, entonces le vamos a dar acceso a hacer el registro de manera correcta
+                    // comparamos los datos enviados, con los del cliente que ya esta registrado
+                    const fullName = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
+                    const fechaN = isTelefonoExist.incorporationOrBirthDate;
+                    const fechaString = JSON.stringify(fechaN);
+                    const fechaVlidador = fechaString.substring(1, 11);
+                    console.log('recibo ', _req.body.birthday);
+                    console.log(birthdayTransform);
+                    console.log(isTelefonoExist.fullName, fullName);
+                    if (isTelefonoExist.fullName === fullName && fechaVlidador === _req.body.birthday) {
+                        ramdom(_req.body.phoneNumber);
+                        // instantiating the model for save data
+                        const user = new RegisterRequest_1.RegisterRequestModel({
+                            firstName: _req.body.firstName,
+                            middleName: _req.body.middleName,
+                            lastName: _req.body.lastName,
+                            birthday: _req.body.birthday,
+                            phoneNumber: _req.body.phoneNumber,
+                            password: _req.body.password,
+                            email: _req.body.email,
+                            tokenTotp: cadena
+                        });
+                        try {
+                            // save data
+                            const savedUser = yield user.save();
+                            // send request exit
+                            res.status(200).json({
+                                message: 'usuario registrado',
+                                status: 200,
+                                data: savedUser._id
+                            });
+                        }
+                        catch (error) {
+                            res.status(400).json({
+                                message: error,
+                                status: 400
+                            });
+                        }
+                    }
+                    else {
+                        return res.status(208).json({
+                            message: 'Los datos proporcionados no coinciden con los datos del cliente',
+                            status: 208
+                        });
+                    }
+                }
+                else {
+                    // send verification code to number phone of the user
                     ramdom(_req.body.phoneNumber);
                     // instantiating the model for save data
                     const user = new RegisterRequest_1.RegisterRequestModel({
@@ -232,43 +272,12 @@ class UserController {
                         });
                     }
                 }
-                else {
-                    return res.status(208).json({
-                        message: 'Los datos proporcionados no coinciden con los que están registrados en la base de datos',
-                        status: 208
-                    });
-                }
             }
             else {
-                // send verification code to number phone of the user
-                ramdom(_req.body.phoneNumber);
-                // instantiating the model for save data
-                const user = new RegisterRequest_1.RegisterRequestModel({
-                    firstName: _req.body.firstName,
-                    middleName: _req.body.middleName,
-                    lastName: _req.body.lastName,
-                    birthday: _req.body.birthday,
-                    phoneNumber: _req.body.phoneNumber,
-                    password: _req.body.password,
-                    email: _req.body.email,
-                    tokenTotp: cadena
+                return res.status(208).json({
+                    message: 'Ya tienes una cuenta asociada a este número de teléfono',
+                    status: 208
                 });
-                try {
-                    // save data
-                    const savedUser = yield user.save();
-                    // send request exit
-                    res.status(200).json({
-                        message: 'usuario registrado',
-                        status: 200,
-                        data: savedUser._id
-                    });
-                }
-                catch (error) {
-                    res.status(400).json({
-                        message: error,
-                        status: 400
-                    });
-                }
             }
         });
         /**
