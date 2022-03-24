@@ -209,9 +209,6 @@ class UserController {
         const fechaN = isTelefonoExist.incorporationOrBirthDate;
         const fechaString = JSON.stringify(fechaN);
         const fechaVlidador = fechaString.substring(1,11);
-        console.log('recibo ', _req.body.birthday);
-        console.log(birthdayTransform);
-        console.log(isTelefonoExist.fullName, fullName);
         if (isTelefonoExist.fullName === fullName && fechaVlidador===_req.body.birthday) {
           ramdom(_req.body.phoneNumber as Number);
           // instantiating the model for save data
