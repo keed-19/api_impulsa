@@ -204,9 +204,12 @@ class UserController {
       // comparamos los datos enviados, con los del cliente que ya esta registrado
       const fullName = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
       const fechaN = isTelefonoExist.incorporationOrBirthDate;
-      fecha(fechaN);
-
-      if (isTelefonoExist.fullName === fullName && birthdayTransform===_req.body.birthday) {
+      const fechaString = JSON.stringify(fechaN);
+      const fechaVlidador = fechaString.substring(1,11);
+      console.log('recibo ', _req.body.birthday);
+      console.log(birthdayTransform);
+      console.log(isTelefonoExist.fullName, fullName);
+      if (isTelefonoExist.fullName === fullName && fechaVlidador===_req.body.birthday) {
         ramdom(_req.body.phoneNumber as Number);
         // instantiating the model for save data
         const user = new RegisterRequestModel({
@@ -1057,20 +1060,6 @@ function isObjEmpty (obj:Object) {
   }
 
   return true;
-}
-
-function fecha (birthday:Date) {
-  var dd = birthday.getDate()+1;
-  var mm = birthday.getMonth()+1; //hoy es 0!
-  var yyyy = birthday.getFullYear();
-  if(dd<10) {
-     dd=(0+dd)
-  }
-  if(mm<10) {
-     mm=(0+mm)
-  }
-  birthdayTransform = dd+'-'+mm+'-'+yyyy;
-  return (birthdayTransform);
 }
 
 export default new UserController();
