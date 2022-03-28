@@ -23,7 +23,7 @@ class ImpulsaController {
         this.ViewPolicies = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const externalId = _req.params.externalId;
-            const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalId: externalId });
+            const isPoliceExist = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalId });
             if (!isPoliceExist) {
                 res.json({
                     message: 'No hay polizas para este cliente',

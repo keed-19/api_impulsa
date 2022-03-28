@@ -51,8 +51,12 @@ UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController.Poli
 // comprobando el codigo
 UserRoute.post('/app/verificar', UserController.VerifyClient);
 
-// visualizando las polizas externas
-UserRoute.get('/app/policies/external/:externalIdClient', UserController.ViewPoliciesExternal);
+// // visualizando las polizas externas este ya funciona
+// UserRoute.get('/app/policies/external/:externalIdClient', UserController.ViewPoliciesExternal);
+
+// probando la validacion de ver las polizas pero si ta hay asociada alguna esa no se vera en la res
+UserRoute.get('/app/policies/external/:id/:externalIdClient', UserController.ViewPoliciesExternal);
+
 
 // restablecer contraseña
 UserRoute.get('/app/restorepassSMS/:phoneNumber', UserController.restorePassSendSMS);

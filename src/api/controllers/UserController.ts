@@ -684,19 +684,137 @@ class UserController {
     }
   }
 
+  // este funciona bien pero no esta validada la respuesta
+  // public ViewPoliciesExternal = async (_req:Request, res:Response) => {
+  //   /** frond end acces origin */
+  //   res.set('Access-Control-Allow-Origin', '*');
+  //   const externalIdClient = _req.params.externalIdClient;// para ver las polizas del usuario externo
+
+  //   try {
+  //     /** Search RegisterRequest with id parameter */
+  //     const policyExternal = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
+  //     if (!policyExternal) {
+  //       res.status(404).json({ message: 'No se encuantran resultados' });
+  //     } else if (policyExternal) {
+  //       res.status(200).json({
+  //         data: policyExternal,
+  //         status: 200
+  //       });
+  //     } else {
+  //       res.status(203).json({
+  //         message: 'Verifica tu código',
+  //         status: 203
+  //       });
+  //     }
+  //   } catch (error) {
+  //     res.status(400).json({
+  //       message: 'Ocurrio un error',
+  //       status: 400
+  //     });
+  //   }
+  // }
+
+  // probando la nueva validacion
+  
+  // probando la nueva consulta
   public ViewPoliciesExternal = async (_req:Request, res:Response) => {
     /** frond end acces origin */
     res.set('Access-Control-Allow-Origin', '*');
     const externalIdClient = _req.params.externalIdClient;// para ver las polizas del usuario externo
+    const id = _req.params.id; // id del cliente que quiere ver las polizas
+    const policySyncS:Array<any> = [];
+    const policyExternalS:Array<any> = [];
+    const policyRes:Array<any> = [];
+    var arrayRes:Array<any> = [];
+    var FinalRes:Array<any> = [];
 
     try {
       /** Search RegisterRequest with id parameter */
+      // viendo las polizas sincronizadas
+      const policySync = await ExternalPolicyClinetModel.find({ IdClient : id });
       const policyExternal = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
+
+      policySync.forEach(item => {
+        policySyncS.push(
+          {
+            Id: item.externalIdPolicy
+          }
+        );
+      });
+
+      policyExternal.forEach(item => {
+        policyExternalS.push(
+          {
+            Id: JSON.stringify(item._id)
+          }
+        );
+      });
+
+      for (let j = 0; j < policyExternalS.length; j++) {
+        // console.log(mostrarPolizas[j])
+        const id = policyExternalS[j].Id;
+        let valor = id.slice(1,-1);
+        policyRes.push({Id: `${valor}`})
+      }
+      // console.log(policyRes);
+
+      arrayRes = [policySyncS,policyRes]; 
+      const plano = arrayRes.reduce((acc: any, el: any) => acc.concat(el), []);
+      const plano2 = plano.reduce((acc: any, el: any) => acc.concat(el), []);
+      
+      
+      // const newUsers = (resp: any) => {
+      //   const usersFiltered = resp.reduce((acc: any, user: any) => {
+      //     // let policyExtracted = {} as any;
+
+      //     const userRepeated = acc.filter((propsUser: { Id: number }) => propsUser.Id === user.Id);
+
+      //     if (userRepeated.length === 0) {
+      //       acc.push(user);
+      //     } else {
+      //       const indexRepeated = acc.findIndex((element: any) => element.Id === user.Id);
+
+      //       const policyExtracted = user.polizas;
+      //       for (const i in policyExtracted) {
+      //         acc[indexRepeated].polizas.push(policyExtracted[i]);
+      //       }
+      //     }
+      //     return acc;
+      //   }, []);
+      //   return usersFiltered;
+      // };
+      // newUsers(plano2);
+      for (let j = 0; j < policySyncS.length; j++) {
+        const id = policySyncS[j].Id;
+
+        // buscando la pocicion del bojeto en el array
+        const indice = policyRes.findIndex(v => v.Id === id);
+
+        // eliminar el objeto del array;
+        policyRes.splice(indice, 1);
+      }
+
+      for (let j = 0; j < policyRes.length; j++) {
+        const id = policyRes[j].Id as Object;
+        const policy = await InsurancePoliciesModel.findOne({_id:id});
+        FinalRes.push(policy);
+      }
+      const valRes = await isObjEmpty(FinalRes as object);
+      // TODO:
+
       if (!policyExternal) {
-        res.status(404).json({ message: 'No se encuantran resultados' });
-      } else if (policyExternal) {
+        res.status(204).json({ 
+          message: 'No se encuantran resultados',
+          status: 204
+        });
+      } else if (valRes === true) {
+        res.status(208).json({
+          message : 'Ya tienes sincronizadas todas las pólizas de este usuario',
+          status: 208
+        });
+      } else if (valRes === false) {
         res.status(200).json({
-          data: policyExternal,
+          data: FinalRes,
           status: 200
         });
       } else {

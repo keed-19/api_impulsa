@@ -13,7 +13,7 @@ class ImpulsaController {
 
       const externalId = _req.params.externalId;
 
-      const isPoliceExist = await InsurancePoliciesModel.find({ externalId: externalId });
+      const isPoliceExist = await InsurancePoliciesModel.find({ externalIdClient: externalId });
 
       if (!isPoliceExist) {
         res.json({
