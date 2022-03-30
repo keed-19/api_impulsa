@@ -4,7 +4,7 @@ import { Schema, model } from 'mongoose';
 
 interface InsurancePolicies {
     insuranceId: string; // externalId de la aseguradora
-    policyNumber : Number; // Numero de poliza
+    policyNumber : String; // Numero de poliza
     policyType : String; // Tipo de poliza
     alias : String;
     effectiveDate : Date; // Fecha de inicio de vigencia
@@ -17,7 +17,7 @@ interface InsurancePolicies {
 
 const shema = new Schema<InsurancePolicies>({
   insuranceId: { type: String, required: true },
-  policyNumber: { type: Number, unique: true, required: true },
+  policyNumber: { type: String, unique: true, required: true },
   policyType: { type: String, required: true },
   alias: { type: String, required: true },
   effectiveDate: { type: Date, required: true },

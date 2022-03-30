@@ -4,7 +4,7 @@ exports.InsurancePoliciesModel = void 0;
 const mongoose_1 = require("mongoose");
 const shema = new mongoose_1.Schema({
     insuranceId: { type: String, required: true },
-    policyNumber: { type: Number, unique: true, required: true },
+    policyNumber: { type: String, unique: true, required: true },
     policyType: { type: String, required: true },
     alias: { type: String, required: true },
     effectiveDate: { type: Date, required: true },

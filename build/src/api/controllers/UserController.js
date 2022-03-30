@@ -588,10 +588,10 @@ class UserController {
         // listo
         this.PolicyNumberSendSMS = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             const policyNumber = _req.params.policyNumber;
-            const NumberPolice = parseInt(policyNumber);
+            // const NumberPolice = parseInt(policyNumber);
             const _id = _req.params.clientId;
             try {
-                const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: NumberPolice });
+                const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
                 if (isPolicyExist) {
                     const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
                     if (client) {
@@ -658,36 +658,7 @@ class UserController {
                 });
             }
         });
-        // este funciona bien pero no esta validada la respuesta
-        // public ViewPoliciesExternal = async (_req:Request, res:Response) => {
-        //   /** frond end acces origin */
-        //   res.set('Access-Control-Allow-Origin', '*');
-        //   const externalIdClient = _req.params.externalIdClient;// para ver las polizas del usuario externo
-        //   try {
-        //     /** Search RegisterRequest with id parameter */
-        //     const policyExternal = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
-        //     if (!policyExternal) {
-        //       res.status(404).json({ message: 'No se encuantran resultados' });
-        //     } else if (policyExternal) {
-        //       res.status(200).json({
-        //         data: policyExternal,
-        //         status: 200
-        //       });
-        //     } else {
-        //       res.status(203).json({
-        //         message: 'Verifica tu código',
-        //         status: 203
-        //       });
-        //     }
-        //   } catch (error) {
-        //     res.status(400).json({
-        //       message: 'Ocurrio un error',
-        //       status: 400
-        //     });
-        //   }
-        // }
-        // probando la nueva validacion
-        // probando la nueva consulta
+        // esta funcion es para edvolver las polizas externas exepto las q ya tiene vinculada el usuario
         this.ViewPoliciesExternal = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             /** frond end acces origin */
             res.set('Access-Control-Allow-Origin', '*');

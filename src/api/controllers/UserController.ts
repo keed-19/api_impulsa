@@ -613,10 +613,10 @@ class UserController {
   // listo
   public PolicyNumberSendSMS = async (_req:Request, res:Response) => {
     const policyNumber = _req.params.policyNumber;
-    const NumberPolice = parseInt(policyNumber);
+    // const NumberPolice = parseInt(policyNumber);
     const _id = _req.params.clientId as Object;
     try {
-      const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: NumberPolice });
+      const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
 
       if (isPolicyExist) {
         const client = await ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
@@ -684,39 +684,7 @@ class UserController {
     }
   }
 
-  // este funciona bien pero no esta validada la respuesta
-  // public ViewPoliciesExternal = async (_req:Request, res:Response) => {
-  //   /** frond end acces origin */
-  //   res.set('Access-Control-Allow-Origin', '*');
-  //   const externalIdClient = _req.params.externalIdClient;// para ver las polizas del usuario externo
-
-  //   try {
-  //     /** Search RegisterRequest with id parameter */
-  //     const policyExternal = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
-  //     if (!policyExternal) {
-  //       res.status(404).json({ message: 'No se encuantran resultados' });
-  //     } else if (policyExternal) {
-  //       res.status(200).json({
-  //         data: policyExternal,
-  //         status: 200
-  //       });
-  //     } else {
-  //       res.status(203).json({
-  //         message: 'Verifica tu código',
-  //         status: 203
-  //       });
-  //     }
-  //   } catch (error) {
-  //     res.status(400).json({
-  //       message: 'Ocurrio un error',
-  //       status: 400
-  //     });
-  //   }
-  // }
-
-  // probando la nueva validacion
-  
-  // probando la nueva consulta
+  // esta funcion es para edvolver las polizas externas exepto las q ya tiene vinculada el usuario
   public ViewPoliciesExternal = async (_req:Request, res:Response) => {
     /** frond end acces origin */
     res.set('Access-Control-Allow-Origin', '*');
