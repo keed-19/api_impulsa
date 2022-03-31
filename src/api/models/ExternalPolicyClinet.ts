@@ -16,7 +16,8 @@ const shema = new Schema<ExternalPolicyClient>({
   externalIdPolicy: { type: String, required: false },
   alias: { type: String, required: false },
   policyType: { type: String, required: false }
-});
+},
+{timestamps: true});
 
 const ExternalPolicyClinetModel = model<ExternalPolicyClient>('ExternalPolicyClient', shema);
 

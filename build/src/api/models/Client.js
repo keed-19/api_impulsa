@@ -8,6 +8,6 @@ const shema = new mongoose_1.Schema({
     incorporationOrBirthDate: { type: Date, required: true },
     externalId: { type: Number, required: false },
     verificationCode: { type: Number, required: false }
-});
+}, { timestamps: true });
 const ClientsModel = (0, mongoose_1.model)('Clients', shema);
 exports.ClientsModel = ClientsModel;

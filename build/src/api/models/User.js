@@ -7,6 +7,6 @@ const shema = new mongoose_1.Schema({
     password: { type: String, required: true },
     email: { type: String, required: true },
     clientId: { type: String, required: true }
-});
+}, { timestamps: true });
 const UsersModel = (0, mongoose_1.model)('Users', shema);
 exports.UsersModel = UsersModel;

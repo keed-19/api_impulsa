@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import ImpulsaController from '../controllers/ImpulsaController';
 import UserController from '../controllers/UserController';
-import middleware from '../middlewares/middleware';
 import UserMiddleware from '../middlewares/middleware';
 import syncMiddleware from '../middlewares/syncMiddleware';
 // import syncMiddleware from '../middlewares/syncMiddleware';
@@ -80,6 +79,9 @@ UserRoute.get('/sync/policies/:externalId', [syncMiddleware.veryfyCredential, Im
 
 // vizualisar un pdf en especifico
 UserRoute.get('/sync/policie/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.ViewPDF]);
+
+// vizualisar un pdf en especifico
+UserRoute.get('/sync/policieDetail/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.ViewPolicyDetail]);
 
 // guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
 // UserRoute.post('/sync/policies/client/:externalIdClient', Upload.single('myFile'), ImpulsaController.SavePolice);

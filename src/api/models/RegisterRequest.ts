@@ -22,7 +22,8 @@ const shema = new Schema<RegisterRequest>({
   email: { type: String, required: true },
   password: { type: String, required: true },
   tokenTotp: { type: String, required: true }
-});
+},
+{timestamps: true});
 
 const RegisterRequestModel = model<RegisterRequest>('RegisterRequest', shema);
 

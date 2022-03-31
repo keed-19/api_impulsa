@@ -15,7 +15,8 @@ const shema = new Schema<Clients>({
   incorporationOrBirthDate: { type: Date, required: true },
   externalId: { type: Number, required: false },
   verificationCode: { type: Number, required: false }
-});
+},
+{timestamps: true});
 
 const ClientsModel = model<Clients>('Clients', shema);
 

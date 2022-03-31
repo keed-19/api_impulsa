@@ -13,7 +13,8 @@ const shema = new Schema<Users>({
   password: { type: String, required: true },
   email: { type: String, required: true },
   clientId: { type: String, required: true }
-});
+},
+{timestamps: true});
 
 const UsersModel = model<Users>('Users', shema);
 

@@ -13,6 +13,6 @@ const shema = new mongoose_1.Schema({
     fileUrl: { type: Object, required: true },
     externalId: { type: String, required: true },
     externalIdClient: { type: String, required: true }
-});
+}, { timestamps: true });
 const InsurancePoliciesModel = (0, mongoose_1.model)('InsurancePolicies', shema);
 exports.InsurancePoliciesModel = InsurancePoliciesModel;

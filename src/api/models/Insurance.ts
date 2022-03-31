@@ -17,7 +17,8 @@ const shema = new Schema<Insurance>({
   iconCode: { type: String, required: true },
   colorCode: { type: String, required: true },
   instructions: { type: [], required: true },
-});
+},
+{timestamps: true});
 
 const InsuranceModel = model<Insurance>('Insurance', shema);
 

@@ -87,6 +87,31 @@ class ImpulsaController {
                 });
             }
         });
+        this.ViewPolicyDetail = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            const externalId = _req.params.externalId;
+            try {
+                const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalId: externalId }, { _id: 0, __v: 0 });
+                if (isPolicyExist) {
+                    res.status(200).json({
+                        data: isPolicyExist,
+                        status: 200
+                    });
+                }
+                else {
+                    res.status(400).json({
+                        message: 'No se encuentra la póliza',
+                        status: 200
+                    });
+                }
+            }
+            catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 400
+                });
+            }
+        });
         // guardar poliza
         this.SavePolice = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b;

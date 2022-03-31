@@ -58,6 +58,8 @@ UserRoute.get('/app/viewInsurances', ImpulsaController_1.default.ViewInsurances)
 UserRoute.get('/sync/policies/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewPolicies]);
 // vizualisar un pdf en especifico
 UserRoute.get('/sync/policie/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewPDF]);
+// vizualisar un pdf en especifico
+UserRoute.get('/sync/policieDetail/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewPolicyDetail]);
 // guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
 // UserRoute.post('/sync/policies/client/:externalIdClient', Upload.single('myFile'), ImpulsaController.SavePolice);
 UserRoute.post('/sync/policies/client/:externalIdClient', [syncMiddleware_1.default.veryfyCredential, saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.SavePolice]);

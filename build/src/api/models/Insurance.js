@@ -9,6 +9,6 @@ const shema = new mongoose_1.Schema({
     iconCode: { type: String, required: true },
     colorCode: { type: String, required: true },
     instructions: { type: [], required: true },
-});
+}, { timestamps: true });
 const InsuranceModel = (0, mongoose_1.model)('Insurance', shema);
 exports.InsuranceModel = InsuranceModel;

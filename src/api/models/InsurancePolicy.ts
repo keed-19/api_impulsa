@@ -26,7 +26,8 @@ const shema = new Schema<InsurancePolicies>({
   fileUrl: { type: Object, required: true },
   externalId: { type: String, required: true },
   externalIdClient: { type: String, required: true }
-});
+},
+{timestamps: true});
 
 const InsurancePoliciesModel = model<InsurancePolicies>('InsurancePolicies', shema);
 
