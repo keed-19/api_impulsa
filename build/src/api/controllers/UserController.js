@@ -25,7 +25,6 @@ const Insurance_1 = require("../models/Insurance");
 let cadena = '';
 let cadenaReenvio = '';
 let CodeValidator = '';
-let birthdayTransform = '';
 /** My class of user controller */
 class UserController {
     constructor() {
@@ -41,67 +40,75 @@ class UserController {
             const _id = _req.body.id;
             const code = _req.body.Code;
             /** Search RegisterRequest with id parameter */
-            const user = yield RegisterRequest_1.RegisterRequestModel.findOne({ _id });
-            if (!user) {
-                res.status(400).json({ message: 'Usuario no encontrado', status: 400 });
-            }
-            else if (user && user.tokenTotp === code) {
-                // verificando si ya es cliente de impulsa
-                const fullName = `${user.firstName} ${user.middleName} ${user.lastName}`;
-                const isClientExist = yield Client_1.ClientsModel.findOne({ fullName: fullName });
-                if (isClientExist) {
-                    const saveUser = new User_1.UsersModel({
-                        username: user.phoneNumber,
-                        password: user.password,
-                        email: user.email,
-                        clientId: isClientExist._id
-                    });
-                    yield saveUser.save();
-                    yield user.remove();
-                    res.status(200).json({
-                        isClientExist,
-                        status: 200
-                    });
+            try {
+                const user = yield RegisterRequest_1.RegisterRequestModel.findOne({ _id });
+                if (!user) {
+                    res.status(400).json({ message: 'Usuario no encontrado', status: 400 });
                 }
-                else {
-                    // instantiating the models
-                    const client = new Client_1.ClientsModel({
-                        fullName: fullName,
-                        incorporationOrBirthDate: user.birthday,
-                        phoneNumber: user.phoneNumber
-                    });
-                    try {
-                        // save models with data of RegisterRequestModel
-                        const savedClient = yield client.save();
-                        if (savedClient) {
-                            const saveuser = new User_1.UsersModel({
-                                username: user.phoneNumber,
-                                password: user.password,
-                                email: user.email,
-                                clientId: savedClient._id
-                            });
-                            yield saveuser.save();
-                        }
-                        // delete RegisterRequestModel
+                else if (user && user.tokenTotp === code) {
+                    // verificando si ya es cliente de impulsa
+                    const fullName = `${user.firstName} ${user.middleName} ${user.lastName}`;
+                    const isClientExist = yield Client_1.ClientsModel.findOne({ fullName: fullName });
+                    if (isClientExist) {
+                        const saveUser = new User_1.UsersModel({
+                            username: user.phoneNumber,
+                            password: user.password,
+                            email: user.email,
+                            clientId: isClientExist._id
+                        });
+                        yield saveUser.save();
                         yield user.remove();
-                        // send request
                         res.status(200).json({
-                            savedClient,
+                            isClientExist,
                             status: 200
                         });
                     }
-                    catch (error) {
-                        res.status(203).json({
-                            message: 'Ocurrio un error: ' + error,
-                            status: 203
+                    else {
+                        // instantiating the models
+                        const client = new Client_1.ClientsModel({
+                            fullName: fullName,
+                            incorporationOrBirthDate: user.birthday,
+                            phoneNumber: user.phoneNumber
                         });
+                        try {
+                            // save models with data of RegisterRequestModel
+                            const savedClient = yield client.save();
+                            if (savedClient) {
+                                const saveuser = new User_1.UsersModel({
+                                    username: user.phoneNumber,
+                                    password: user.password,
+                                    email: user.email,
+                                    clientId: savedClient._id
+                                });
+                                yield saveuser.save();
+                            }
+                            // delete RegisterRequestModel
+                            yield user.remove();
+                            // send request
+                            res.status(200).json({
+                                savedClient,
+                                status: 200
+                            });
+                        }
+                        catch (error) {
+                            res.status(203).json({
+                                message: 'Ocurrio un error: ' + error,
+                                status: 203
+                            });
+                        }
                     }
                 }
+                else {
+                    res.status(203).json({
+                        message: 'Verifica tu código',
+                        status: 203
+                    });
+                }
             }
-            else {
-                res.status(203).json({
-                    message: 'Verifica tu código',
-                    status: 203
+            catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 400
                 });
             }
         });
@@ -191,17 +198,56 @@ class UserController {
         this.register = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             /** search Number phone in the data base */
-            const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
-            const isUserExist = yield User_1.UsersModel.findOne({ username: _req.body.phoneNumber });
-            if (!isUserExist) {
-                if (isTelefonoExist) {
-                    // si ya es cleinte de impulsa, entonces le vamos a dar acceso a hacer el registro de manera correcta
-                    // comparamos los datos enviados, con los del cliente que ya esta registrado
-                    const fullName = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
-                    const fechaN = isTelefonoExist.incorporationOrBirthDate;
-                    const fechaString = JSON.stringify(fechaN);
-                    const fechaVlidador = fechaString.substring(1, 11);
-                    if (isTelefonoExist.fullName === fullName && fechaVlidador === _req.body.birthday) {
+            try {
+                const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
+                const isUserExist = yield User_1.UsersModel.findOne({ username: _req.body.phoneNumber });
+                if (!isUserExist) {
+                    if (isTelefonoExist) {
+                        // si ya es cleinte de impulsa, entonces le vamos a dar acceso a hacer el registro de manera correcta
+                        // comparamos los datos enviados, con los del cliente que ya esta registrado
+                        const fullName = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
+                        const fechaN = isTelefonoExist.incorporationOrBirthDate;
+                        const fechaString = JSON.stringify(fechaN);
+                        const fechaVlidador = fechaString.substring(1, 11);
+                        if (isTelefonoExist.fullName === fullName && fechaVlidador === _req.body.birthday) {
+                            ramdom(_req.body.phoneNumber);
+                            // instantiating the model for save data
+                            const user = new RegisterRequest_1.RegisterRequestModel({
+                                firstName: _req.body.firstName,
+                                middleName: _req.body.middleName,
+                                lastName: _req.body.lastName,
+                                birthday: _req.body.birthday,
+                                phoneNumber: _req.body.phoneNumber,
+                                password: _req.body.password,
+                                email: _req.body.email,
+                                tokenTotp: cadena
+                            });
+                            try {
+                                // save data
+                                const savedUser = yield user.save();
+                                // send request exit
+                                res.status(200).json({
+                                    message: 'usuario registrado',
+                                    status: 200,
+                                    data: savedUser._id
+                                });
+                            }
+                            catch (error) {
+                                res.status(400).json({
+                                    message: error,
+                                    status: 400
+                                });
+                            }
+                        }
+                        else {
+                            return res.status(203).json({
+                                message: 'Los datos proporcionados no coinciden con los datos del cliente',
+                                status: 203
+                            });
+                        }
+                    }
+                    else {
+                        // send verification code to number phone of the user
                         ramdom(_req.body.phoneNumber);
                         // instantiating the model for save data
                         const user = new RegisterRequest_1.RegisterRequestModel({
@@ -231,49 +277,18 @@ class UserController {
                             });
                         }
                     }
-                    else {
-                        return res.status(203).json({
-                            message: 'Los datos proporcionados no coinciden con los datos del cliente',
-                            status: 203
-                        });
-                    }
                 }
                 else {
-                    // send verification code to number phone of the user
-                    ramdom(_req.body.phoneNumber);
-                    // instantiating the model for save data
-                    const user = new RegisterRequest_1.RegisterRequestModel({
-                        firstName: _req.body.firstName,
-                        middleName: _req.body.middleName,
-                        lastName: _req.body.lastName,
-                        birthday: _req.body.birthday,
-                        phoneNumber: _req.body.phoneNumber,
-                        password: _req.body.password,
-                        email: _req.body.email,
-                        tokenTotp: cadena
+                    return res.status(208).json({
+                        message: 'Ya tienes una cuenta asociada a este número de teléfono',
+                        status: 208
                     });
-                    try {
-                        // save data
-                        const savedUser = yield user.save();
-                        // send request exit
-                        res.status(200).json({
-                            message: 'usuario registrado',
-                            status: 200,
-                            data: savedUser._id
-                        });
-                    }
-                    catch (error) {
-                        res.status(400).json({
-                            message: error,
-                            status: 400
-                        });
-                    }
                 }
             }
-            else {
-                return res.status(208).json({
-                    message: 'Ya tienes una cuenta asociada a este número de teléfono',
-                    status: 208
+            catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 400
                 });
             }
         });
@@ -288,53 +303,43 @@ class UserController {
             const pass = _req.body.password;
             const numuser = _req.body.phoneNumber;
             // search user
-            const user = yield User_1.UsersModel.findOne({ username: numuser });
-            if (!user) {
-                return res.status(203).send({
-                    message: 'Credenciales incorrectas',
-                    status: 203
-                });
+            try {
+                const user = yield User_1.UsersModel.findOne({ username: numuser });
+                if (!user) {
+                    return res.status(203).send({
+                        message: 'Credenciales incorrectas',
+                        status: 203
+                    });
+                }
+                else if (user.password === pass) {
+                    // search user in model clients
+                    const searchclient = yield Client_1.ClientsModel.findOne({ phoneNumber: numuser });
+                    const payload = {
+                        email: user.email,
+                        userId: user._id
+                    };
+                    const token = yield jsonwebtoken_1.default.sign(payload, process.env.TOKEN_SECRET || '', { expiresIn: '7d' });
+                    // send request
+                    yield res.status(200).json({
+                        status: 200,
+                        data: { token },
+                        name: searchclient === null || searchclient === void 0 ? void 0 : searchclient.fullName,
+                        external_id: searchclient === null || searchclient === void 0 ? void 0 : searchclient.externalId,
+                        id: searchclient === null || searchclient === void 0 ? void 0 : searchclient._id,
+                        phoneNumber: user.username
+                    });
+                }
+                else {
+                    return res.status(200).json({
+                        message: 'Credenciales incorrectas',
+                        status: 203
+                    });
+                }
             }
-            else if (user.password === pass) {
-                // search user in model clients
-                const searchclient = yield Client_1.ClientsModel.findOne({ phoneNumber: numuser });
-                // var token = sign(user, process.env.TOKEN_SECRET as string, { expiresIn: 300 })
-                // creating  token
-                // const token = sign({
-                //   data: user
-                // }, 'hola');
-                const payload = {
-                    email: user.email,
-                    userId: user._id
-                };
-                const token = yield jsonwebtoken_1.default.sign(payload, process.env.TOKEN_SECRET || '', { expiresIn: '7d' });
-                // await console.log (verify(token,secret))
-                // // creating message Twilio
-                // const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
-                // const authToken = process.env.TWILIO_AUTH_TOKEN as string;
-                // const client = new Twilio(accountSid, authToken);
-                // // sent SMS of twilio
-                // await client.messages
-                // .create({
-                //     body: `Hola ${searchclient?.firstName}, Impulsa te da la bienvenida, gracias por usar nuestra APP`,
-                //     from: '+19378602978',
-                //     to: `+52${user.username}`
-                // })
-                // .then(message => console.log(message.sid));
-                // send request
-                yield res.status(200).json({
-                    status: 200,
-                    data: { token },
-                    name: searchclient === null || searchclient === void 0 ? void 0 : searchclient.fullName,
-                    external_id: searchclient === null || searchclient === void 0 ? void 0 : searchclient.externalId,
-                    id: searchclient === null || searchclient === void 0 ? void 0 : searchclient._id,
-                    phoneNumber: user.username
-                });
-            }
-            else {
-                return res.status(200).json({
-                    message: 'Credenciales incorrectas',
-                    status: 203
+            catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 400
                 });
             }
         });
@@ -405,10 +410,8 @@ class UserController {
                             });
                         });
                     }
-                    // console.log(mostrarPolizas)
-                    // console.log(mostrarPolizas.length);
                     const mostrarPolizasexter = [];
-                    let validador = [];
+                    const validador = [];
                     for (let j = 0; j < mostrarPolizas.length; j++) {
                         // console.log(mostrarPolizas[j])
                         const id = mostrarPolizas[j].id;
@@ -484,55 +487,63 @@ class UserController {
         this.ViewPDF = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const id = _req.params.id;
-            const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id });
-            if (isPolicyExist) {
-                const name = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.fileUrl;
-                try {
-                    const data = fs_1.default.readFileSync('src/uploads/' + name);
-                    res.setHeader('Content-Type', 'application/pdf');
-                    // res.contentType("application/pdf");
-                    res.send(data);
-                }
-                catch (error) {
-                    res.status(400).send({
-                        message: 'No se ecuentra la póliza: ' + error,
-                        status: 400
-                    });
-                }
-            }
-            else {
-                try {
-                    const isPolicyExternalExist = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: id });
-                    const _id = isPolicyExternalExist === null || isPolicyExternalExist === void 0 ? void 0 : isPolicyExternalExist.externalIdPolicy;
-                    const isPolicyExistOrigin = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: _id });
-                    if (isPolicyExistOrigin) {
-                        const name = isPolicyExistOrigin === null || isPolicyExistOrigin === void 0 ? void 0 : isPolicyExistOrigin.fileUrl;
-                        try {
-                            const data = fs_1.default.readFileSync('src/uploads/' + name);
-                            res.setHeader('Content-Type', 'application/pdf');
-                            // res.contentType("application/pdf");
-                            res.send(data);
-                        }
-                        catch (error) {
-                            res.status(400).send({
-                                message: 'No se ecuentra la póliza: ' + error,
-                                status: 400
-                            });
-                        }
+            try {
+                const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id });
+                if (isPolicyExist) {
+                    const name = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.fileUrl;
+                    try {
+                        const data = fs_1.default.readFileSync('src/uploads/' + name);
+                        res.setHeader('Content-Type', 'application/pdf');
+                        // res.contentType("application/pdf");
+                        res.send(data);
                     }
-                    else {
-                        res.status(400).json({
-                            message: 'No se encuentra la póliza',
+                    catch (error) {
+                        res.status(400).send({
+                            message: 'No se ecuentra la póliza: ' + error,
                             status: 400
                         });
                     }
                 }
-                catch (error) {
-                    res.status(400).json({
-                        message: 'Ocurrio un error: ' + error,
-                        status: 400
-                    });
+                else {
+                    try {
+                        const isPolicyExternalExist = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: id });
+                        const _id = isPolicyExternalExist === null || isPolicyExternalExist === void 0 ? void 0 : isPolicyExternalExist.externalIdPolicy;
+                        const isPolicyExistOrigin = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: _id });
+                        if (isPolicyExistOrigin) {
+                            const name = isPolicyExistOrigin === null || isPolicyExistOrigin === void 0 ? void 0 : isPolicyExistOrigin.fileUrl;
+                            try {
+                                const data = fs_1.default.readFileSync('src/uploads/' + name);
+                                res.setHeader('Content-Type', 'application/pdf');
+                                // res.contentType("application/pdf");
+                                res.send(data);
+                            }
+                            catch (error) {
+                                res.status(400).send({
+                                    message: 'No se ecuentra la póliza: ' + error,
+                                    status: 400
+                                });
+                            }
+                        }
+                        else {
+                            res.status(400).json({
+                                message: 'No se encuentra la póliza',
+                                status: 400
+                            });
+                        }
+                    }
+                    catch (error) {
+                        res.status(400).json({
+                            message: 'Ocurrio un error: ' + error,
+                            status: 400
+                        });
+                    }
                 }
+            }
+            catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 400
+                });
             }
         });
         // actualizar alias de poliza personal
@@ -667,8 +678,7 @@ class UserController {
             const policySyncS = [];
             const policyExternalS = [];
             const policyRes = [];
-            var arrayRes = [];
-            var FinalRes = [];
+            const FinalRes = [];
             try {
                 /** Search RegisterRequest with id parameter */
                 // viendo las polizas sincronizadas
@@ -687,31 +697,9 @@ class UserController {
                 for (let j = 0; j < policyExternalS.length; j++) {
                     // console.log(mostrarPolizas[j])
                     const id = policyExternalS[j].Id;
-                    let valor = id.slice(1, -1);
+                    const valor = id.slice(1, -1);
                     policyRes.push({ Id: `${valor}` });
                 }
-                // console.log(policyRes);
-                arrayRes = [policySyncS, policyRes];
-                const plano = arrayRes.reduce((acc, el) => acc.concat(el), []);
-                const plano2 = plano.reduce((acc, el) => acc.concat(el), []);
-                // const newUsers = (resp: any) => {
-                //   const usersFiltered = resp.reduce((acc: any, user: any) => {
-                //     // let policyExtracted = {} as any;
-                //     const userRepeated = acc.filter((propsUser: { Id: number }) => propsUser.Id === user.Id);
-                //     if (userRepeated.length === 0) {
-                //       acc.push(user);
-                //     } else {
-                //       const indexRepeated = acc.findIndex((element: any) => element.Id === user.Id);
-                //       const policyExtracted = user.polizas;
-                //       for (const i in policyExtracted) {
-                //         acc[indexRepeated].polizas.push(policyExtracted[i]);
-                //       }
-                //     }
-                //     return acc;
-                //   }, []);
-                //   return usersFiltered;
-                // };
-                // newUsers(plano2);
                 for (let j = 0; j < policySyncS.length; j++) {
                     const id = policySyncS[j].Id;
                     // buscando la pocicion del bojeto en el array
@@ -725,7 +713,6 @@ class UserController {
                     FinalRes.push(policy);
                 }
                 const valRes = yield isObjEmpty(FinalRes);
-                // TODO:
                 if (!policyExternal) {
                     res.status(204).json({
                         message: 'No se encuantran resultados',
@@ -821,7 +808,7 @@ class UserController {
                 if (isPolicyExist) {
                     const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
                     const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
-                    //buscando la aseguradora para mostrar los datos
+                    // buscando la aseguradora para mostrar los datos
                     const insurance = parseInt(isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.insuranceId);
                     const isInsuranceExist = yield Insurance_1.InsuranceModel.findOne({ externalId: insurance });
                     // console.log(isInsuranceExist);
@@ -851,7 +838,7 @@ class UserController {
                     const externalIdPolicy = isPolicyExternalExist === null || isPolicyExternalExist === void 0 ? void 0 : isPolicyExternalExist.externalIdPolicy;
                     if (isPolicyExternalExist) {
                         const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: externalIdPolicy });
-                        //buscando los detalles de aseguradora de la poliza
+                        // buscando los detalles de aseguradora de la poliza
                         const insurance = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.insuranceId;
                         const isInsuranceExist = yield Insurance_1.InsuranceModel.findOne({ externalId: insurance });
                         // console.log(isInsuranceExist);
@@ -896,30 +883,38 @@ class UserController {
         this.restorePassSendSMS = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const phoneNumber = _req.params.phoneNumber;
-            const isUserExist = yield User_1.UsersModel.findOne({ username: phoneNumber });
-            if (isUserExist) {
-                ramdom(phoneNumber);
-                const code = parseInt(cadena);
-                const update = { verificationCode: code };
-                try {
-                    yield Client_1.ClientsModel.findByIdAndUpdate(isUserExist.clientId, update);
-                    res.status(200).json({
-                        data: phoneNumber,
-                        message: 'El código se envio de manera exitosa',
-                        status: 200
-                    });
+            try {
+                const isUserExist = yield User_1.UsersModel.findOne({ username: phoneNumber });
+                if (isUserExist) {
+                    ramdom(phoneNumber);
+                    const code = parseInt(cadena);
+                    const update = { verificationCode: code };
+                    try {
+                        yield Client_1.ClientsModel.findByIdAndUpdate(isUserExist.clientId, update);
+                        res.status(200).json({
+                            data: phoneNumber,
+                            message: 'El código se envio de manera exitosa',
+                            status: 200
+                        });
+                    }
+                    catch (error) {
+                        res.status(400).json({
+                            message: 'Ocuerrio un error',
+                            status: 400
+                        });
+                    }
                 }
-                catch (error) {
-                    res.status(400).json({
-                        message: 'Ocuerrio un error',
-                        status: 400
+                else {
+                    res.status(203).json({
+                        message: 'No se encuentra el número de teléfono',
+                        status: 203
                     });
                 }
             }
-            else {
-                res.status(203).json({
-                    message: 'No se encuentra el número de teléfono',
-                    status: 203
+            catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 400
                 });
             }
         });
@@ -980,22 +975,11 @@ class UserController {
                 }
             }
             catch (error) {
-                res.status(203).json({
+                res.status(400).json({
                     message: 'Ocuerrio un error: ' + error,
-                    status: 203
+                    status: 400
                 });
             }
-        });
-    }
-    /** Function to get users from database */
-    index(_, res) {
-        RegisterRequest_1.RegisterRequestModel.find({}, (err, users) => {
-            res.set('Access-Control-Allow-Origin', '*');
-            if (err)
-                return res.status(500).send({ message: `Error al hacer la petición: ${err}` });
-            if (!users)
-                return res.status(404).send({ message: 'Aún no existen usuarios en la base de datos' });
-            res.status(200).json({ users: users });
         });
     }
 }
