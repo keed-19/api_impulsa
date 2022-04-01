@@ -16,6 +16,7 @@ const InsurancePolicy_1 = require("../models/InsurancePolicy");
 const Insurance_1 = require("../models/Insurance");
 const fs_1 = __importDefault(require("fs"));
 const Client_1 = require("../models/Client");
+const User_1 = require("../models/User");
 /** My class of Impulsa controller */
 class ImpulsaController {
     constructor() {
@@ -360,7 +361,9 @@ class ImpulsaController {
                     });
                 }
                 else {
-                    isTelefonoExist.remove();
+                    yield isTelefonoExist.delete();
+                    const User = yield User_1.UsersModel.findOne({ clientId: isTelefonoExist._id });
+                    yield (User === null || User === void 0 ? void 0 : User.delete());
                     res.status(200).json({
                         message: 'El cliente se elimino correctamente',
                         status: 200
@@ -388,7 +391,7 @@ class ImpulsaController {
                 }
                 else {
                     yield fs_1.default.unlinkSync('src/uploads/' + isPolicyExist.fileUrl);
-                    yield isPolicyExist.remove();
+                    yield isPolicyExist.delete();
                     res.status(200).json({
                         message: 'La poliza se elimino correctamente',
                         status: 200
@@ -671,7 +674,7 @@ class ImpulsaController {
                     });
                 }
                 else {
-                    yield isInsuranceExist.remove();
+                    yield isInsuranceExist.delete();
                     res.status(200).json({
                         message: 'La aseguradora se elimino correctamente',
                         status: 200

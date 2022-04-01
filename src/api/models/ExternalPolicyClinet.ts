@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import mongoose_delete from 'mongoose-delete';
 
 // create an interface representing a document in MongoDB
 interface ExternalPolicyClient {
@@ -18,6 +19,8 @@ const shema = new Schema<ExternalPolicyClient>({
   policyType: { type: String, required: false }
 },
 {timestamps: true});
+
+shema.plugin(mongoose_delete, { deletedAt : true, overrideMethods: 'all', indexFields: ['deletedAt'] });
 
 const ExternalPolicyClinetModel = model<ExternalPolicyClient>('ExternalPolicyClient', shema);
 

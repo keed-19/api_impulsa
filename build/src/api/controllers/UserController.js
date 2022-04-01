@@ -602,35 +602,46 @@ class UserController {
             // const NumberPolice = parseInt(policyNumber);
             const _id = _req.params.clientId;
             try {
-                const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
-                if (isPolicyExist) {
-                    const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
-                    if (client) {
-                        sendSMSClientPolicy(client.phoneNumber);
-                        const update = { verificationCode: CodeValidator };
-                        const clienteActualizado = yield Client_1.ClientsModel.findByIdAndUpdate(_id, update);
-                        if (clienteActualizado) {
-                            const clientExternalId = client.externalId;
-                            const phoneNumber = client.phoneNumber;
-                            res.status(200).json({
-                                clientExternalId,
-                                phoneNumber,
-                                status: 200
-                            });
-                        }
-                        else {
-                            res.status(400).json({
-                                message: 'Ocurrio un error',
-                                status: 400
-                            });
-                        }
-                    }
+                const validarClient = yield Client_1.ClientsModel.findOne({ _id: _id });
+                const externalIdClient = yield (validarClient === null || validarClient === void 0 ? void 0 : validarClient.externalId);
+                const validarPolicyProp = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient, policyNumber: policyNumber });
+                if (validarPolicyProp) {
+                    res.status(203).json({
+                        message: 'No pudes vincular tus propias pólizas',
+                        status: 203
+                    });
                 }
                 else {
-                    res.status(400).json({
-                        message: 'Póliza no encontrada',
-                        status: 400
-                    });
+                    const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
+                    if (isPolicyExist) {
+                        const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
+                        if (client) {
+                            sendSMSClientPolicy(client.phoneNumber);
+                            const update = { verificationCode: CodeValidator };
+                            const clienteActualizado = yield Client_1.ClientsModel.findByIdAndUpdate(_id, update);
+                            if (clienteActualizado) {
+                                const clientExternalId = client.externalId;
+                                const phoneNumber = client.phoneNumber;
+                                res.status(200).json({
+                                    clientExternalId,
+                                    phoneNumber,
+                                    status: 200
+                                });
+                            }
+                            else {
+                                res.status(400).json({
+                                    message: 'Ocurrio un error',
+                                    status: 400
+                                });
+                            }
+                        }
+                    }
+                    else {
+                        res.status(203).json({
+                            message: 'Póliza no encontrada',
+                            status: 203
+                        });
+                    }
                 }
             }
             catch (error) {
@@ -721,7 +732,7 @@ class UserController {
                 }
                 else if (valRes === true) {
                     res.status(208).json({
-                        message: 'Ya tienes sincronizadas todas las pólizas de este usuario',
+                        data: 'Ya tienes sincronizadas todas las pólizas de este usuario',
                         status: 208
                     });
                 }
@@ -1064,12 +1075,12 @@ function sendSMSClientPolicy(phone) {
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     // instantiating twilio
     const client = new twilio_1.Twilio(accountSid, authToken);
-    // send code verification
-    client.messages.create({
-        body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
-        from: '+18169346014',
-        to: `+52${phone}`
-    }).then(message => console.log(message.sid));
+    // // send code verification
+    // client.messages.create({
+    //   body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
+    //   from: '+18169346014',
+    //   to: `+52${phone}`
+    // }).then(message => console.log(message.sid));
     return (CodeValidator);
 }
 function isObjEmpty(obj) {

@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import mongoose_delete from 'mongoose-delete';
 
 // create an interface representing a document in MongoDB
 interface Clients {
@@ -17,6 +18,8 @@ const shema = new Schema<Clients>({
   verificationCode: { type: Number, required: false }
 },
 {timestamps: true});
+
+shema.plugin(mongoose_delete, { deletedAt : true, overrideMethods: 'all', indexFields: ['deletedAt'] });
 
 const ClientsModel = model<Clients>('Clients', shema);
 

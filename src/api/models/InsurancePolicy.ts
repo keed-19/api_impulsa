@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import mongoose_delete from 'mongoose-delete';
 
 // create an interface representing a document in MongoDB
 
@@ -28,6 +29,8 @@ const shema = new Schema<InsurancePolicies>({
   externalIdClient: { type: String, required: true }
 },
 {timestamps: true});
+
+shema.plugin(mongoose_delete, { deletedAt : true, overrideMethods: 'all', indexFields: ['deletedAt'] });
 
 const InsurancePoliciesModel = model<InsurancePolicies>('InsurancePolicies', shema);
 

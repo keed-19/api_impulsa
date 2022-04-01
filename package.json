@@ -20,6 +20,7 @@
   },
   "homepage": "https://gitlab.com/nestor_ronal09/impulsa-to-go-api#readme",
   "devDependencies": {
+    "@types/mongoose-delete": "^0.5.9",
     "nodemon": "^2.0.15"
   },
   "dependencies": {

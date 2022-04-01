@@ -608,37 +608,46 @@ class UserController {
     // const NumberPolice = parseInt(policyNumber);
     const _id = _req.params.clientId as Object;
     try {
-      const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
-
-      if (isPolicyExist) {
-        const client = await ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
-
-        if (client) {
-          sendSMSClientPolicy(client.phoneNumber);
-          const update = { verificationCode: CodeValidator };
-          const clienteActualizado = await ClientsModel.findByIdAndUpdate(_id, update);
-
-          if (clienteActualizado) {
-            const clientExternalId = client.externalId;
-            const phoneNumber = client.phoneNumber;
-
-            res.status(200).json({
-              clientExternalId,
-              phoneNumber,
-              status: 200
-            });
-          } else {
-            res.status(400).json({
-              message: 'Ocurrio un error',
-              status: 400
-            });
-          }
-        }
-      } else {
-        res.status(400).json({
-          message: 'Póliza no encontrada',
-          status: 400
+      const validarClient = await ClientsModel.findOne({ _id: _id });
+      const externalIdClient = await validarClient?.externalId;
+      const validarPolicyProp = await InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient, policyNumber: policyNumber });
+      if(validarPolicyProp) {
+        res.status(203).json({
+          message: 'No pudes vincular tus propias pólizas',
+          status: 203
         });
+      } else {
+        const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
+        if (isPolicyExist) {
+          const client = await ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
+
+          if (client) {
+            sendSMSClientPolicy(client.phoneNumber);
+            const update = { verificationCode: CodeValidator };
+            const clienteActualizado = await ClientsModel.findByIdAndUpdate(_id, update);
+
+            if (clienteActualizado) {
+              const clientExternalId = client.externalId;
+              const phoneNumber = client.phoneNumber;
+
+              res.status(200).json({
+                clientExternalId,
+                phoneNumber,
+                status: 200
+              });
+            } else {
+              res.status(400).json({
+                message: 'Ocurrio un error',
+                status: 400
+              });
+            }
+          }
+        } else {
+          res.status(203).json({
+            message: 'Póliza no encontrada',
+            status: 203
+          });
+        }
       }
     } catch (error) {
       res.status(400).json({
@@ -740,7 +749,7 @@ class UserController {
         });
       } else if (valRes === true) {
         res.status(208).json({
-          message: 'Ya tienes sincronizadas todas las pólizas de este usuario',
+          data: 'Ya tienes sincronizadas todas las pólizas de este usuario',
           status: 208
         });
       } else if (valRes === false) {
@@ -1105,12 +1114,12 @@ function sendSMSClientPolicy (phone: String) {
   // instantiating twilio
   const client = new Twilio(accountSid, authToken);
 
-  // send code verification
-  client.messages.create({
-    body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
-    from: '+18169346014',
-    to: `+52${phone}`
-  }).then(message => console.log(message.sid));
+  // // send code verification
+  // client.messages.create({
+  //   body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
+  //   from: '+18169346014',
+  //   to: `+52${phone}`
+  // }).then(message => console.log(message.sid));
   return (CodeValidator);
 }
 

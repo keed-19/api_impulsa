@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import mongoose_delete from 'mongoose-delete';
 
 // create an interface representing a document in MongoDB
 
@@ -24,6 +25,8 @@ const shema = new Schema<RegisterRequest>({
   tokenTotp: { type: String, required: true }
 },
 {timestamps: true});
+
+shema.plugin(mongoose_delete, { deletedAt : true, overrideMethods: 'all', indexFields: ['deletedAt'] });
 
 const RegisterRequestModel = model<RegisterRequest>('RegisterRequest', shema);
 

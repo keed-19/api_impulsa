@@ -4,6 +4,7 @@ import { InsurancePoliciesModel } from '../models/InsurancePolicy';
 import { InsuranceModel } from '../models/Insurance';
 import fs from 'fs';
 import { ClientsModel } from '../models/Client';
+import { UsersModel } from '../models/User';
 
 /** My class of Impulsa controller */
 class ImpulsaController {
@@ -349,7 +350,9 @@ class ImpulsaController {
             status: 400
           });
         } else {
-          isTelefonoExist.remove();
+          await isTelefonoExist.delete();
+          const User = await UsersModel.findOne({ clientId : isTelefonoExist._id });
+          await User?.delete();
           res.status(200).json({
             message: 'El cliente se elimino correctamente',
             status: 200
@@ -377,7 +380,7 @@ class ImpulsaController {
           });
         } else {
           await fs.unlinkSync('src/uploads/' + isPolicyExist.fileUrl);
-          await isPolicyExist.remove();
+          await isPolicyExist.delete();
           res.status(200).json({
             message: 'La poliza se elimino correctamente',
             status: 200
@@ -653,7 +656,7 @@ class ImpulsaController {
             status: 400
           });
         } else {
-          await isInsuranceExist.remove();
+          await isInsuranceExist.delete();
           res.status(200).json({
             message: 'La aseguradora se elimino correctamente',
             status: 200
