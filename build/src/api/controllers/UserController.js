@@ -1075,12 +1075,12 @@ function sendSMSClientPolicy(phone) {
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     // instantiating twilio
     const client = new twilio_1.Twilio(accountSid, authToken);
-    // // send code verification
-    // client.messages.create({
-    //   body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
-    //   from: '+18169346014',
-    //   to: `+52${phone}`
-    // }).then(message => console.log(message.sid));
+    // send code verification
+    client.messages.create({
+        body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
+        from: '+18169346014',
+        to: `+52${phone}`
+    }).then(message => console.log(message.sid));
     return (CodeValidator);
 }
 function isObjEmpty(obj) {
