@@ -461,11 +461,28 @@ class ImpulsaController {
           });
         } else {
           if (!file) {
-            // const error = new Error('Se necesita el archivo para realizar la actualización');
-            return res.status(400).json({
-              message: 'Se necesita el archivo PDF para poder realizar la actualización',
-              status: 400
-            });
+            const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
+
+            if (isPolicyExist) {
+              const _id = isPolicyExist._id;
+              await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
+              try {
+                // await InsurancePoliciesModel.findByIdAndUpdate(_id, data);
+                const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
+                res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
+              } catch (error) {
+                fs.unlinkSync(`${_req.file?.path}`);
+                return res.status(400).send({
+                  message: `Error al actualizar la poliza: ${error}`,
+                  status: 400
+                });
+              }
+            } else {
+              res.status(400).json({
+                message: 'No se encuentra la póliza',
+                status: 400
+              });
+            }
           } else if (file.mimetype === 'application/pdf') {
             const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
 

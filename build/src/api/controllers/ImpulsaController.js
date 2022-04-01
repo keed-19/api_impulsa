@@ -455,7 +455,7 @@ class ImpulsaController {
         });
         // actualizar poliza
         this.UpdatePoliza = (_req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _c, _d;
+            var _c, _d, _e;
             res.set('Access-Control-Allow-Origin', '*');
             const file = _req.file;
             const externalId = _req.params.externalId;
@@ -472,11 +472,29 @@ class ImpulsaController {
                 }
                 else {
                     if (!file) {
-                        // const error = new Error('Se necesita el archivo para realizar la actualización');
-                        return res.status(400).json({
-                            message: 'Se necesita el archivo PDF para poder realizar la actualización',
-                            status: 400
-                        });
+                        const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalId: externalId });
+                        if (isPolicyExist) {
+                            const _id = isPolicyExist._id;
+                            yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, update);
+                            try {
+                                // await InsurancePoliciesModel.findByIdAndUpdate(_id, data);
+                                const updatePoliceNow = yield InsurancePolicy_1.InsurancePoliciesModel.findById(_id);
+                                res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
+                            }
+                            catch (error) {
+                                fs_1.default.unlinkSync(`${(_c = _req.file) === null || _c === void 0 ? void 0 : _c.path}`);
+                                return res.status(400).send({
+                                    message: `Error al actualizar la poliza: ${error}`,
+                                    status: 400
+                                });
+                            }
+                        }
+                        else {
+                            res.status(400).json({
+                                message: 'No se encuentra la póliza',
+                                status: 400
+                            });
+                        }
                     }
                     else if (file.mimetype === 'application/pdf') {
                         const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalId: externalId });
@@ -489,7 +507,7 @@ class ImpulsaController {
                                 res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
                             }
                             catch (error) {
-                                fs_1.default.unlinkSync(`${(_c = _req.file) === null || _c === void 0 ? void 0 : _c.path}`);
+                                fs_1.default.unlinkSync(`${(_d = _req.file) === null || _d === void 0 ? void 0 : _d.path}`);
                                 return res.status(400).send({
                                     message: `Error al actualizar l apoliza: ${error}`,
                                     status: 400
@@ -504,7 +522,7 @@ class ImpulsaController {
                         }
                     }
                     else {
-                        fs_1.default.unlinkSync(`${(_d = _req.file) === null || _d === void 0 ? void 0 : _d.path}`);
+                        fs_1.default.unlinkSync(`${(_e = _req.file) === null || _e === void 0 ? void 0 : _e.path}`);
                         res.status(400).json({
                             message: 'No se cargo ningún archivo o no es un PDF',
                             status: 400
