@@ -111,7 +111,10 @@ class ImpulsaController {
       try {
         if (!file) {
           const error = new Error('Please upload a file');
-          return error;
+          res.status(400).json({
+            message: 'Se nececesita el archivo PDF: '+error,
+            status: 400
+          });
         } else if (file.mimetype === 'application/pdf') {
           /** search Number phone in the data base */
           const isUserExist = await ClientsModel.findOne({ externalId: _req.params.externalIdClient });
