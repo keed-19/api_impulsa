@@ -173,6 +173,7 @@ class ImpulsaController {
                       UserPolicy: [
                                     `InsurerName : ${user.insuranceId}`,
                                     `PolicyNumber : ${user.policyNumber}`,
+                                    `alias : ${user.alias}`,
                                     `PolicyType : ${user.policyType}`,
                                     `EffectiveDate : ${user.effectiveDate}`,
                                     `ExpirationDate : ${user.expirationDate}`,
