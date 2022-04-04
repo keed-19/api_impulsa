@@ -151,7 +151,7 @@ class ImpulsaController {
                                 const number = _req.body.policyNumber;
                                 // asignando la aseguradora a la poliza
                                 const insuranceId = _req.body.insuranceId;
-                                const isInsuranceExist = yield Insurance_1.InsuranceModel.findOne({ insuranceId: insuranceId });
+                                const isInsuranceExist = yield Insurance_1.InsuranceModel.findOne({ externalId: insuranceId });
                                 if (isInsuranceExist) {
                                     try {
                                         const aseguradora = isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name;

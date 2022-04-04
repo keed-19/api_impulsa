@@ -144,7 +144,7 @@ class ImpulsaController {
                 // asignando la aseguradora a la poliza
                 const insuranceId = _req.body.insuranceId;
 
-                const isInsuranceExist = await InsuranceModel.findOne({ insuranceId: insuranceId });
+                const isInsuranceExist = await InsuranceModel.findOne({ externalId: insuranceId });
 
                 if (isInsuranceExist) {
                   try {
