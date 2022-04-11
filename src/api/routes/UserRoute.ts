@@ -69,6 +69,9 @@ UserRoute.put('/app/restorepass', UserController.restorePass);
 // lista de aseguradoras
 UserRoute.get('/app/viewInsurances', ImpulsaController.ViewInsurances);
 
+// ver notificaciones push
+UserRoute.get('/app/notifications/:externalId', UserController.ViewNotificationsPush);
+
 
 /**
  * CRUD DE POLIZAS
@@ -135,5 +138,8 @@ UserRoute.delete('/sync/delete/insurances/:externalId', [syncMiddleware.veryfyCr
 
 // actualizar aseguradora
 UserRoute.put('/sync/update/insurances/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.UpdateInsurance]);
+
+// enviar notificaciones PUSH a un cliente por su externalId
+UserRoute.post('/sync/push/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.sendPush]);
 
 export default UserRoute;

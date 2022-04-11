@@ -7,13 +7,15 @@ interface Users {
     password : String;
     email : String;
     clientId : String;
+    firebaseToken : String;
 }
 
 const shema = new Schema<Users>({
   username: { type: String, required: true },
   password: { type: String, required: true },
   email: { type: String, required: true },
-  clientId: { type: String, required: true }
+  clientId: { type: String, required: true },
+  firebaseToken: { type: String, required: false }
 },
 {timestamps: true});
 

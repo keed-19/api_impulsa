@@ -15,9 +15,9 @@ const shema = new Schema<Insurance>({
   externalId: { type: Number, required: true },
   name: { type: String, required: true },
   phoneNumber: { type: String, required: true },
-  iconCode: { type: String, required: true },
-  colorCode: { type: String, required: true },
-  instructions: { type: [], required: true },
+  iconCode: { type: String, required: false },
+  colorCode: { type: String, required: false },
+  instructions: { type: [], required: false },
 },
 {timestamps: true});
 
