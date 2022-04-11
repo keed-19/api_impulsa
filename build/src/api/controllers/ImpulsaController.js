@@ -17,6 +17,9 @@ const Insurance_1 = require("../models/Insurance");
 const fs_1 = __importDefault(require("fs"));
 const Client_1 = require("../models/Client");
 const User_1 = require("../models/User");
+const axios_1 = __importDefault(require("axios"));
+const NotificatiosPush_1 = require("../models/NotificatiosPush");
+const mongoose_1 = require("mongoose");
 /** My class of Impulsa controller */
 class ImpulsaController {
     constructor() {
@@ -756,6 +759,71 @@ class ImpulsaController {
                     message: 'Ocurrio un error: ' + error,
                     status: 400
                 });
+            }
+        });
+        // notificaciones push
+        this.sendPush = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            const title = _req.body.title;
+            const notification = _req.body.notification;
+            const externalId = _req.params.externalId;
+            try {
+                const client = yield Client_1.ClientsModel.findOne({ externalId: externalId });
+                if (client) {
+                    const _id = JSON.stringify(client === null || client === void 0 ? void 0 : client._id);
+                    const search = _id.slice(1, -1);
+                    const user = yield User_1.UsersModel.findOne({ clientId: search });
+                    const firebaseToken = user === null || user === void 0 ? void 0 : user.firebaseToken;
+                    console.log(search);
+                    // token omar: cOqymngbRTyswgSRVOgwQu:APA91bFZYKtqTPNZESfxau0jnI1PS8klEybOhcif2FxON20xuEgGnFitw0uh5OrGa-Ae3LxUWoWtWuQzV67uHKlNVbvIXl-Sh7NOhMpNPT-HLt2BiyVV7Pg7kp9ohaxN0q6dn1HSmFrL
+                    var data = {
+                        "to": `${firebaseToken}`,
+                        "notification": {
+                            "sound": "default",
+                            "body": `${notification}`,
+                            "title": `${title}`,
+                            "content_available": true,
+                            "priority": "high"
+                        }
+                    };
+                    const instance = yield axios_1.default.create({
+                        baseURL: 'https://fcm.googleapis.com/',
+                        timeout: 1000,
+                        headers: {
+                            'Authorization': 'key=AAAAny8l8OY:APA91bGrXyb9VlVzVQoBsNxUvCt6wqQFqgiMWMdTk-ov1ba_jW97uUX4Bz-lNPCbYPFnCe-QEcY2zKAE7Vv7I4egBguBgU3ZDQ3u4MLbNgMyo1u5dNGHSjfYgfuOJFTgcLdUtJs9_9fG',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const notificationPush = new NotificatiosPush_1.NotificationPushModel({
+                        type: 'APP',
+                        title: title,
+                        notification: notification,
+                        date: (0, mongoose_1.now)(),
+                        externalIdClient: externalId
+                    });
+                    yield notificationPush.save();
+                    instance.post('fcm/send', data)
+                        .then(function (response) {
+                        res.status(200).json({
+                            message: `La notificación se ha enviado de manera correcta: ${response.data}`,
+                            status: 200
+                        });
+                    })
+                        .catch(function (error) {
+                        res.status(400).json({
+                            message: 'Ocurrio un error: ' + error,
+                            status: 400
+                        });
+                    });
+                }
+                else {
+                    res.status(400).json({
+                        message: 'No se encuentra el Cliente',
+                        status: 400
+                    });
+                }
+            }
+            catch (error) {
+                res.send({ 'Ocurrio un error ': error });
             }
         });
     }

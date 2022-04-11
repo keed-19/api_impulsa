@@ -1035,10 +1035,7 @@ class UserController {
     try {
       const isNotificationExist = await NotificationPushModel.find({ externalIdClient: externalId }, { _id: 0, __v: 0 });
       if (isNotificationExist) {
-        res.status(200).json({
-          data: isNotificationExist,
-          status: 200
-        });
+        res.status(200).json(isNotificationExist);
       } else {
         res.status(204).json({
           message: 'No hay notificaciones',

@@ -21,6 +21,7 @@ const User_1 = require("../models/User");
 const fs_1 = __importDefault(require("fs"));
 const ExternalPolicyClinet_1 = require("../models/ExternalPolicyClinet");
 const Insurance_1 = require("../models/Insurance");
+const NotificatiosPush_1 = require("../models/NotificatiosPush");
 /** Variable for verification code */
 let cadena = '';
 let cadenaReenvio = '';
@@ -197,6 +198,8 @@ class UserController {
         */
         this.register = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
+            console.log(_req.body.tokenSMS);
+            console.log(_req.body);
             /** search Number phone in the data base */
             try {
                 const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
@@ -210,7 +213,7 @@ class UserController {
                         const fechaString = JSON.stringify(fechaN);
                         const fechaVlidador = fechaString.substring(1, 11);
                         if (isTelefonoExist.fullName === fullName && fechaVlidador === _req.body.birthday) {
-                            ramdom(_req.body.phoneNumber);
+                            ramdom(_req.body.phoneNumber, _req.body.tokenSMS);
                             // instantiating the model for save data
                             const user = new RegisterRequest_1.RegisterRequestModel({
                                 firstName: _req.body.firstName,
@@ -248,7 +251,7 @@ class UserController {
                     }
                     else {
                         // send verification code to number phone of the user
-                        ramdom(_req.body.phoneNumber);
+                        ramdom(_req.body.phoneNumber, _req.body.tokenSMS);
                         // instantiating the model for save data
                         const user = new RegisterRequest_1.RegisterRequestModel({
                             firstName: _req.body.firstName,
@@ -299,40 +302,58 @@ class UserController {
         * @returns {Json}
         */
         this.login = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _a;
             res.set('Access-Control-Allow-Origin', '*');
             const pass = _req.body.password;
             const numuser = _req.body.phoneNumber;
             // search user
             try {
-                const user = yield User_1.UsersModel.findOne({ username: numuser });
-                if (!user) {
-                    return res.status(203).send({
-                        message: 'Credenciales incorrectas',
-                        status: 203
-                    });
-                }
-                else if (user.password === pass) {
-                    // search user in model clients
-                    const searchclient = yield Client_1.ClientsModel.findOne({ phoneNumber: numuser });
-                    const payload = {
-                        email: user.email,
-                        userId: user._id
-                    };
-                    const token = yield jsonwebtoken_1.default.sign(payload, process.env.TOKEN_SECRET || '', { expiresIn: '7d' });
-                    // send request
-                    yield res.status(200).json({
-                        status: 200,
-                        data: { token },
-                        name: searchclient === null || searchclient === void 0 ? void 0 : searchclient.fullName,
-                        external_id: searchclient === null || searchclient === void 0 ? void 0 : searchclient.externalId,
-                        id: searchclient === null || searchclient === void 0 ? void 0 : searchclient._id,
-                        phoneNumber: user.username
-                    });
+                const tokenFirebase = (_a = _req.body.tokenFirebase) === null || _a === void 0 ? void 0 : _a.slice(1, -1);
+                console.log(tokenFirebase);
+                if (tokenFirebase !== undefined || tokenFirebase === undefined) {
+                    const user = yield User_1.UsersModel.findOne({ username: numuser });
+                    if (!user) {
+                        return res.status(203).send({
+                            message: 'Credenciales incorrectas',
+                            status: 203
+                        });
+                    }
+                    else if (user.password === pass) {
+                        // search user in model clients
+                        const searchclient = yield Client_1.ClientsModel.findOne({ phoneNumber: numuser });
+                        // guardando el token de firebase
+                        const update = {
+                            firebaseToken: tokenFirebase
+                        };
+                        // guardando el firebaseToken en el modelo usuario
+                        yield user.updateOne(update);
+                        // generando token de acceso
+                        const payload = {
+                            email: user.email,
+                            userId: user._id
+                        };
+                        const token = yield jsonwebtoken_1.default.sign(payload, process.env.TOKEN_SECRET || '', { expiresIn: '7d' });
+                        // send request
+                        yield res.status(200).json({
+                            status: 200,
+                            data: { token },
+                            name: searchclient === null || searchclient === void 0 ? void 0 : searchclient.fullName,
+                            external_id: searchclient === null || searchclient === void 0 ? void 0 : searchclient.externalId,
+                            id: searchclient === null || searchclient === void 0 ? void 0 : searchclient._id,
+                            phoneNumber: user.username
+                        });
+                    }
+                    else {
+                        return res.status(200).json({
+                            message: 'Credenciales incorrectas',
+                            status: 203
+                        });
+                    }
                 }
                 else {
-                    return res.status(200).json({
-                        message: 'Credenciales incorrectas',
-                        status: 203
+                    res.status(400).json({
+                        message: 'Se necesita el token',
+                        status: 400
                     });
                 }
             }
@@ -348,133 +369,127 @@ class UserController {
             res.set('Access-Control-Allow-Origin', '*');
             const _id = _req.params.id;
             try {
+                let misPolizas = {};
+                let polizasExternal = [];
+                const myPolicies = [];
+                const policyMe = [];
+                const policyIdExternal = [];
+                let policyExternalClients = [];
+                let externalP = {};
+                const policyExternal = [];
+                let respuesta = [];
+                // const ValorespolicyExternal:Array<any> = [];
+                // const policyIdExternalUnique:Array<any> = [];
                 const isClientExist = yield Client_1.ClientsModel.findById(_id);
-                // buscar polizas propias
-                const externalIdPropio = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.externalId;
-                const polizasPropias = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdPropio });
-                const id = _id;
-                // buscar polizas asociadas
-                const polizasExternas = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: id });
-                // console.log(polizasExternas);
-                if (!isClientExist) {
-                    res.status(400).json({
-                        message: 'No eres cliente de impulsa',
-                        status: 400
+                const externalId = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.externalId;
+                // guardando la respuesta de las polizas propias
+                const polizasPropias = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalId });
+                polizasPropias.forEach(item => {
+                    policyMe.push({
+                        _id: item._id
+                        // alias: item.alias,
+                        // policyType: item.policyType,
+                        // status: item.status
                     });
-                }
-                else if (isClientExist && polizasPropias && polizasExternas) {
-                    // mapear las polizas asociadas para mandarlas en la respuesta
-                    const policyRatings = [];
-                    const policyMe = [];
-                    // let mostrarArray:Array<any> = [];
-                    const mostrarPolizas = [];
-                    const ClientProp = yield Client_1.ClientsModel.findOne({ externalId: externalIdPropio });
-                    const policyProp = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp.externalId });
-                    policyProp.forEach(item => {
-                        policyMe.push({
-                            _id: item._id,
-                            alias: item.alias,
-                            policyType: item.policyType,
-                            status: item.status
-                        });
-                    });
-                    const misPolizas = {
-                        _id: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp._id,
-                        Nombre: ClientProp === null || ClientProp === void 0 ? void 0 : ClientProp.fullName,
-                        polizas: policyMe
+                });
+                // buscando el numero de telefono de la aseguradora
+                for (let x = 0; x < policyMe.length; x++) {
+                    const id = policyMe[x]._id;
+                    const polisa = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id });
+                    const insurance = polisa === null || polisa === void 0 ? void 0 : polisa.insuranceId;
+                    const numberPhone = yield Insurance_1.InsuranceModel.findOne({ externalId: insurance });
+                    const polizas = {
+                        _id: polisa === null || polisa === void 0 ? void 0 : polisa._id,
+                        policyType: polisa === null || polisa === void 0 ? void 0 : polisa.policyType,
+                        alias: polisa === null || polisa === void 0 ? void 0 : polisa.alias,
+                        phoneNumber: numberPhone === null || numberPhone === void 0 ? void 0 : numberPhone.phoneNumber
                     };
-                    polizasExternas.forEach(item => {
-                        policyRatings.push({
-                            externalIdClient: item.externalIdClient,
-                            IdClient: item.IdClient
+                    myPolicies.push(polizas);
+                    // console.log(polisa);
+                }
+                // mis polizas en formato de respuesta
+                misPolizas = {
+                    _id: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist._id,
+                    Nombre: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.fullName,
+                    polizas: myPolicies
+                };
+                // console.log(misPolizas);
+                // guardando los externalId de las polizas externas
+                const polizasExternas = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: _id });
+                polizasExternas.forEach(item => {
+                    policyIdExternal.push({
+                        externalIdClient: item.externalIdClient
+                    });
+                });
+                // eliminando los externalId repetidos en el arreglo policyIdExternal
+                const uniqueArray = policyIdExternal.filter((thing, index) => {
+                    return index === policyIdExternal.findIndex(obj => {
+                        return JSON.stringify(obj) === JSON.stringify(thing);
+                    });
+                });
+                // guardando las polizas externas de los clientes vinculados
+                for (let j = 0; j < uniqueArray.length; j++) {
+                    policyExternalClients = [];
+                    // eslint-disable-next-line no-unused-vars
+                    polizasExternal = [];
+                    const id = uniqueArray[j].externalIdClient;
+                    // buscar el cliente con el externalId
+                    const client = yield Client_1.ClientsModel.findOne({ externalId: id });
+                    const polizasClientsExternal = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: _id, externalIdClient: id });
+                    polizasClientsExternal.forEach(item => {
+                        policyExternalClients.push({
+                            externalIdPolicy: item.externalIdPolicy,
+                            alias: item.alias
                         });
                     });
-                    const uniqueArray = policyRatings.filter((thing, index) => {
-                        return index === policyRatings.findIndex(obj => {
-                            return JSON.stringify(obj) === JSON.stringify(thing);
-                        });
-                    });
-                    // guardando en un arreglo las polizas externas
-                    const arrayLenght = uniqueArray.length;
-                    // var IdClient;
-                    for (let i = 0; i < arrayLenght; i++) {
-                        const externalIdClient = polizasExternas[i].externalIdClient;
-                        // IdClient = polizasExternas[i].IdClient;
-                        const policyExternalClient = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ externalIdClient: externalIdClient });
-                        // provando la rspuesta para validar
-                        policyExternalClient.forEach(item => {
-                            mostrarPolizas.push({
-                                id: item._id,
-                                externalIdClient: item.externalIdClient,
-                                IdClient: item.IdClient
-                            });
-                        });
+                    for (let i = 0; i < policyExternalClients.length; i++) {
+                        externalP = {};
+                        const idPolicy = policyExternalClients[i].externalIdPolicy;
+                        const polizas = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: idPolicy });
+                        const idInsurance = polizas === null || polizas === void 0 ? void 0 : polizas.insuranceId;
+                        const polizasModeloExternal = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ externalIdPolicy: idPolicy, IdClient: _id });
+                        const insurance = yield Insurance_1.InsuranceModel.findOne({ externalId: idInsurance });
+                        externalP = {
+                            _id: polizasModeloExternal === null || polizasModeloExternal === void 0 ? void 0 : polizasModeloExternal._id,
+                            policyType: polizas === null || polizas === void 0 ? void 0 : polizas.policyType,
+                            alias: polizasModeloExternal === null || polizasModeloExternal === void 0 ? void 0 : polizasModeloExternal.alias,
+                            phoneNumber: insurance === null || insurance === void 0 ? void 0 : insurance.phoneNumber
+                        };
+                        polizasExternal.push(externalP);
                     }
-                    const mostrarPolizasexter = [];
-                    const validador = [];
-                    for (let j = 0; j < mostrarPolizas.length; j++) {
-                        // console.log(mostrarPolizas[j])
-                        const id = mostrarPolizas[j].id;
-                        const IdClientSee = mostrarPolizas[j].IdClient;
-                        const externalIdClient = mostrarPolizas[j].externalIdClient;
-                        const idp = _id;
-                        if (idp === IdClientSee) {
-                            const policyExternalClient = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ _id: id });
-                            const ExternalClient = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
-                            validador.push(policyExternalClient);
-                            const mostrar = [{
-                                    _id: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.externalId,
-                                    Nombre: ExternalClient === null || ExternalClient === void 0 ? void 0 : ExternalClient.fullName,
-                                    polizas: [policyExternalClient]
-                                }];
-                            mostrarPolizasexter.push(mostrar);
-                            // console.log(policyExternalClient)
+                    const polizasClientesExternos = {
+                        _id: client === null || client === void 0 ? void 0 : client._id,
+                        Nombre: client === null || client === void 0 ? void 0 : client.fullName,
+                        polizas: polizasExternal
+                    };
+                    policyExternal.push(polizasClientesExternos);
+                }
+                // asignando la respuesta con el formato incorrecto
+                respuesta = [[misPolizas], policyExternal];
+                const plano = respuesta.reduce((acc, el) => acc.concat(el), []);
+                const plano2 = plano.reduce((acc, el) => acc.concat(el), []);
+                // metodo para convertir la respuesta en un formato correcto
+                const newUsers = (resp) => {
+                    const usersFiltered = resp.reduce((acc, user) => {
+                        // let policyExtracted = {} as any;
+                        const userRepeated = acc.filter((propsUser) => propsUser._id === user._id);
+                        if (userRepeated.length === 0) {
+                            acc.push(user);
                         }
                         else {
-                            console.log('este no: ', mostrarPolizas[j]);
+                            const indexRepeated = acc.findIndex((element) => element._id === user._id);
+                            const policyExtracted = user.polizas;
+                            for (const i in policyExtracted) {
+                                acc[indexRepeated].polizas.push(policyExtracted[i]);
+                            }
                         }
-                    }
-                    // console.log(uniqueArrayExter)
-                    const respuestaGeneral = [[misPolizas], mostrarPolizasexter];
-                    const plano = respuestaGeneral.reduce((acc, el) => acc.concat(el), []);
-                    const plano2 = plano.reduce((acc, el) => acc.concat(el), []);
-                    // res.send(plano2);
-                    const newUsers = (resp) => {
-                        const usersFiltered = resp.reduce((acc, user) => {
-                            // let policyExtracted = {} as any;
-                            const userRepeated = acc.filter((propsUser) => propsUser._id === user._id);
-                            if (userRepeated.length === 0) {
-                                acc.push(user);
-                            }
-                            else {
-                                const indexRepeated = acc.findIndex((element) => element._id === user._id);
-                                const policyExtracted = user.polizas;
-                                for (const i in policyExtracted) {
-                                    acc[indexRepeated].polizas.push(policyExtracted[i]);
-                                }
-                            }
-                            return acc;
-                        }, []);
-                        return usersFiltered;
-                    };
-                    // const valorar = JSON.parse(mostrarPolizasexter);
-                    // console.log(newUsers(plano2))
-                    const valpoliceMy = yield isObjEmpty(policyMe);
-                    const valpoliceExt = yield isObjEmpty(validador);
-                    const verRespuesta = newUsers(plano2);
-                    if (valpoliceMy === true && valpoliceExt === true) {
-                        res.status(200).json([misPolizas]);
-                    }
-                    else {
-                        res.status(200).json(verRespuesta);
-                    }
-                }
-                else {
-                    res.status(400).json({
-                        message: 'Ocurrio un error',
-                        status: 400
-                    });
-                }
+                        return acc;
+                    }, []);
+                    return usersFiltered;
+                };
+                // utilizando el metodo para dar una respuesta con el formato correcto
+                const respuestaFormal = newUsers(plano2);
+                res.status(200).json(respuestaFormal);
             }
             catch (error) {
                 res.status(400).json({
@@ -691,26 +706,28 @@ class UserController {
             const policyRes = [];
             const FinalRes = [];
             try {
-                /** Search RegisterRequest with id parameter */
-                // viendo las polizas sincronizadas
-                const policySync = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: id });
-                const policyExternal = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
-                policySync.forEach(item => {
+                // guardamos las polizas externas del usuario con acceso a las polizas de un cliente
+                const externalIDClientViewer = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: id, externalIdClient: externalIdClient });
+                externalIDClientViewer.forEach(item => {
                     policySyncS.push({
                         Id: item.externalIdPolicy
                     });
                 });
-                policyExternal.forEach(item => {
+                // guardamos las polizas del usuario externo
+                const polizasClienteExterno = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
+                polizasClienteExterno.forEach(item => {
                     policyExternalS.push({
                         Id: JSON.stringify(item._id)
                     });
                 });
+                // quitamos las comillas de los _id de las polizas del usuario
                 for (let j = 0; j < policyExternalS.length; j++) {
                     // console.log(mostrarPolizas[j])
                     const id = policyExternalS[j].Id;
                     const valor = id.slice(1, -1);
                     policyRes.push({ Id: `${valor}` });
                 }
+                // quitar las polizas sincronizadas de las polizas del cliente externo
                 for (let j = 0; j < policySyncS.length; j++) {
                     const id = policySyncS[j].Id;
                     // buscando la pocicion del bojeto en el array
@@ -718,19 +735,14 @@ class UserController {
                     // eliminar el objeto del array;
                     policyRes.splice(indice, 1);
                 }
+                // guardar las polizas que seran devueltas al usuario en la respuesta
                 for (let j = 0; j < policyRes.length; j++) {
                     const id = policyRes[j].Id;
                     const policy = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id });
                     FinalRes.push(policy);
                 }
                 const valRes = yield isObjEmpty(FinalRes);
-                if (!policyExternal) {
-                    res.status(204).json({
-                        message: 'No se encuantran resultados',
-                        status: 204
-                    });
-                }
-                else if (valRes === true) {
+                if (valRes === true) {
                     res.status(208).json({
                         data: 'Ya tienes sincronizadas todas las pólizas de este usuario',
                         status: 208
@@ -992,6 +1004,29 @@ class UserController {
                 });
             }
         });
+        // ver lista de las notificaciones de un cliente
+        this.ViewNotificationsPush = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set('Access-Control-Allow-Origin', '*');
+            const externalId = _req.params.externalId;
+            try {
+                const isNotificationExist = yield NotificatiosPush_1.NotificationPushModel.find({ externalIdClient: externalId }, { _id: 0, __v: 0 });
+                if (isNotificationExist) {
+                    res.status(200).json(isNotificationExist);
+                }
+                else {
+                    res.status(204).json({
+                        message: 'No hay notificaciones',
+                        status: 204
+                    });
+                }
+            }
+            catch (error) {
+                res.status(400).json({
+                    message: 'Ocurrio un error: ' + error,
+                    status: 400
+                });
+            }
+        });
     }
 }
 /**
@@ -999,7 +1034,7 @@ class UserController {
  * @param {Number} phone Number phone User to send verification code
  * @returns {String} this value is the code verification
  */
-function ramdom(phone) {
+function ramdom(phone, tokenSMS) {
     // generating 4 random numbers
     const val1 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
     const val2 = Math.floor(Math.random() * (1 - 9 + 1) + 9);
@@ -1014,7 +1049,7 @@ function ramdom(phone) {
     const client = new twilio_1.Twilio(accountSid, authToken);
     // send code verification
     client.messages.create({
-        body: `Tu código de verificación es: ${cadena}`,
+        body: `<#> ${cadena} es tu código de verificación, ${tokenSMS}`,
         from: '+18169346014',
         to: `+52${phone}`
     }).then((message) => console.log(message.sid));
