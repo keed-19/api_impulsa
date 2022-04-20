@@ -8,6 +8,8 @@ import { UsersModel } from '../models/User';
 import axios from 'axios';
 import { NotificationPushModel } from '../models/NotificatiosPush';
 import { now } from 'mongoose';
+import { Status } from '../constants/const';
+import { ExternalPolicyClinetModel } from '../models/ExternalPolicyClinet';
 
 /** My class of Impulsa controller */
 class ImpulsaController {
@@ -111,11 +113,18 @@ class ImpulsaController {
     public SavePolice = async (_req: Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       const file = _req.file;
+      const status = _req.body.status;
+      const numUse = Status[status];
       try {
         if (!file) {
           const error = new Error('Please upload a file');
           res.status(400).json({
             message: 'Se nececesita el archivo PDF: '+error,
+            status: 400
+          });
+        } else if (numUse === undefined) {
+          res.status(400).json({
+            message: 'El status es invalido',
             status: 400
           });
         } else if (file.mimetype === 'application/pdf') {
@@ -162,7 +171,7 @@ class ImpulsaController {
                       alias: alias,
                       effectiveDate: _req.body.effectiveDate,
                       expirationDate: _req.body.expirationDate,
-                      status: _req.body.status,
+                      status: numUse,
                       fileUrl: file.filename,
                       externalId: _req.body.externalId,
                       externalIdClient: _req.params.externalIdClient
@@ -283,6 +292,7 @@ class ImpulsaController {
     public SaveClient = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       const phoneNumber = _req.body.phoneNumber;
+      const fullName = _req.body.fullName;
       const phone = phoneNumber.replace(/\s+/g, '');
       try {
         if (_req.body.phoneNumber === null) {
@@ -296,12 +306,12 @@ class ImpulsaController {
             status: 208
           });
         } else {
-          const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: phone });
+          const isfullNameExist = await ClientsModel.findOne({ fullName: fullName });
           const isEzternalIDExist = await ClientsModel.findOne({ externalId: _req.body.externalId });
 
-          if (isTelefonoExist) {
+          if (isfullNameExist) {
             return res.status(208).json({
-              error: 'El numero telefonico ya se encuentra registrado en la base de datos',
+              error: 'El nombre del cliente ya se encuentra registrado en la base de datos',
               status: 208
             });
           } else if (isEzternalIDExist) {
@@ -312,7 +322,7 @@ class ImpulsaController {
           } else {
             // instantiating the model for save data
             const client = new ClientsModel({
-              fullName: _req.body.fullName,
+              fullName: fullName,
               incorporationOrBirthDate: _req.body.incorporationOrBirthDate,
               phoneNumber: phone,
               externalId: _req.body.externalId
@@ -339,7 +349,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -456,6 +466,9 @@ class ImpulsaController {
       const file = _req.file;
       const externalId = _req.params.externalId;
       const update = _req.body;
+      const status = _req.body.status;
+      const numUse = Status[status];
+      const UpdateStatus = {status: numUse};
       try {
         const data = {
           fileUrl: file?.filename
@@ -466,6 +479,11 @@ class ImpulsaController {
             message: 'El externalId no se puede editar',
             status: 400
           });
+        } else if (numUse === undefined) {
+          res.status(400).json({
+            message: 'El status es invalido',
+            status: 400
+          });
         } else {
           if (!file) {
             const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
@@ -473,6 +491,13 @@ class ImpulsaController {
             if (isPolicyExist) {
               const _id = isPolicyExist._id;
               await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
+              if (status !== undefined) {
+                await InsurancePoliciesModel.findByIdAndUpdate(_id, UpdateStatus);
+                const idPolicy = JSON.stringify(_id);
+                const idActualizar = idPolicy.slice(1,-1);
+                const policyActualizar = await ExternalPolicyClinetModel.findOne({externalIdPolicy: idActualizar});
+                await ExternalPolicyClinetModel.findByIdAndUpdate(policyActualizar?._id, UpdateStatus);
+              }
               try {
                 // await InsurancePoliciesModel.findByIdAndUpdate(_id, data);
                 const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
@@ -490,7 +515,7 @@ class ImpulsaController {
                 status: 400
               });
             }
-          } else if (file.mimetype === 'application/pdf') {
+          } else if (file.mimetype === 'application/pdf' || status !== undefined) {
             const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
 
             if (isPolicyExist) {
@@ -498,6 +523,13 @@ class ImpulsaController {
               await InsurancePoliciesModel.findByIdAndUpdate(_id, update);
               try {
                 await InsurancePoliciesModel.findByIdAndUpdate(_id, data);
+                if (status !== undefined) {
+                  await InsurancePoliciesModel.findByIdAndUpdate(_id, UpdateStatus);
+                  const idPolicy = JSON.stringify(_id);
+                  const idActualizar = idPolicy.slice(1,-1);
+                  const policyActualizar = await ExternalPolicyClinetModel.findOne({externalIdPolicy: idActualizar});
+                  await ExternalPolicyClinetModel.findByIdAndUpdate(policyActualizar?._id, UpdateStatus);
+                }
                 const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
                 res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
               } catch (error) {
@@ -754,50 +786,69 @@ class ImpulsaController {
           const search = _id.slice(1, -1);
           const user = await UsersModel.findOne({ clientId: search });
           const firebaseToken = user?.firebaseToken;
-          console.log(search);
-          // token omar: cOqymngbRTyswgSRVOgwQu:APA91bFZYKtqTPNZESfxau0jnI1PS8klEybOhcif2FxON20xuEgGnFitw0uh5OrGa-Ae3LxUWoWtWuQzV67uHKlNVbvIXl-Sh7NOhMpNPT-HLt2BiyVV7Pg7kp9ohaxN0q6dn1HSmFrL
-          var data={
-            "to": `${firebaseToken}`,
-            "notification": {
-              "sound": "default",
-              "body": `${notification}`,
-              "title": `${title}`,
-              "content_available": true,
-              "priority": "high"
-            }
-          };
+          if (firebaseToken !== undefined) {
+            console.log(search);
+            // token omar: cOqymngbRTyswgSRVOgwQu:APA91bFZYKtqTPNZESfxau0jnI1PS8klEybOhcif2FxON20xuEgGnFitw0uh5OrGa-Ae3LxUWoWtWuQzV67uHKlNVbvIXl-Sh7NOhMpNPT-HLt2BiyVV7Pg7kp9ohaxN0q6dn1HSmFrL
+            var data={
+              "to": `${firebaseToken}`,
+              "notification": {
+                sound: 'default',
+                vibration: true,
+                body: `${notification}`,
+                title: `${title}`,
+                content_available: true,
+                priority: 'high'
+              },
+              "android": {
+                "notification": {
+                  sound: 'default',
+                  vibration: true,
+                }
+              },
+              "apns": {
+                "payload": {
+                  sound: 'default'
+                }
+              }
+            };
 
-          const instance = await axios.create({
-            baseURL: 'https://fcm.googleapis.com/',
-            timeout: 1000,
-            headers: {
-              'Authorization': 'key=AAAAny8l8OY:APA91bGrXyb9VlVzVQoBsNxUvCt6wqQFqgiMWMdTk-ov1ba_jW97uUX4Bz-lNPCbYPFnCe-QEcY2zKAE7Vv7I4egBguBgU3ZDQ3u4MLbNgMyo1u5dNGHSjfYgfuOJFTgcLdUtJs9_9fG', 
-              'Content-Type': 'application/json'
-            }
-          });
-
-          const notificationPush = new NotificationPushModel({
-            type: 'APP',
-            title: title,
-            notification: notification,
-            date: now(),
-            externalIdClient: externalId
-          });
-          await notificationPush.save();
-
-          instance.post('fcm/send', data)
-          .then(function (response) {
-            res.status(200).json({
-              message: `La notificación se ha enviado de manera correcta: ${response.data}`,
-              status: 200
+            const instance = await axios.create({
+              baseURL: 'https://fcm.googleapis.com/',
+              timeout: 1000,
+              headers: {
+                'Authorization': process.env.KEY_FIREBASE || '', 
+                'Content-Type': 'application/json'
+              }
             });
-          })
-          .catch(function (error) {
+
+            const notificationPush = new NotificationPushModel({
+              type: 'APP',
+              title: title,
+              notification: notification,
+              date: now(),
+              externalIdClient: externalId
+            });
+            await notificationPush.save();
+
+            instance.post('fcm/send', data)
+            .then(function (response) {
+              res.status(200).json({
+                message: `La notificación se ha enviado de manera correcta: ${response.data}`,
+                status: 200
+              });
+            })
+            .catch(function (error) {
+              res.status(400).json({
+                message: 'Ocurrio un error: ' + error,
+                status: 400
+              });
+            });
+          } else {
             res.status(400).json({
-              message: 'Ocurrio un error: ' + error,
+              message: 'El cliente no tiene el token de firebase',
               status: 400
             });
-          });
+          }
         } else {
           res.status(400).json({
             message: 'No se encuentra el Cliente',

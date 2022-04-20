@@ -6,6 +6,14 @@ import cors from 'cors';
 import UserRoute from './api/routes/UserRoute';
 import './config/database';
 
+/** Initializations of node_cron */
+import node_cron from 'node-cron';
+import UserController from './api/controllers/UserController';
+
+node_cron.schedule('0 6 * * *', function() {
+  UserController.SendNotificationPushClient();
+});
+
 /** Initializations */
 
 const options: cors.CorsOptions = {

@@ -72,6 +72,8 @@ UserRoute.get('/app/viewInsurances', ImpulsaController.ViewInsurances);
 // ver notificaciones push
 UserRoute.get('/app/notifications/:externalId', UserController.ViewNotificationsPush);
 
+UserRoute.get('/app/sendNotifications', UserController.SendNotificationPushClient);
+
 
 /**
  * CRUD DE POLIZAS

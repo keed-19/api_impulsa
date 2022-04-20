@@ -9,12 +9,18 @@ import { UsersModel } from '../models/User';
 import fs from 'fs';
 import { ExternalPolicyClinetModel } from '../models/ExternalPolicyClinet';
 import { InsuranceModel } from '../models/Insurance';
+import axios from 'axios';
 import { NotificationPushModel } from '../models/NotificatiosPush';
+import moment from 'moment';
+import { now } from 'mongoose';
+import { Status } from '../constants/const';
+moment().format();
 
 /** Variable for verification code */
 let cadena = '';
 let cadenaReenvio = '';
 let CodeValidator = '';
+let validador = false;
 
 /** My class of user controller */
 class UserController {
@@ -381,14 +387,12 @@ class UserController {
       const isClientExist = await ClientsModel.findById(_id as Object);
       const externalId = isClientExist?.externalId;
       // guardando la respuesta de las polizas propias
-      const polizasPropias = await InsurancePoliciesModel.find({ externalIdClient: externalId });
+      // const polizasPropias = await InsurancePoliciesModel.find({ externalIdClient: externalId, status: 'active' });
+      const polizasPropias = await InsurancePoliciesModel.find({ externalIdClient: externalId, status: {'$in': ['active', 'wasNotPaid']}});
       polizasPropias.forEach(item => {
         policyMe.push(
           {
             _id: item._id
-            // alias: item.alias,
-            // policyType: item.policyType,
-            // status: item.status
           }
         );
       });
@@ -396,7 +400,7 @@ class UserController {
       // buscando el numero de telefono de la aseguradora
       for (let x = 0; x < policyMe.length; x++) {
         const id = policyMe[x]._id;
-        const polisa = await InsurancePoliciesModel.findOne({ _id: id });
+        const polisa = await InsurancePoliciesModel.findOne({ _id: id, status: {'$in': ['active', 'wasNotPaid']} });
         const insurance = polisa?.insuranceId;
         const numberPhone = await InsuranceModel.findOne({ externalId: insurance });
         const polizas = {
@@ -418,7 +422,7 @@ class UserController {
       // console.log(misPolizas);
 
       // guardando los externalId de las polizas externas
-      const polizasExternas = await ExternalPolicyClinetModel.find({ IdClient: _id });
+      const polizasExternas = await ExternalPolicyClinetModel.find({ IdClient: _id, status: {'$in': ['active', 'wasNotPaid']} });
       polizasExternas.forEach(item => {
         policyIdExternal.push(
           {
@@ -442,7 +446,7 @@ class UserController {
         const id = uniqueArray[j].externalIdClient as String;
         // buscar el cliente con el externalId
         const client = await ClientsModel.findOne({ externalId: id });
-        const polizasClientsExternal = await ExternalPolicyClinetModel.find({ IdClient: _id, externalIdClient: id });
+        const polizasClientsExternal = await ExternalPolicyClinetModel.find({ IdClient: _id, externalIdClient: id, status: {'$in': ['active', 'wasNotPaid']} });
         polizasClientsExternal.forEach(item => {
           policyExternalClients.push(
             {
@@ -454,9 +458,9 @@ class UserController {
         for (let i = 0; i < policyExternalClients.length; i++) {
           externalP = {};
           const idPolicy = policyExternalClients[i].externalIdPolicy;
-          const polizas = await InsurancePoliciesModel.findOne({ _id: idPolicy });
+          const polizas = await InsurancePoliciesModel.findOne({ _id: idPolicy, status: {'$in': ['active', 'wasNotPaid']} });
           const idInsurance = polizas?.insuranceId;
-          const polizasModeloExternal = await ExternalPolicyClinetModel.findOne({ externalIdPolicy: idPolicy, IdClient: _id });
+          const polizasModeloExternal = await ExternalPolicyClinetModel.findOne({ externalIdPolicy: idPolicy, IdClient: _id, status: {'$in': ['active', 'wasNotPaid']} });
           const insurance = await InsuranceModel.findOne({ externalId: idInsurance });
           externalP = {
             _id: polizasModeloExternal?._id,
@@ -629,14 +633,14 @@ class UserController {
     try {
       const validarClient = await ClientsModel.findOne({ _id: _id });
       const externalIdClient = await validarClient?.externalId;
-      const validarPolicyProp = await InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient, policyNumber: policyNumber });
+      const validarPolicyProp = await InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient, policyNumber: policyNumber, status: {'$in': ['active', 'wasNotPaid']} });
       if (validarPolicyProp) {
         res.status(203).json({
           message: 'No pudes vincular tus propias pólizas',
           status: 203
         });
       } else {
-        const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
+        const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber, status: {'$in': ['active', 'wasNotPaid']} });
         if (isPolicyExist) {
           const client = await ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
 
@@ -717,7 +721,7 @@ class UserController {
 
     try {
       // guardamos las polizas externas del usuario con acceso a las polizas de un cliente
-      const externalIDClientViewer = await ExternalPolicyClinetModel.find({ IdClient: id, externalIdClient: externalIdClient });
+      const externalIDClientViewer = await ExternalPolicyClinetModel.find({ IdClient: id, externalIdClient: externalIdClient, status: {'$in': ['active', 'wasNotPaid']} });
       externalIDClientViewer.forEach(item => {
         policySyncS.push(
           {
@@ -727,7 +731,7 @@ class UserController {
       });
 
       // guardamos las polizas del usuario externo
-      const polizasClienteExterno = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
+      const polizasClienteExterno = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient, status: {'$in': ['active', 'wasNotPaid']} });
       polizasClienteExterno.forEach(item => {
         policyExternalS.push(
           {
@@ -758,7 +762,7 @@ class UserController {
       // guardar las polizas que seran devueltas al usuario en la respuesta
       for (let j = 0; j < policyRes.length; j++) {
         const id = policyRes[j].Id as Object;
-        const policy = await InsurancePoliciesModel.findOne({ _id: id });
+        const policy = await InsurancePoliciesModel.findOne({ _id: id, status: {'$in': ['active', 'wasNotPaid']} });
         FinalRes.push(policy);
       }
       const valRes = await isObjEmpty(FinalRes as object);
@@ -801,14 +805,15 @@ class UserController {
       // eslint-disable-next-line no-var
       for (var i = 0; i < arrayLenght; i++) {
         const _id = fromRoles[i];
-        const valores = await InsurancePoliciesModel.find({ _id: _id });
+        const valores = await InsurancePoliciesModel.find({ _id: _id, status: {'$in': ['active', 'wasNotPaid']} });
         valores.forEach(item => {
           policyViewSelect.push(
             {
               id: JSON.stringify(item._id),
               alias: item.alias,
               policyType: item.policyType,
-              externalIdClient: item.externalIdClient
+              externalIdClient: item.externalIdClient,
+              status: item.status
             }
           );
           // console.log(policyViewSelect)
@@ -823,7 +828,8 @@ class UserController {
         const alias = policyViewSelect[j].alias;
         const policyType = policyViewSelect[j].policyType;
         const externalIdClient = policyViewSelect[j].externalIdClient;
-        const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient };
+        const status = policyViewSelect[j].status;
+        const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient, status };
         // console.log(save);
         const savePolicy = new ExternalPolicyClinetModel(save);
         try {
@@ -900,6 +906,7 @@ class UserController {
           const policyDetail = {
             _id: isPolicyExist?._id,
             name: isInsuranceExist?.name,
+            iconCode: isInsuranceExist?.iconCode,
             phoneNumber: isInsuranceExist?.phoneNumber,
             alias: isPolicyExternalExist?.alias,
             status: isPolicyExist?.status,
@@ -994,6 +1001,7 @@ class UserController {
     }
   }
 
+  // restablecer contraseña
   public restorePass = async (_req: Request, res:Response) => {
     res.set('Access-Control-Allow-Origin', '*');
     const _id = _req.body.id as Object;
@@ -1047,6 +1055,154 @@ class UserController {
         message: 'Ocurrio un error: ' + error,
         status: 400
       });
+    }
+  }
+
+  // enviar notificaciones por fechas de polizas
+  public SendNotificationPushClient = async () => {
+    // arreglo para guardar los id de las polizas que estan por vencer
+    let policies:Array<any> = [];
+    const fechaMongo = moment.utc().format('YYYY-MM-DD');
+    const valorFechaunMes = moment(fechaMongo).add(1, 'months').format('YYYY-MM-DD');
+    const valorFechaQuinceDias = moment(fechaMongo).add({ days:15 }).format('YYYY-MM-DD');
+    const valorFechaHoy = moment(fechaMongo).format('YYYY-MM-DD');
+    console.log(valorFechaunMes);
+    console.log(valorFechaQuinceDias);
+    const fechasVenciminetoUnMes = await InsurancePoliciesModel.find({expirationDate: valorFechaunMes, status: 'active'});
+    // console.log(fechasVenciminetoUnMes);
+
+    if (fechasVenciminetoUnMes) {
+      fechasVenciminetoUnMes.forEach(item => {
+        policies.push(
+          {
+            externalIdClient: item.externalIdClient,
+            alias: item.alias
+          }
+        );
+      });
+
+      // sacando los externalId de los clientes
+      let uniqueArray = policies.filter((thing, index) => {
+        return index === policies.findIndex(obj => {
+          return JSON.stringify(obj) === JSON.stringify(thing);
+        });
+      });
+
+      // sacando la fecha en un formato reconocible para la validacion
+      for (let x = 0; x < uniqueArray.length; x++) {
+        const externalId = uniqueArray[x].externalIdClient;
+        const alias = uniqueArray[x].alias;
+        const client = await ClientsModel.findOne({ externalId: externalId });
+
+        const _id = JSON.stringify(client?._id);
+        const search = _id.slice(1, -1);
+        const user = await UsersModel.findOne({ clientId: search });
+        const firebaseToken = user?.firebaseToken;
+        SendNotifications(firebaseToken as String, externalId, `Su póliza: ${alias}, está a un mes de vencer`);
+        const notificationPush = new NotificationPushModel({
+          type: 'APP',
+          title: 'Impulsa',
+          notification: `Su póliza: ${alias}, está a un mes de vencer`,
+          date: now(),
+          externalIdClient: externalId
+        });
+        await notificationPush.save();
+      }
+      uniqueArray=[];
+      policies=[]
+      if (validador) {
+        validador=false;
+      }
+    }
+
+    const fechasVenciminetoQuinceDias = await InsurancePoliciesModel.find({expirationDate: valorFechaQuinceDias, status: 'active'});
+    if (fechasVenciminetoQuinceDias) {
+      fechasVenciminetoQuinceDias.forEach(item => {
+        policies.push(
+          {
+            externalIdClient: item.externalIdClient,
+            alias: item.alias
+          }
+        );
+      });
+
+      // sacando los externalId de los clientes
+      let uniqueArray = policies.filter((thing, index) => {
+        return index === policies.findIndex(obj => {
+          return JSON.stringify(obj) === JSON.stringify(thing);
+        });
+      });
+
+      // sacando la fecha en un formato reconocible para la validacion
+      for (let x = 0; x < uniqueArray.length; x++) {
+        const externalId = uniqueArray[x].externalIdClient;
+        const alias = uniqueArray[x].alias;
+        const client = await ClientsModel.findOne({ externalId: externalId });
+
+        const _id = JSON.stringify(client?._id);
+        const search = _id.slice(1, -1);
+        const user = await UsersModel.findOne({ clientId: search });
+        const firebaseToken = user?.firebaseToken;
+        SendNotifications(firebaseToken as String, externalId, `Su póliza: ${alias}, esta a 15 días de vencer`);
+        const notificationPush = new NotificationPushModel({
+          type: 'APP',
+          title: 'Impulsa',
+          notification: `Su póliza: ${alias}, esta a 15 días de vencer`,
+          date: now(),
+          externalIdClient: externalId
+        });
+        await notificationPush.save();
+      }
+      uniqueArray=[];
+      policies=[]
+      if (validador) {
+        validador=false;
+      }
+    }
+
+    const fechasVenciminetoNow = await InsurancePoliciesModel.find({expirationDate: valorFechaHoy, status: 'active'});
+    if (fechasVenciminetoNow) {
+      fechasVenciminetoNow.forEach(item => {
+        policies.push(
+          {
+            externalIdClient: item.externalIdClient,
+            alias: item.alias
+          }
+        );
+      });
+
+      // sacando los externalId de los clientes
+      let uniqueArray = policies.filter((thing, index) => {
+        return index === policies.findIndex(obj => {
+          return JSON.stringify(obj) === JSON.stringify(thing);
+        });
+      });
+
+      // sacando la fecha en un formato reconocible para la validacion
+      for (let x = 0; x < uniqueArray.length; x++) {
+        const externalId = uniqueArray[x].externalIdClient;
+        const alias = uniqueArray[x].alias;
+        const client = await ClientsModel.findOne({ externalId: externalId });
+
+        const _id = JSON.stringify(client?._id);
+        const search = _id.slice(1, -1);
+        const user = await UsersModel.findOne({ clientId: search });
+        const firebaseToken = user?.firebaseToken;
+        SendNotifications(firebaseToken as String, externalId, `Su póliza: ${alias}, vence el día de hoy`);
+        const notificationPush = new NotificationPushModel({
+          type: 'APP',
+          title: 'Impulsa',
+          notification: `Su póliza: ${alias}, vence el día de hoy`,
+          date: now(),
+          externalIdClient: externalId
+        });
+        await notificationPush.save();
+      }
+      uniqueArray=[];
+      policies=[]
+      if (validador) {
+        validador=false;
+      }
     }
   }
 }
@@ -1152,12 +1308,12 @@ function sendSMSClientPolicy (phone: String) {
   // instantiating twilio
   const client = new Twilio(accountSid, authToken);
 
-  // send code verification
-  client.messages.create({
-    body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
-    from: '+18169346014',
-    to: `+52${phone}`
-  }).then(message => console.log(message.sid));
+  // // send code verification
+  // client.messages.create({
+  //   body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
+  //   from: '+18169346014',
+  //   to: `+52${phone}`
+  // }).then(message => console.log(message.sid));
   return (CodeValidator);
 }
 
@@ -1168,6 +1324,55 @@ function isObjEmpty (obj:Object) {
   }
 
   return true;
+}
+
+function SendNotifications (firebaseToken: String, externalId: Number, body: String) {
+  try {
+    var data={
+      "to": `${firebaseToken}`,
+      "notification": {
+        "sound": "default",
+        "body": `${body}`,
+        "title": "Impulsa",
+        "content_available": true,
+        "priority": "high"
+      }
+    };
+
+    const instance = axios.create({
+      baseURL: 'https://fcm.googleapis.com/',
+      timeout: 1000,
+      headers: {
+        'Authorization': process.env.KEY_FIREBASE || '', 
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const notificationPush = new NotificationPushModel({
+      type: 'APP',
+      title: 'impulsa',
+      notification: body,
+      date: now(),
+      externalIdClient: externalId
+    });
+    notificationPush.save();
+
+    instance.post('fcm/send', data);
+
+    return validador = true;
+  } catch (error) {
+    const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
+    const authToken = process.env.TWILIO_AUTH_TOKEN as string;
+
+    const client = new Twilio(accountSid, authToken);
+
+    client.messages.create({
+      body: `Las Notificaciones no se enviaron`,
+      from: '+18169346014',
+      to: `+529192389847`
+    }).then(message => console.log(message.sid));
+    return validador = false;
+  }
 }
 
 export default new UserController();
