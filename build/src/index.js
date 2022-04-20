@@ -9,6 +9,12 @@ const cors_1 = __importDefault(require("cors"));
 /** Import Routes */
 const UserRoute_1 = __importDefault(require("./api/routes/UserRoute"));
 require("./config/database");
+/** Initializations of node_cron */
+const node_cron_1 = __importDefault(require("node-cron"));
+const UserController_1 = __importDefault(require("./api/controllers/UserController"));
+node_cron_1.default.schedule('0 6 * * *', function () {
+    UserController_1.default.SendNotificationPushClient();
+});
 /** Initializations */
 const options = {
     origin: '*'

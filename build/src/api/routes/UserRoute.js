@@ -53,6 +53,7 @@ UserRoute.put('/app/restorepass', UserController_1.default.restorePass);
 UserRoute.get('/app/viewInsurances', ImpulsaController_1.default.ViewInsurances);
 // ver notificaciones push
 UserRoute.get('/app/notifications/:externalId', UserController_1.default.ViewNotificationsPush);
+UserRoute.get('/app/sendNotifications', UserController_1.default.SendNotificationPushClient);
 /**
  * CRUD DE POLIZAS
 */

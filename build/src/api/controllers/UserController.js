@@ -21,11 +21,16 @@ const User_1 = require("../models/User");
 const fs_1 = __importDefault(require("fs"));
 const ExternalPolicyClinet_1 = require("../models/ExternalPolicyClinet");
 const Insurance_1 = require("../models/Insurance");
+const axios_1 = __importDefault(require("axios"));
 const NotificatiosPush_1 = require("../models/NotificatiosPush");
+const moment_1 = __importDefault(require("moment"));
+const mongoose_1 = require("mongoose");
+(0, moment_1.default)().format();
 /** Variable for verification code */
 let cadena = '';
 let cadenaReenvio = '';
 let CodeValidator = '';
+let validador = false;
 /** My class of user controller */
 class UserController {
     constructor() {
@@ -383,19 +388,17 @@ class UserController {
                 const isClientExist = yield Client_1.ClientsModel.findById(_id);
                 const externalId = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.externalId;
                 // guardando la respuesta de las polizas propias
-                const polizasPropias = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalId });
+                // const polizasPropias = await InsurancePoliciesModel.find({ externalIdClient: externalId, status: 'active' });
+                const polizasPropias = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalId, status: { '$in': ['active', 'wasNotPaid'] } });
                 polizasPropias.forEach(item => {
                     policyMe.push({
                         _id: item._id
-                        // alias: item.alias,
-                        // policyType: item.policyType,
-                        // status: item.status
                     });
                 });
                 // buscando el numero de telefono de la aseguradora
                 for (let x = 0; x < policyMe.length; x++) {
                     const id = policyMe[x]._id;
-                    const polisa = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id });
+                    const polisa = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id, status: { '$in': ['active', 'wasNotPaid'] } });
                     const insurance = polisa === null || polisa === void 0 ? void 0 : polisa.insuranceId;
                     const numberPhone = yield Insurance_1.InsuranceModel.findOne({ externalId: insurance });
                     const polizas = {
@@ -415,7 +418,7 @@ class UserController {
                 };
                 // console.log(misPolizas);
                 // guardando los externalId de las polizas externas
-                const polizasExternas = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: _id });
+                const polizasExternas = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: _id, status: { '$in': ['active', 'wasNotPaid'] } });
                 polizasExternas.forEach(item => {
                     policyIdExternal.push({
                         externalIdClient: item.externalIdClient
@@ -435,7 +438,7 @@ class UserController {
                     const id = uniqueArray[j].externalIdClient;
                     // buscar el cliente con el externalId
                     const client = yield Client_1.ClientsModel.findOne({ externalId: id });
-                    const polizasClientsExternal = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: _id, externalIdClient: id });
+                    const polizasClientsExternal = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: _id, externalIdClient: id, status: { '$in': ['active', 'wasNotPaid'] } });
                     polizasClientsExternal.forEach(item => {
                         policyExternalClients.push({
                             externalIdPolicy: item.externalIdPolicy,
@@ -445,9 +448,9 @@ class UserController {
                     for (let i = 0; i < policyExternalClients.length; i++) {
                         externalP = {};
                         const idPolicy = policyExternalClients[i].externalIdPolicy;
-                        const polizas = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: idPolicy });
+                        const polizas = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: idPolicy, status: { '$in': ['active', 'wasNotPaid'] } });
                         const idInsurance = polizas === null || polizas === void 0 ? void 0 : polizas.insuranceId;
-                        const polizasModeloExternal = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ externalIdPolicy: idPolicy, IdClient: _id });
+                        const polizasModeloExternal = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ externalIdPolicy: idPolicy, IdClient: _id, status: { '$in': ['active', 'wasNotPaid'] } });
                         const insurance = yield Insurance_1.InsuranceModel.findOne({ externalId: idInsurance });
                         externalP = {
                             _id: polizasModeloExternal === null || polizasModeloExternal === void 0 ? void 0 : polizasModeloExternal._id,
@@ -619,7 +622,7 @@ class UserController {
             try {
                 const validarClient = yield Client_1.ClientsModel.findOne({ _id: _id });
                 const externalIdClient = yield (validarClient === null || validarClient === void 0 ? void 0 : validarClient.externalId);
-                const validarPolicyProp = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient, policyNumber: policyNumber });
+                const validarPolicyProp = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient, policyNumber: policyNumber, status: { '$in': ['active', 'wasNotPaid'] } });
                 if (validarPolicyProp) {
                     res.status(203).json({
                         message: 'No pudes vincular tus propias pólizas',
@@ -627,7 +630,7 @@ class UserController {
                     });
                 }
                 else {
-                    const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber });
+                    const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber, status: { '$in': ['active', 'wasNotPaid'] } });
                     if (isPolicyExist) {
                         const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
                         if (client) {
@@ -707,14 +710,14 @@ class UserController {
             const FinalRes = [];
             try {
                 // guardamos las polizas externas del usuario con acceso a las polizas de un cliente
-                const externalIDClientViewer = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: id, externalIdClient: externalIdClient });
+                const externalIDClientViewer = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: id, externalIdClient: externalIdClient, status: { '$in': ['active', 'wasNotPaid'] } });
                 externalIDClientViewer.forEach(item => {
                     policySyncS.push({
                         Id: item.externalIdPolicy
                     });
                 });
                 // guardamos las polizas del usuario externo
-                const polizasClienteExterno = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient });
+                const polizasClienteExterno = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient, status: { '$in': ['active', 'wasNotPaid'] } });
                 polizasClienteExterno.forEach(item => {
                     policyExternalS.push({
                         Id: JSON.stringify(item._id)
@@ -738,7 +741,7 @@ class UserController {
                 // guardar las polizas que seran devueltas al usuario en la respuesta
                 for (let j = 0; j < policyRes.length; j++) {
                     const id = policyRes[j].Id;
-                    const policy = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id });
+                    const policy = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id, status: { '$in': ['active', 'wasNotPaid'] } });
                     FinalRes.push(policy);
                 }
                 const valRes = yield isObjEmpty(FinalRes);
@@ -781,13 +784,14 @@ class UserController {
                 // eslint-disable-next-line no-var
                 for (var i = 0; i < arrayLenght; i++) {
                     const _id = fromRoles[i];
-                    const valores = yield InsurancePolicy_1.InsurancePoliciesModel.find({ _id: _id });
+                    const valores = yield InsurancePolicy_1.InsurancePoliciesModel.find({ _id: _id, status: { '$in': ['active', 'wasNotPaid'] } });
                     valores.forEach(item => {
                         policyViewSelect.push({
                             id: JSON.stringify(item._id),
                             alias: item.alias,
                             policyType: item.policyType,
-                            externalIdClient: item.externalIdClient
+                            externalIdClient: item.externalIdClient,
+                            status: item.status
                         });
                         // console.log(policyViewSelect)
                     });
@@ -800,7 +804,8 @@ class UserController {
                     const alias = policyViewSelect[j].alias;
                     const policyType = policyViewSelect[j].policyType;
                     const externalIdClient = policyViewSelect[j].externalIdClient;
-                    const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient };
+                    const status = policyViewSelect[j].status;
+                    const save = { IdClient, externalIdPolicy, alias, policyType, externalIdClient, status };
                     // console.log(save);
                     const savePolicy = new ExternalPolicyClinet_1.ExternalPolicyClinetModel(save);
                     try {
@@ -873,6 +878,7 @@ class UserController {
                         const policyDetail = {
                             _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
                             name: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name,
+                            iconCode: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.iconCode,
                             phoneNumber: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.phoneNumber,
                             alias: isPolicyExternalExist === null || isPolicyExternalExist === void 0 ? void 0 : isPolicyExternalExist.alias,
                             status: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.status,
@@ -970,6 +976,7 @@ class UserController {
                 });
             }
         });
+        // restablecer contraseña
         this.restorePass = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const _id = _req.body.id;
@@ -1025,6 +1032,135 @@ class UserController {
                     message: 'Ocurrio un error: ' + error,
                     status: 400
                 });
+            }
+        });
+        // enviar notificaciones por fechas de polizas
+        this.SendNotificationPushClient = () => __awaiter(this, void 0, void 0, function* () {
+            // arreglo para guardar los id de las polizas que estan por vencer
+            let policies = [];
+            const fechaMongo = moment_1.default.utc().format('YYYY-MM-DD');
+            const valorFechaunMes = (0, moment_1.default)(fechaMongo).add(1, 'months').format('YYYY-MM-DD');
+            const valorFechaQuinceDias = (0, moment_1.default)(fechaMongo).add({ days: 15 }).format('YYYY-MM-DD');
+            const valorFechaHoy = (0, moment_1.default)(fechaMongo).format('YYYY-MM-DD');
+            console.log(valorFechaunMes);
+            console.log(valorFechaQuinceDias);
+            const fechasVenciminetoUnMes = yield InsurancePolicy_1.InsurancePoliciesModel.find({ expirationDate: valorFechaunMes, status: 'active' });
+            // console.log(fechasVenciminetoUnMes);
+            if (fechasVenciminetoUnMes) {
+                fechasVenciminetoUnMes.forEach(item => {
+                    policies.push({
+                        externalIdClient: item.externalIdClient,
+                        alias: item.alias
+                    });
+                });
+                // sacando los externalId de los clientes
+                let uniqueArray = policies.filter((thing, index) => {
+                    return index === policies.findIndex(obj => {
+                        return JSON.stringify(obj) === JSON.stringify(thing);
+                    });
+                });
+                // sacando la fecha en un formato reconocible para la validacion
+                for (let x = 0; x < uniqueArray.length; x++) {
+                    const externalId = uniqueArray[x].externalIdClient;
+                    const alias = uniqueArray[x].alias;
+                    const client = yield Client_1.ClientsModel.findOne({ externalId: externalId });
+                    const _id = JSON.stringify(client === null || client === void 0 ? void 0 : client._id);
+                    const search = _id.slice(1, -1);
+                    const user = yield User_1.UsersModel.findOne({ clientId: search });
+                    const firebaseToken = user === null || user === void 0 ? void 0 : user.firebaseToken;
+                    SendNotifications(firebaseToken, externalId, `Su póliza: ${alias}, está a un mes de vencer`);
+                    const notificationPush = new NotificatiosPush_1.NotificationPushModel({
+                        type: 'APP',
+                        title: 'Impulsa',
+                        notification: `Su póliza: ${alias}, está a un mes de vencer`,
+                        date: (0, mongoose_1.now)(),
+                        externalIdClient: externalId
+                    });
+                    yield notificationPush.save();
+                }
+                uniqueArray = [];
+                policies = [];
+                if (validador) {
+                    validador = false;
+                }
+            }
+            const fechasVenciminetoQuinceDias = yield InsurancePolicy_1.InsurancePoliciesModel.find({ expirationDate: valorFechaQuinceDias, status: 'active' });
+            if (fechasVenciminetoQuinceDias) {
+                fechasVenciminetoQuinceDias.forEach(item => {
+                    policies.push({
+                        externalIdClient: item.externalIdClient,
+                        alias: item.alias
+                    });
+                });
+                // sacando los externalId de los clientes
+                let uniqueArray = policies.filter((thing, index) => {
+                    return index === policies.findIndex(obj => {
+                        return JSON.stringify(obj) === JSON.stringify(thing);
+                    });
+                });
+                // sacando la fecha en un formato reconocible para la validacion
+                for (let x = 0; x < uniqueArray.length; x++) {
+                    const externalId = uniqueArray[x].externalIdClient;
+                    const alias = uniqueArray[x].alias;
+                    const client = yield Client_1.ClientsModel.findOne({ externalId: externalId });
+                    const _id = JSON.stringify(client === null || client === void 0 ? void 0 : client._id);
+                    const search = _id.slice(1, -1);
+                    const user = yield User_1.UsersModel.findOne({ clientId: search });
+                    const firebaseToken = user === null || user === void 0 ? void 0 : user.firebaseToken;
+                    SendNotifications(firebaseToken, externalId, `Su póliza: ${alias}, esta a 15 días de vencer`);
+                    const notificationPush = new NotificatiosPush_1.NotificationPushModel({
+                        type: 'APP',
+                        title: 'Impulsa',
+                        notification: `Su póliza: ${alias}, esta a 15 días de vencer`,
+                        date: (0, mongoose_1.now)(),
+                        externalIdClient: externalId
+                    });
+                    yield notificationPush.save();
+                }
+                uniqueArray = [];
+                policies = [];
+                if (validador) {
+                    validador = false;
+                }
+            }
+            const fechasVenciminetoNow = yield InsurancePolicy_1.InsurancePoliciesModel.find({ expirationDate: valorFechaHoy, status: 'active' });
+            if (fechasVenciminetoNow) {
+                fechasVenciminetoNow.forEach(item => {
+                    policies.push({
+                        externalIdClient: item.externalIdClient,
+                        alias: item.alias
+                    });
+                });
+                // sacando los externalId de los clientes
+                let uniqueArray = policies.filter((thing, index) => {
+                    return index === policies.findIndex(obj => {
+                        return JSON.stringify(obj) === JSON.stringify(thing);
+                    });
+                });
+                // sacando la fecha en un formato reconocible para la validacion
+                for (let x = 0; x < uniqueArray.length; x++) {
+                    const externalId = uniqueArray[x].externalIdClient;
+                    const alias = uniqueArray[x].alias;
+                    const client = yield Client_1.ClientsModel.findOne({ externalId: externalId });
+                    const _id = JSON.stringify(client === null || client === void 0 ? void 0 : client._id);
+                    const search = _id.slice(1, -1);
+                    const user = yield User_1.UsersModel.findOne({ clientId: search });
+                    const firebaseToken = user === null || user === void 0 ? void 0 : user.firebaseToken;
+                    SendNotifications(firebaseToken, externalId, `Su póliza: ${alias}, vence el día de hoy`);
+                    const notificationPush = new NotificatiosPush_1.NotificationPushModel({
+                        type: 'APP',
+                        title: 'Impulsa',
+                        notification: `Su póliza: ${alias}, vence el día de hoy`,
+                        date: (0, mongoose_1.now)(),
+                        externalIdClient: externalId
+                    });
+                    yield notificationPush.save();
+                }
+                uniqueArray = [];
+                policies = [];
+                if (validador) {
+                    validador = false;
+                }
             }
         });
     }
@@ -1125,5 +1261,48 @@ function isObjEmpty(obj) {
             return false;
     }
     return true;
+}
+function SendNotifications(firebaseToken, externalId, body) {
+    try {
+        var data = {
+            "to": `${firebaseToken}`,
+            "notification": {
+                "sound": "default",
+                "body": `${body}`,
+                "title": "Impulsa",
+                "content_available": true,
+                "priority": "high"
+            }
+        };
+        const instance = axios_1.default.create({
+            baseURL: 'https://fcm.googleapis.com/',
+            timeout: 1000,
+            headers: {
+                'Authorization': process.env.KEY_FIREBASE || '',
+                'Content-Type': 'application/json'
+            }
+        });
+        const notificationPush = new NotificatiosPush_1.NotificationPushModel({
+            type: 'APP',
+            title: 'impulsa',
+            notification: body,
+            date: (0, mongoose_1.now)(),
+            externalIdClient: externalId
+        });
+        notificationPush.save();
+        instance.post('fcm/send', data);
+        return validador = true;
+    }
+    catch (error) {
+        const accountSid = process.env.TWILIO_ACCOUNT_SID;
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        const client = new twilio_1.Twilio(accountSid, authToken);
+        client.messages.create({
+            body: `Las Notificaciones no se enviaron`,
+            from: '+18169346014',
+            to: `+529192389847`
+        }).then(message => console.log(message.sid));
+        return validador = false;
+    }
 }
 exports.default = new UserController();

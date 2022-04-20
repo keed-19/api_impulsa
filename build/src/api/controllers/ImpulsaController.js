@@ -20,6 +20,8 @@ const User_1 = require("../models/User");
 const axios_1 = __importDefault(require("axios"));
 const NotificatiosPush_1 = require("../models/NotificatiosPush");
 const mongoose_1 = require("mongoose");
+const const_1 = require("../constants/const");
+const ExternalPolicyClinet_1 = require("../models/ExternalPolicyClinet");
 /** My class of Impulsa controller */
 class ImpulsaController {
     constructor() {
@@ -121,11 +123,19 @@ class ImpulsaController {
             var _a, _b;
             res.set('Access-Control-Allow-Origin', '*');
             const file = _req.file;
+            const status = _req.body.status;
+            const numUse = const_1.Status[status];
             try {
                 if (!file) {
                     const error = new Error('Please upload a file');
                     res.status(400).json({
                         message: 'Se nececesita el archivo PDF: ' + error,
+                        status: 400
+                    });
+                }
+                else if (numUse === undefined) {
+                    res.status(400).json({
+                        message: 'El status es invalido',
                         status: 400
                     });
                 }
@@ -168,7 +178,7 @@ class ImpulsaController {
                                             alias: alias,
                                             effectiveDate: _req.body.effectiveDate,
                                             expirationDate: _req.body.expirationDate,
-                                            status: _req.body.status,
+                                            status: numUse,
                                             fileUrl: file.filename,
                                             externalId: _req.body.externalId,
                                             externalIdClient: _req.params.externalIdClient
@@ -292,6 +302,7 @@ class ImpulsaController {
         this.SaveClient = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const phoneNumber = _req.body.phoneNumber;
+            const fullName = _req.body.fullName;
             const phone = phoneNumber.replace(/\s+/g, '');
             try {
                 if (_req.body.phoneNumber === null) {
@@ -307,11 +318,11 @@ class ImpulsaController {
                     });
                 }
                 else {
-                    const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: phone });
+                    const isfullNameExist = yield Client_1.ClientsModel.findOne({ fullName: fullName });
                     const isEzternalIDExist = yield Client_1.ClientsModel.findOne({ externalId: _req.body.externalId });
-                    if (isTelefonoExist) {
+                    if (isfullNameExist) {
                         return res.status(208).json({
-                            error: 'El numero telefonico ya se encuentra registrado en la base de datos',
+                            error: 'El nombre del cliente ya se encuentra registrado en la base de datos',
                             status: 208
                         });
                     }
@@ -324,7 +335,7 @@ class ImpulsaController {
                     else {
                         // instantiating the model for save data
                         const client = new Client_1.ClientsModel({
-                            fullName: _req.body.fullName,
+                            fullName: fullName,
                             incorporationOrBirthDate: _req.body.incorporationOrBirthDate,
                             phoneNumber: phone,
                             externalId: _req.body.externalId
@@ -467,6 +478,9 @@ class ImpulsaController {
             const file = _req.file;
             const externalId = _req.params.externalId;
             const update = _req.body;
+            const status = _req.body.status;
+            const numUse = const_1.Status[status];
+            const UpdateStatus = { status: numUse };
             try {
                 const data = {
                     fileUrl: file === null || file === void 0 ? void 0 : file.filename
@@ -477,12 +491,25 @@ class ImpulsaController {
                         status: 400
                     });
                 }
+                else if (numUse === undefined) {
+                    res.status(400).json({
+                        message: 'El status es invalido',
+                        status: 400
+                    });
+                }
                 else {
                     if (!file) {
                         const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalId: externalId });
                         if (isPolicyExist) {
                             const _id = isPolicyExist._id;
                             yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, update);
+                            if (status !== undefined) {
+                                yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, UpdateStatus);
+                                const idPolicy = JSON.stringify(_id);
+                                const idActualizar = idPolicy.slice(1, -1);
+                                const policyActualizar = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ externalIdPolicy: idActualizar });
+                                yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findByIdAndUpdate(policyActualizar === null || policyActualizar === void 0 ? void 0 : policyActualizar._id, UpdateStatus);
+                            }
                             try {
                                 // await InsurancePoliciesModel.findByIdAndUpdate(_id, data);
                                 const updatePoliceNow = yield InsurancePolicy_1.InsurancePoliciesModel.findById(_id);
@@ -503,13 +530,20 @@ class ImpulsaController {
                             });
                         }
                     }
-                    else if (file.mimetype === 'application/pdf') {
+                    else if (file.mimetype === 'application/pdf' || status !== undefined) {
                         const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalId: externalId });
                         if (isPolicyExist) {
                             const _id = isPolicyExist._id;
                             yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, update);
                             try {
                                 yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, data);
+                                if (status !== undefined) {
+                                    yield InsurancePolicy_1.InsurancePoliciesModel.findByIdAndUpdate(_id, UpdateStatus);
+                                    const idPolicy = JSON.stringify(_id);
+                                    const idActualizar = idPolicy.slice(1, -1);
+                                    const policyActualizar = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ externalIdPolicy: idActualizar });
+                                    yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findByIdAndUpdate(policyActualizar === null || policyActualizar === void 0 ? void 0 : policyActualizar._id, UpdateStatus);
+                                }
                                 const updatePoliceNow = yield InsurancePolicy_1.InsurancePoliciesModel.findById(_id);
                                 res.status(200).send({ message: 'poliza actualizada', updatePoliceNow });
                             }
@@ -773,47 +807,67 @@ class ImpulsaController {
                     const search = _id.slice(1, -1);
                     const user = yield User_1.UsersModel.findOne({ clientId: search });
                     const firebaseToken = user === null || user === void 0 ? void 0 : user.firebaseToken;
-                    console.log(search);
-                    // token omar: cOqymngbRTyswgSRVOgwQu:APA91bFZYKtqTPNZESfxau0jnI1PS8klEybOhcif2FxON20xuEgGnFitw0uh5OrGa-Ae3LxUWoWtWuQzV67uHKlNVbvIXl-Sh7NOhMpNPT-HLt2BiyVV7Pg7kp9ohaxN0q6dn1HSmFrL
-                    var data = {
-                        "to": `${firebaseToken}`,
-                        "notification": {
-                            "sound": "default",
-                            "body": `${notification}`,
-                            "title": `${title}`,
-                            "content_available": true,
-                            "priority": "high"
-                        }
-                    };
-                    const instance = yield axios_1.default.create({
-                        baseURL: 'https://fcm.googleapis.com/',
-                        timeout: 1000,
-                        headers: {
-                            'Authorization': 'key=AAAAny8l8OY:APA91bGrXyb9VlVzVQoBsNxUvCt6wqQFqgiMWMdTk-ov1ba_jW97uUX4Bz-lNPCbYPFnCe-QEcY2zKAE7Vv7I4egBguBgU3ZDQ3u4MLbNgMyo1u5dNGHSjfYgfuOJFTgcLdUtJs9_9fG',
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    const notificationPush = new NotificatiosPush_1.NotificationPushModel({
-                        type: 'APP',
-                        title: title,
-                        notification: notification,
-                        date: (0, mongoose_1.now)(),
-                        externalIdClient: externalId
-                    });
-                    yield notificationPush.save();
-                    instance.post('fcm/send', data)
-                        .then(function (response) {
-                        res.status(200).json({
-                            message: `La notificación se ha enviado de manera correcta: ${response.data}`,
-                            status: 200
+                    if (firebaseToken !== undefined) {
+                        console.log(search);
+                        // token omar: cOqymngbRTyswgSRVOgwQu:APA91bFZYKtqTPNZESfxau0jnI1PS8klEybOhcif2FxON20xuEgGnFitw0uh5OrGa-Ae3LxUWoWtWuQzV67uHKlNVbvIXl-Sh7NOhMpNPT-HLt2BiyVV7Pg7kp9ohaxN0q6dn1HSmFrL
+                        var data = {
+                            "to": `${firebaseToken}`,
+                            "notification": {
+                                sound: 'default',
+                                vibration: true,
+                                body: `${notification}`,
+                                title: `${title}`,
+                                content_available: true,
+                                priority: 'high'
+                            },
+                            "android": {
+                                "notification": {
+                                    sound: 'default',
+                                    vibration: true,
+                                }
+                            },
+                            "apns": {
+                                "payload": {
+                                    sound: 'default'
+                                }
+                            }
+                        };
+                        const instance = yield axios_1.default.create({
+                            baseURL: 'https://fcm.googleapis.com/',
+                            timeout: 1000,
+                            headers: {
+                                'Authorization': process.env.KEY_FIREBASE || '',
+                                'Content-Type': 'application/json'
+                            }
                         });
-                    })
-                        .catch(function (error) {
+                        const notificationPush = new NotificatiosPush_1.NotificationPushModel({
+                            type: 'APP',
+                            title: title,
+                            notification: notification,
+                            date: (0, mongoose_1.now)(),
+                            externalIdClient: externalId
+                        });
+                        yield notificationPush.save();
+                        instance.post('fcm/send', data)
+                            .then(function (response) {
+                            res.status(200).json({
+                                message: `La notificación se ha enviado de manera correcta: ${response.data}`,
+                                status: 200
+                            });
+                        })
+                            .catch(function (error) {
+                            res.status(400).json({
+                                message: 'Ocurrio un error: ' + error,
+                                status: 400
+                            });
+                        });
+                    }
+                    else {
                         res.status(400).json({
-                            message: 'Ocurrio un error: ' + error,
+                            message: 'El cliente no tiene el token de firebase',
                             status: 400
                         });
-                    });
+                    }
                 }
                 else {
                     res.status(400).json({
