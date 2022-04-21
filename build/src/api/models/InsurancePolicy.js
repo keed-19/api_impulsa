@@ -16,7 +16,8 @@ const shema = new mongoose_1.Schema({
     status: { type: String, required: true },
     fileUrl: { type: Object, required: true },
     externalId: { type: String, required: true },
-    externalIdClient: { type: String, required: true }
+    externalIdClient: { type: String, required: true },
+    updatedAt: { type: Date, required: false }
 }, { timestamps: true });
 shema.plugin(mongoose_delete_1.default, { deletedAt: true, overrideMethods: 'all', indexFields: ['deletedAt'] });
 const InsurancePoliciesModel = (0, mongoose_1.model)('InsurancePolicies', shema);

@@ -799,12 +799,13 @@ class UserController {
     const Idpoliza = _req.body.data;
     try {
       const fromRoles = Array.from(Idpoliza);
+      const newArr = fromRoles.filter((el, index) => fromRoles.indexOf(el) === index);
 
-      const arrayLenght = fromRoles.length;
+      const arrayLenght = newArr.length;
       // console.log(arrayLenght);
       // eslint-disable-next-line no-var
       for (var i = 0; i < arrayLenght; i++) {
-        const _id = fromRoles[i];
+        const _id = newArr[i];
         const valores = await InsurancePoliciesModel.find({ _id: _id, status: {'$in': ['active', 'wasNotPaid']} });
         valores.forEach(item => {
           policyViewSelect.push(
@@ -870,6 +871,7 @@ class UserController {
         };
         const policyDetail = {
           _id: isPolicyExist?._id,
+          fechaUpdate: isPolicyExist?.updatedAt,
           name: isInsuranceExist?.name, // nombre de la aseguradora
           iconCode: isInsuranceExist?.iconCode, // logo de la  aseguradora
           phoneNumber: isInsuranceExist?.phoneNumber, // numero de telefono de la  aseguradora
@@ -905,6 +907,7 @@ class UserController {
 
           const policyDetail = {
             _id: isPolicyExist?._id,
+            fechaUpdate: isPolicyExist?.updatedAt,
             name: isInsuranceExist?.name,
             iconCode: isInsuranceExist?.iconCode,
             phoneNumber: isInsuranceExist?.phoneNumber,
@@ -1204,6 +1207,12 @@ class UserController {
         validador=false;
       }
     }
+  }
+
+  public ViewPrivacyPolitics = async(_req: Request,res: Response) => {
+    const data = fs.readFileSync('src/uploads/AvisodePrivacidad.PDF');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.send(data);
   }
 }
 

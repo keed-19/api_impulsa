@@ -779,11 +779,12 @@ class UserController {
             const Idpoliza = _req.body.data;
             try {
                 const fromRoles = Array.from(Idpoliza);
-                const arrayLenght = fromRoles.length;
+                const newArr = fromRoles.filter((el, index) => fromRoles.indexOf(el) === index);
+                const arrayLenght = newArr.length;
                 // console.log(arrayLenght);
                 // eslint-disable-next-line no-var
                 for (var i = 0; i < arrayLenght; i++) {
-                    const _id = fromRoles[i];
+                    const _id = newArr[i];
                     const valores = yield InsurancePolicy_1.InsurancePoliciesModel.find({ _id: _id, status: { '$in': ['active', 'wasNotPaid'] } });
                     valores.forEach(item => {
                         policyViewSelect.push({
@@ -845,6 +846,7 @@ class UserController {
                     };
                     const policyDetail = {
                         _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
+                        fechaUpdate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.updatedAt,
                         name: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name,
                         iconCode: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.iconCode,
                         phoneNumber: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.phoneNumber,
@@ -877,6 +879,7 @@ class UserController {
                         };
                         const policyDetail = {
                             _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
+                            fechaUpdate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.updatedAt,
                             name: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name,
                             iconCode: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.iconCode,
                             phoneNumber: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.phoneNumber,
@@ -1162,6 +1165,11 @@ class UserController {
                     validador = false;
                 }
             }
+        });
+        this.ViewPrivacyPolitics = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            const data = fs_1.default.readFileSync('src/uploads/AvisodePrivacidad.PDF');
+            res.setHeader('Content-Type', 'application/pdf');
+            res.send(data);
         });
     }
 }

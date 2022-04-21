@@ -178,6 +178,7 @@ class ImpulsaController {
                     });
                     // save data
                     await user.save();
+                    await user.updateOne({});
 
                     // send request exit
                     res.status(200).json({
