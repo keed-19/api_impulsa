@@ -50,9 +50,6 @@ UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController.Poli
 // comprobando el codigo
 UserRoute.post('/app/verificar', UserController.VerifyClient);
 
-// // visualizando las polizas externas este ya funciona
-// UserRoute.get('/app/policies/external/:externalIdClient', UserController.ViewPoliciesExternal);
-
 // probando la validacion de ver las polizas pero si ta hay asociada alguna esa no se vera en la res
 UserRoute.get('/app/policies/external/:id/:externalIdClient', UserController.ViewPoliciesExternal);
 
@@ -73,6 +70,8 @@ UserRoute.get('/app/viewInsurances', ImpulsaController.ViewInsurances);
 UserRoute.get('/app/notifications/:externalId', UserController.ViewNotificationsPush);
 
 UserRoute.get('/app/sendNotifications', UserController.SendNotificationPushClient);
+
+UserRoute.get('/app/privacyPolicies', UserController.ViewPrivacyPolitics);
 
 
 /**

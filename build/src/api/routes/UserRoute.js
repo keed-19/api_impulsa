@@ -39,8 +39,6 @@ UserRoute.put('/app/updateAlias', UserController_1.default.UpdateAlias);
 UserRoute.get('/app/externalClient/:clientId/:policyNumber', UserController_1.default.PolicyNumberSendSMS);
 // comprobando el codigo
 UserRoute.post('/app/verificar', UserController_1.default.VerifyClient);
-// // visualizando las polizas externas este ya funciona
-// UserRoute.get('/app/policies/external/:externalIdClient', UserController.ViewPoliciesExternal);
 // probando la validacion de ver las polizas pero si ta hay asociada alguna esa no se vera en la res
 UserRoute.get('/app/policies/external/:id/:externalIdClient', UserController_1.default.ViewPoliciesExternal);
 // restablecer contraseña
@@ -54,6 +52,7 @@ UserRoute.get('/app/viewInsurances', ImpulsaController_1.default.ViewInsurances)
 // ver notificaciones push
 UserRoute.get('/app/notifications/:externalId', UserController_1.default.ViewNotificationsPush);
 UserRoute.get('/app/sendNotifications', UserController_1.default.SendNotificationPushClient);
+UserRoute.get('app/privacyPolicies', UserController_1.default.ViewPrivacyPolitics);
 /**
  * CRUD DE POLIZAS
 */

@@ -779,11 +779,12 @@ class UserController {
             const Idpoliza = _req.body.data;
             try {
                 const fromRoles = Array.from(Idpoliza);
-                const arrayLenght = fromRoles.length;
+                const newArr = fromRoles.filter((el, index) => fromRoles.indexOf(el) === index);
+                const arrayLenght = newArr.length;
                 // console.log(arrayLenght);
                 // eslint-disable-next-line no-var
                 for (var i = 0; i < arrayLenght; i++) {
-                    const _id = fromRoles[i];
+                    const _id = newArr[i];
                     const valores = yield InsurancePolicy_1.InsurancePoliciesModel.find({ _id: _id, status: { '$in': ['active', 'wasNotPaid'] } });
                     valores.forEach(item => {
                         policyViewSelect.push({
@@ -1162,6 +1163,11 @@ class UserController {
                     validador = false;
                 }
             }
+        });
+        this.ViewPrivacyPolitics = (res) => __awaiter(this, void 0, void 0, function* () {
+            const data = fs_1.default.readFileSync('src/uploads/AvisodePrivacidad.PDF');
+            res.setHeader('Content-Type', 'application/pdf');
+            res.send(data);
         });
     }
 }
