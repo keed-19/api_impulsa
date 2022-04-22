@@ -109,7 +109,7 @@ class UserController {
     }
   }
 
-  // reenvio de codigo de verificacion
+  // reenvio de codigo de verificacion actualizado
   public ReenvioConfirmacion = async (_req:Request, res:Response) => {
     res.set('Access-Control-Allow-Origin', '*');
     const _id = _req.params._id as Object;
