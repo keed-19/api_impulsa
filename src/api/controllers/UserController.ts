@@ -871,6 +871,7 @@ class UserController {
         };
         const policyDetail = {
           _id: isPolicyExist?._id,
+          fechaUpdate: isPolicyExist?.updatedAt,
           name: isInsuranceExist?.name, // nombre de la aseguradora
           iconCode: isInsuranceExist?.iconCode, // logo de la  aseguradora
           phoneNumber: isInsuranceExist?.phoneNumber, // numero de telefono de la  aseguradora
@@ -906,6 +907,7 @@ class UserController {
 
           const policyDetail = {
             _id: isPolicyExist?._id,
+            fechaUpdate: isPolicyExist?.updatedAt,
             name: isInsuranceExist?.name,
             iconCode: isInsuranceExist?.iconCode,
             phoneNumber: isInsuranceExist?.phoneNumber,

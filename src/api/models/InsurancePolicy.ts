@@ -14,6 +14,7 @@ interface InsurancePolicies {
     fileUrl : Object; // Ruta del PDF
     externalId : String; // Id del usuario al que pertenece la poliza
     externalIdClient : String; // Id del usuario al que pertenece la poliza
+    updatedAt: Date;
 }
 
 const shema = new Schema<InsurancePolicies>({
@@ -26,7 +27,8 @@ const shema = new Schema<InsurancePolicies>({
   status: { type: String, required: true },
   fileUrl: { type: Object, required: true },
   externalId: { type: String, required: true },
-  externalIdClient: { type: String, required: true }
+  externalIdClient: { type: String, required: true },
+  updatedAt: { type: Date, required: false }
 },
 {timestamps: true});
 

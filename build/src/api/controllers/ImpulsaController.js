@@ -185,6 +185,7 @@ class ImpulsaController {
                                         });
                                         // save data
                                         yield user.save();
+                                        yield user.updateOne({});
                                         // send request exit
                                         res.status(200).json({
                                             message: 'Poliza registrada',

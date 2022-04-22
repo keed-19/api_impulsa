@@ -846,6 +846,7 @@ class UserController {
                     };
                     const policyDetail = {
                         _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
+                        fechaUpdate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.updatedAt,
                         name: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name,
                         iconCode: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.iconCode,
                         phoneNumber: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.phoneNumber,
@@ -878,6 +879,7 @@ class UserController {
                         };
                         const policyDetail = {
                             _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
+                            fechaUpdate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.updatedAt,
                             name: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name,
                             iconCode: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.iconCode,
                             phoneNumber: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.phoneNumber,
