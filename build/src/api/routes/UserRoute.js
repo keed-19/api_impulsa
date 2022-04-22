@@ -52,7 +52,7 @@ UserRoute.get('/app/viewInsurances', ImpulsaController_1.default.ViewInsurances)
 // ver notificaciones push
 UserRoute.get('/app/notifications/:externalId', UserController_1.default.ViewNotificationsPush);
 UserRoute.get('/app/sendNotifications', UserController_1.default.SendNotificationPushClient);
-UserRoute.get('app/privacyPolicies', UserController_1.default.ViewPrivacyPolitics);
+UserRoute.get('/app/privacyPolicies', UserController_1.default.ViewPrivacyPolitics);
 /**
  * CRUD DE POLIZAS
 */
