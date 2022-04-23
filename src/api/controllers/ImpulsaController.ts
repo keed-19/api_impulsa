@@ -109,10 +109,12 @@ class ImpulsaController {
       }
     }
 
-    // guardar poliza
+    // pendiente por subir el pdf a heroku
     public SavePolice = async (_req: Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       const file = _req.file;
+      //var oMyBlob = new Blob(file as undefined, {type : 'application/pdf'});
+      //console.log(oMyBlob);
       const status = _req.body.status;
       const numUse = Status[status];
       try {
@@ -292,8 +294,14 @@ class ImpulsaController {
     // guardar cliente
     public SaveClient = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
+      const removeAccents = (str: string) => {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      } 
+
       const phoneNumber = _req.body.phoneNumber;
-      const fullName = _req.body.fullName;
+      const fullNameFI = _req.body.fullName;
+      let fullNameCA = fullNameFI.toUpperCase();
+      var fullName = removeAccents(fullNameCA);
       const phone = phoneNumber.replace(/\s+/g, '');
       try {
         if (_req.body.phoneNumber === null) {

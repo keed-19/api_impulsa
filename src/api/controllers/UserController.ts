@@ -208,9 +208,14 @@ class UserController {
 
        if (!isUserExist) {
          if (isTelefonoExist) {
+          const removeAccents = (str: string) => {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          }
            // si ya es cleinte de impulsa, entonces le vamos a dar acceso a hacer el registro de manera correcta
            // comparamos los datos enviados, con los del cliente que ya esta registrado
-           const fullName = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
+           const fullNameFI = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
+           let fullNameCA = fullNameFI.toUpperCase();
+           var fullName = removeAccents(fullNameCA);
            const fechaN = isTelefonoExist.incorporationOrBirthDate;
            const fechaString = JSON.stringify(fechaN);
            const fechaVlidador = fechaString.substring(1, 11);
