@@ -8,8 +8,7 @@ const ImpulsaController_1 = __importDefault(require("../controllers/ImpulsaContr
 const UserController_1 = __importDefault(require("../controllers/UserController"));
 const middleware_1 = __importDefault(require("../middlewares/middleware"));
 const syncMiddleware_1 = __importDefault(require("../middlewares/syncMiddleware"));
-// import syncMiddleware from '../middlewares/syncMiddleware';
-const saveFile_1 = require("../services/saveFile");
+const upload_1 = require("../middlewares/upload");
 const UserRoute = (0, express_1.Router)();
 UserRoute.post('/users', UserController_1.default.register);
 UserRoute.post('/login', UserController_1.default.login);
@@ -64,11 +63,12 @@ UserRoute.get('/sync/policie/:externalId', [syncMiddleware_1.default.veryfyCrede
 UserRoute.get('/sync/policieDetail/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewPolicyDetail]);
 // guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
 // UserRoute.post('/sync/policies/client/:externalIdClient', Upload.single('myFile'), ImpulsaController.SavePolice);
-UserRoute.post('/sync/policies/client/:externalIdClient', [syncMiddleware_1.default.veryfyCredential, saveFile_1.Upload.single('myFile'), ImpulsaController_1.default.SavePolice]);
+// UserRoute.post('/sync/policies/client/:externalIdClient', [syncMiddleware.veryfyCredential, uploadFiles.single('file'), ImpulsaController.SavePolice]);
+UserRoute.post('/sync/policies/client/:externalIdClient', [syncMiddleware_1.default.veryfyCredential, upload_1.uploadFiles.single('myFile'), ImpulsaController_1.default.SavePolice]);
 // eliminar pdf con el numero de poliza
 UserRoute.delete('/sync/policies/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.DeletePolice]);
 // actualizar polizas
-UserRoute.put('/sync/policies/:externalId', saveFile_1.Upload.single('myFile'), [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.UpdatePoliza]);
+UserRoute.put('/sync/policies/:externalId', upload_1.uploadFiles.single('myFile'), [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.UpdatePoliza]);
 /**
  * FUNCIONALIDADES IMPULSA
  * CRUD DE CLIENTES
@@ -101,4 +101,8 @@ UserRoute.delete('/sync/delete/insurances/:externalId', [syncMiddleware_1.defaul
 UserRoute.put('/sync/update/insurances/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.UpdateInsurance]);
 // enviar notificaciones PUSH a un cliente por su externalId
 UserRoute.post('/sync/push/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.sendPush]);
+// probando la nueva carga de archivos
+UserRoute.post('/sync/policiesNew/client/:externalIdClient', [upload_1.uploadFiles.single('file'), ImpulsaController_1.default.SavePoliceInMongoDB]);
+// probando la vista de los PDF que ya estan en la base de datos
+UserRoute.get('/sync/policiesDB/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewPDFonMongoDB]);
 exports.default = UserRoute;

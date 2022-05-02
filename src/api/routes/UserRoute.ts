@@ -3,6 +3,7 @@ import ImpulsaController from '../controllers/ImpulsaController';
 import UserController from '../controllers/UserController';
 import UserMiddleware from '../middlewares/middleware';
 import syncMiddleware from '../middlewares/syncMiddleware';
+import { uploadFiles } from '../middlewares/upload';
 // import syncMiddleware from '../middlewares/syncMiddleware';
 import { Upload } from '../services/saveFile';
 const UserRoute: Router = Router();
@@ -89,13 +90,14 @@ UserRoute.get('/sync/policieDetail/:externalId', [syncMiddleware.veryfyCredentia
 
 // guardar los archivos pdf en la carpeta uploads y guardando la factura en la base de datos
 // UserRoute.post('/sync/policies/client/:externalIdClient', Upload.single('myFile'), ImpulsaController.SavePolice);
-UserRoute.post('/sync/policies/client/:externalIdClient', [syncMiddleware.veryfyCredential, Upload.single('myFile'), ImpulsaController.SavePolice]);
+// UserRoute.post('/sync/policies/client/:externalIdClient', [syncMiddleware.veryfyCredential, uploadFiles.single('file'), ImpulsaController.SavePolice]);
+UserRoute.post('/sync/policies/client/:externalIdClient', [syncMiddleware.veryfyCredential, uploadFiles.single('myFile'), ImpulsaController.SavePolice]);
 
 // eliminar pdf con el numero de poliza
 UserRoute.delete('/sync/policies/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.DeletePolice]);
 
 // actualizar polizas
-UserRoute.put('/sync/policies/:externalId', Upload.single('myFile'), [syncMiddleware.veryfyCredential, ImpulsaController.UpdatePoliza]);
+UserRoute.put('/sync/policies/:externalId', uploadFiles.single('myFile'), [syncMiddleware.veryfyCredential, ImpulsaController.UpdatePoliza]);
 
 /**
  * FUNCIONALIDADES IMPULSA
@@ -142,5 +144,11 @@ UserRoute.put('/sync/update/insurances/:externalId', [syncMiddleware.veryfyCrede
 
 // enviar notificaciones PUSH a un cliente por su externalId
 UserRoute.post('/sync/push/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.sendPush]);
+
+// probando la nueva carga de archivos
+UserRoute.post('/sync/policiesNew/client/:externalIdClient', [uploadFiles.single('file'), ImpulsaController.SavePoliceInMongoDB]);
+
+// probando la vista de los PDF que ya estan en la base de datos
+UserRoute.get('/sync/policiesDB/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.ViewPDFonMongoDB]);
 
 export default UserRoute;

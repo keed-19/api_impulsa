@@ -25,6 +25,10 @@ const axios_1 = __importDefault(require("axios"));
 const NotificatiosPush_1 = require("../models/NotificatiosPush");
 const moment_1 = __importDefault(require("moment"));
 const mongoose_1 = require("mongoose");
+const database_1 = require("../../config/database");
+const mongodb_1 = require("mongodb");
+const mongodb_2 = require("mongodb");
+const mongoClient = new mongodb_2.MongoClient(database_1.conection);
 (0, moment_1.default)().format();
 /** Variable for verification code */
 let cadena = '';
@@ -118,7 +122,7 @@ class UserController {
                 });
             }
         });
-        // reenvio de codigo de verificacion
+        // reenvio de codigo de verificacion actualizado
         this.ReenvioConfirmacion = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const _id = _req.params._id;
@@ -211,9 +215,14 @@ class UserController {
                 const isUserExist = yield User_1.UsersModel.findOne({ username: _req.body.phoneNumber });
                 if (!isUserExist) {
                     if (isTelefonoExist) {
+                        const removeAccents = (str) => {
+                            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        };
                         // si ya es cleinte de impulsa, entonces le vamos a dar acceso a hacer el registro de manera correcta
                         // comparamos los datos enviados, con los del cliente que ya esta registrado
-                        const fullName = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
+                        const fullNameFI = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
+                        let fullNameCA = fullNameFI.toUpperCase();
+                        var fullName = removeAccents(fullNameCA);
                         const fechaN = isTelefonoExist.incorporationOrBirthDate;
                         const fechaString = JSON.stringify(fechaN);
                         const fechaVlidador = fechaString.substring(1, 11);
@@ -510,10 +519,26 @@ class UserController {
                 if (isPolicyExist) {
                     const name = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.fileUrl;
                     try {
-                        const data = fs_1.default.readFileSync('src/uploads/' + name);
-                        res.setHeader('Content-Type', 'application/pdf');
-                        // res.contentType("application/pdf");
-                        res.send(data);
+                        // const data = fs.readFileSync('src/uploads/' + name);
+                        // // res.contentType("application/pdf");
+                        // res.send(data);
+                        yield mongoClient.connect();
+                        const database = mongoClient.db();
+                        const bucket = new mongodb_1.GridFSBucket(database, {
+                            bucketName: "insurancePolicies",
+                        });
+                        let downloadStream = bucket.openDownloadStreamByName(name);
+                        downloadStream.on("data", function (data) {
+                            // res.setHeader('Content-Type', 'application/pdf');
+                            // res.setHeader('Content-Type', 'application/pdf');
+                            return res.status(200).write(data);
+                        });
+                        downloadStream.on("error", function (err) {
+                            return res.status(404).send({ message: "No se puede obtener la póliza!" + err });
+                        });
+                        downloadStream.on("end", () => {
+                            return res.end();
+                        });
                     }
                     catch (error) {
                         res.status(400).send({

@@ -13,7 +13,10 @@ import axios from 'axios';
 import { NotificationPushModel } from '../models/NotificatiosPush';
 import moment from 'moment';
 import { now } from 'mongoose';
-import { Status } from '../constants/const';
+import {conection} from '../../config/database';
+import { GridFSBucket } from 'mongodb';
+import { MongoClient } from 'mongodb';
+const mongoClient = new MongoClient(conection);
 moment().format();
 
 /** Variable for verification code */
@@ -531,11 +534,29 @@ class UserController {
         const name = isPolicyExist?.fileUrl;
 
         try {
-          const data = fs.readFileSync('src/uploads/' + name);
+          // const data = fs.readFileSync('src/uploads/' + name);
 
-          res.setHeader('Content-Type', 'application/pdf');
-          // res.contentType("application/pdf");
-          res.send(data);
+          // // res.contentType("application/pdf");
+          // res.send(data);
+          
+          
+          await mongoClient.connect();
+          const database = mongoClient.db();
+          const bucket = new GridFSBucket(database, {
+            bucketName: "insurancePolicies",
+          });
+          let downloadStream = bucket.openDownloadStreamByName(name as string);
+          downloadStream.on("data", function (data) {
+            // res.setHeader('Content-Type', 'application/pdf');
+            // res.setHeader('Content-Type', 'application/pdf');
+            return res.status(200).write(data);
+          });
+          downloadStream.on("error", function (err) {
+            return res.status(404).send({ message: "No se puede obtener la póliza!" + err });
+          });
+          downloadStream.on("end", () => {
+            return res.end();
+          });
         } catch (error) {
           res.status(400).send({
             message: 'No se ecuentra la póliza: ' + error,

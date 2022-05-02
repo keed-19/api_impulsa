@@ -12,6 +12,8 @@ interface InsurancePolicies {
     expirationDate : Date; // Fecha fin de vigencia
     status : String; // Estatus
     fileUrl : Object; // Ruta del PDF
+    file: Buffer;
+    contentType: String;
     externalId : String; // Id del usuario al que pertenece la poliza
     externalIdClient : String; // Id del usuario al que pertenece la poliza
     updatedAt: Date;

@@ -14,6 +14,9 @@ const node_cron_1 = __importDefault(require("node-cron"));
 const UserController_1 = __importDefault(require("./api/controllers/UserController"));
 node_cron_1.default.schedule('0 6 * * *', function () {
     UserController_1.default.SendNotificationPushClient();
+}, {
+    scheduled: true,
+    timezone: "America/Mexico_City"
 });
 /** Initializations */
 const options = {

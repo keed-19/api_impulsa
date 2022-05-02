@@ -12,6 +12,9 @@ import UserController from './api/controllers/UserController';
 
 node_cron.schedule('0 6 * * *', function() {
   UserController.SendNotificationPushClient();
+}, {
+  scheduled: true,
+  timezone: "America/Mexico_City"
 });
 
 /** Initializations */
