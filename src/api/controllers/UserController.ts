@@ -969,10 +969,11 @@ class UserController {
   public restorePassSendSMS = async (_req: Request, res: Response) => {
     res.set('Access-Control-Allow-Origin', '*');
     const phoneNumber = _req.params.phoneNumber;
+    const tokenSMS = _req.params.token;
     try {
       const isUserExist = await UsersModel.findOne({ username: phoneNumber });
       if (isUserExist) {
-        ramdom(phoneNumber as unknown as Number);
+        ramdom(phoneNumber as unknown as Number, tokenSMS);
         const code = parseInt(cadena);
         const update = { verificationCode: code };
         try {

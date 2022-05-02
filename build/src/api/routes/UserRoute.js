@@ -41,7 +41,7 @@ UserRoute.post('/app/verificar', UserController_1.default.VerifyClient);
 // probando la validacion de ver las polizas pero si ta hay asociada alguna esa no se vera en la res
 UserRoute.get('/app/policies/external/:id/:externalIdClient', UserController_1.default.ViewPoliciesExternal);
 // restablecer contraseña
-UserRoute.get('/app/restorepassSMS/:phoneNumber', UserController_1.default.restorePassSendSMS);
+UserRoute.get('/app/restorepassSMS/:phoneNumber/:token', UserController_1.default.restorePassSendSMS);
 // COMPROVAR COD
 UserRoute.post('/app/restorepassVerify', UserController_1.default.restorePassComCod);
 // restablecer contraseña

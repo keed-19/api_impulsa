@@ -56,7 +56,7 @@ UserRoute.get('/app/policies/external/:id/:externalIdClient', UserController.Vie
 
 
 // restablecer contraseña
-UserRoute.get('/app/restorepassSMS/:phoneNumber', UserController.restorePassSendSMS);
+UserRoute.get('/app/restorepassSMS/:phoneNumber/:token', UserController.restorePassSendSMS);
 
 // COMPROVAR COD
 UserRoute.post('/app/restorepassVerify', UserController.restorePassComCod);
