@@ -157,7 +157,7 @@ class ImpulsaController {
             }
         });
         // TODOs: este ya esta listo pero falta validar q se elimine el archivo si no es un pdf
-        this.SavePolice = (_req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        this.SavePolice = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const file = _req.file;
             //var oMyBlob = new Blob(file as undefined, {type : 'application/pdf'});
@@ -243,7 +243,6 @@ class ImpulsaController {
                                                 `externalId : ${user.externalId}`
                                             ]
                                         });
-                                        next();
                                         // UploadFile().uploadFiles.single('file') 
                                         uploadFiles.single('file');
                                     }
@@ -277,8 +276,6 @@ class ImpulsaController {
                     yield mongoClient.connect();
                     const database = yield mongoClient.db();
                     const buscar = yield database.collection("insurancePolicies.files").findOne({ filename: name });
-                    const id = JSON.stringify(buscar === null || buscar === void 0 ? void 0 : buscar._id);
-                    const idStr = id.slice(1, -1);
                     const binarios = yield database.collection("insurancePolicies.chunks").find({ "files_id": buscar === null || buscar === void 0 ? void 0 : buscar._id });
                     yield binarios.forEach(item => {
                         noPDF.push({
@@ -291,7 +288,6 @@ class ImpulsaController {
                     }
                     yield database.collection("insurancePolicies.files").findOneAndDelete({ filename: name });
                     noPDF = [];
-                    console.log(noPDF);
                     res.status(400).json({
                         message: 'no es un archivo pdf: ',
                         status: 400

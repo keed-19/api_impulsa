@@ -555,10 +555,23 @@ class UserController {
                         if (isPolicyExistOrigin) {
                             const name = isPolicyExistOrigin === null || isPolicyExistOrigin === void 0 ? void 0 : isPolicyExistOrigin.fileUrl;
                             try {
-                                const data = fs_1.default.readFileSync('src/uploads/' + name);
-                                res.setHeader('Content-Type', 'application/pdf');
-                                // res.contentType("application/pdf");
-                                res.send(data);
+                                yield mongoClient.connect();
+                                const database = mongoClient.db();
+                                const bucket = new mongodb_1.GridFSBucket(database, {
+                                    bucketName: "insurancePolicies",
+                                });
+                                let downloadStream = bucket.openDownloadStreamByName(name);
+                                downloadStream.on("data", function (data) {
+                                    // res.setHeader('Content-Type', 'application/pdf');
+                                    // res.setHeader('Content-Type', 'application/pdf');
+                                    return res.status(200).write(data);
+                                });
+                                downloadStream.on("error", function (err) {
+                                    return res.status(404).send({ message: "No se puede obtener la póliza!" + err });
+                                });
+                                downloadStream.on("end", () => {
+                                    return res.end();
+                                });
                             }
                             catch (error) {
                                 res.status(400).send({

@@ -148,7 +148,7 @@ class ImpulsaController {
     }
 
     // TODOs: este ya esta listo pero falta validar q se elimine el archivo si no es un pdf
-    public SavePolice = async (_req: Request, res : Response, next: NextFunction) => {
+    public SavePolice = async (_req: Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       const file = _req.file;
       //var oMyBlob = new Blob(file as undefined, {type : 'application/pdf'});
@@ -238,8 +238,6 @@ class ImpulsaController {
                                     `externalId : ${user.externalId}`
                       ]
                     });
-                  
-                    next();
                     // UploadFile().uploadFiles.single('file') 
                     uploadFiles.single('file');
                   } catch (error) {
@@ -271,8 +269,6 @@ class ImpulsaController {
           await mongoClient.connect();
           const database = await mongoClient.db();
           const buscar = await database.collection("insurancePolicies.files").findOne({filename: name});
-          const id = JSON.stringify(buscar?._id);
-          const idStr = id.slice(1, -1);
 
           const binarios = await database.collection("insurancePolicies.chunks").find({"files_id": buscar?._id})
           await binarios.forEach(item => {
@@ -290,7 +286,6 @@ class ImpulsaController {
 
           await database.collection("insurancePolicies.files").findOneAndDelete({filename: name})
           noPDF=[];
-          console.log(noPDF)
 
           res.status(400).json({
             message: 'no es un archivo pdf: ',
