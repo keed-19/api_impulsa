@@ -573,10 +573,10 @@ class UserController {
 
             try {
               await mongoClient.connect();
-          const database = mongoClient.db();
-          const bucket = new GridFSBucket(database, {
-            bucketName: "insurancePolicies",
-          });
+              const database = mongoClient.db();
+              const bucket = new GridFSBucket(database, {
+              bucketName: "insurancePolicies",
+            });
           let downloadStream = bucket.openDownloadStreamByName(name as string);
           downloadStream.on("data", function (data) {
             // res.setHeader('Content-Type', 'application/pdf');
