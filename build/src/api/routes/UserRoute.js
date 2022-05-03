@@ -101,8 +101,4 @@ UserRoute.delete('/sync/delete/insurances/:externalId', [syncMiddleware_1.defaul
 UserRoute.put('/sync/update/insurances/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.UpdateInsurance]);
 // enviar notificaciones PUSH a un cliente por su externalId
 UserRoute.post('/sync/push/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.sendPush]);
-// probando la nueva carga de archivos
-UserRoute.post('/sync/policiesNew/client/:externalIdClient', [upload_1.uploadFiles.single('file'), ImpulsaController_1.default.SavePoliceInMongoDB]);
-// probando la vista de los PDF que ya estan en la base de datos
-UserRoute.get('/sync/policiesDB/:externalId', [syncMiddleware_1.default.veryfyCredential, ImpulsaController_1.default.ViewPDFonMongoDB]);
 exports.default = UserRoute;

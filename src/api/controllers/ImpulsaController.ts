@@ -1,5 +1,5 @@
 /** Imports models and pluggins */
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { InsurancePoliciesModel } from '../models/InsurancePolicy';
 import { InsuranceModel } from '../models/Insurance';
 import fs from 'fs';
@@ -10,27 +10,11 @@ import { NotificationPushModel } from '../models/NotificatiosPush';
 import { now } from 'mongoose';
 import { Status } from '../constants/const';
 import { ExternalPolicyClinetModel } from '../models/ExternalPolicyClinet';
-import {conection} from '../../config/database';
-import { GridFSBucket } from 'mongodb';
-import { MongoClient } from 'mongodb';
-const mongoClient = new MongoClient(conection);
-import multer from 'multer';
-import {GridFsStorage} from 'multer-gridfs-storage';
+import { conection } from '../../config/database';
+import { GridFSBucket, MongoClient } from 'mongodb';
 
-var storage = new GridFsStorage({
-  url: conection,
-  options: { useNewUrlParser: true, useUnifiedTopology: true },
-  file: (valor, file) => {
-    // const req = finalResult as any;
-    // console.log('insurancePolicy', valor.f);
-    console.log('file', file)
-    return {
-      bucketName: 'insurancePolicies',
-      filename: `${file.originalname}`
-    };
-  }
-});
-var uploadFiles = multer({ storage: storage });
+// import { GridFsStorage } from 'multer-gridfs-storage';
+const mongoClient = new MongoClient(conection);
 
 /** My class of Impulsa controller */
 class ImpulsaController {
@@ -69,7 +53,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -83,7 +67,7 @@ class ImpulsaController {
         const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
         if (isPolicyExist) {
           const name = isPolicyExist?.fileUrl;
-          
+
           try {
             // const database:any = conection;
             // console.log(name as string);
@@ -91,33 +75,33 @@ class ImpulsaController {
             await mongoClient.connect();
             const database = mongoClient.db();
             const bucket = new GridFSBucket(database, {
-              bucketName: "insurancePolicies",
+              bucketName: 'insurancePolicies'
             });
-            let downloadStream = bucket.openDownloadStreamByName(name as string);
-            downloadStream.on("data", function (data) {
+            const downloadStream = bucket.openDownloadStreamByName(name as string);
+            downloadStream.on('data', function (data) {
               // res.setHeader('Content-Type', 'application/pdf');
               return res.status(200).write(data);
             });
-            downloadStream.on("error", function (err) {
-              return res.status(404).send({ message: "No se puede obtener la póliza!" + err });
+            downloadStream.on('error', function (err) {
+              return res.status(404).send({ message: 'No se puede obtener la póliza!' + err });
             });
-            downloadStream.on("end", () => {
+            downloadStream.on('end', () => {
               return res.end();
             });
           } catch (error) {
             return res.status(400).send({
-              message: 'Ocurrio un error inesperado: ' + error,
+              message: 'Ocurrio un error inesperado: ' + error
             });
           }
         } else {
           return res.status(400).send({
-            message: 'No se ecuentra la póliza',
+            message: 'No se ecuentra la póliza'
           });
         }
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -127,7 +111,7 @@ class ImpulsaController {
 
       const externalId = _req.params.externalId;
       try {
-        const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId },{_id:0, __v:0});
+        const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId }, { _id: 0, __v: 0 });
         if (isPolicyExist) {
           res.status(200).json({
             data: isPolicyExist,
@@ -142,7 +126,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -151,7 +135,7 @@ class ImpulsaController {
     public SavePolice = async (_req: Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       const file = _req.file;
-      //var oMyBlob = new Blob(file as undefined, {type : 'application/pdf'});
+      // var oMyBlob = new Blob(file as undefined, {type : 'application/pdf'});
       console.log(file);
       const status = _req.body.status;
       const numUse = Status[status];
@@ -197,8 +181,7 @@ class ImpulsaController {
                 const insuranceId = _req.body.insuranceId;
 
                 const isInsuranceExist = await InsuranceModel.findOne({ externalId: insuranceId });
-                
-                
+
                 if (isInsuranceExist) {
                   try {
                     const aseguradora = isInsuranceExist?.name;
@@ -220,9 +203,6 @@ class ImpulsaController {
                     // save data
                     await user.save();
                     await user.updateOne({});
-                    var req = _req.file as any;
-                    const valor = {'name':`${user._id}.pdf`};
-                    const finalResult = Object.assign(req, valor);
                     // send request exit
                     res.status(200).json({
                       message: 'Poliza registrada',
@@ -238,8 +218,7 @@ class ImpulsaController {
                                     `externalId : ${user.externalId}`
                       ]
                     });
-                    // UploadFile().uploadFiles.single('file') 
-                    uploadFiles.single('file');
+                    // UploadFile().uploadFiles.single('file')
                   } catch (error) {
                     res.status(404).json({
                       error,
@@ -264,13 +243,12 @@ class ImpulsaController {
         } else {
           const name = file.filename;
           let noPDF:Array<any> = [];
-          
 
           await mongoClient.connect();
           const database = await mongoClient.db();
-          const buscar = await database.collection("insurancePolicies.files").findOne({filename: name});
+          const buscar = await database.collection('insurancePolicies.files').findOne({ filename: name });
 
-          const binarios = await database.collection("insurancePolicies.chunks").find({"files_id": buscar?._id})
+          const binarios = await database.collection('insurancePolicies.chunks').find({ files_id: buscar?._id });
           await binarios.forEach(item => {
             noPDF.push(
               {
@@ -281,11 +259,11 @@ class ImpulsaController {
 
           for (let x = 0; x < noPDF.length; x++) {
             const id = noPDF[x]._id;
-            await database.collection("insurancePolicies.chunks").findOneAndDelete({_id: id})
+            await database.collection('insurancePolicies.chunks').findOneAndDelete({ _id: id });
           }
 
-          await database.collection("insurancePolicies.files").findOneAndDelete({filename: name})
-          noPDF=[];
+          await database.collection('insurancePolicies.files').findOneAndDelete({ filename: name });
+          noPDF = [];
 
           res.status(400).json({
             message: 'no es un archivo pdf: ',
@@ -295,7 +273,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -321,7 +299,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -353,7 +331,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -362,13 +340,13 @@ class ImpulsaController {
     public SaveClient = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       const removeAccents = (str: string) => {
-        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      } 
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      };
 
       const phoneNumber = _req.body.phoneNumber;
       const fullNameFI = _req.body.fullName;
-      let fullNameCA = fullNameFI.toUpperCase();
-      var fullName = removeAccents(fullNameCA);
+      const fullNameCA = fullNameFI.toUpperCase();
+      const fullName = removeAccents(fullNameCA);
       const phone = phoneNumber.replace(/\s+/g, '');
       try {
         if (_req.body.phoneNumber === null) {
@@ -444,7 +422,7 @@ class ImpulsaController {
           });
         } else {
           await isTelefonoExist.delete();
-          const User = await UsersModel.findOne({ clientId : isTelefonoExist._id });
+          const User = await UsersModel.findOne({ clientId: isTelefonoExist._id });
           await User?.delete();
           res.status(200).json({
             message: 'El cliente se elimino correctamente',
@@ -454,7 +432,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -482,7 +460,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -531,7 +509,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -544,7 +522,7 @@ class ImpulsaController {
       const update = _req.body;
       const status = _req.body.status;
       const numUse = Status[status];
-      const UpdateStatus = {status: numUse};
+      const UpdateStatus = { status: numUse };
       try {
         const data = {
           fileUrl: file?.filename
@@ -570,8 +548,8 @@ class ImpulsaController {
               if (status !== undefined) {
                 await InsurancePoliciesModel.findByIdAndUpdate(_id, UpdateStatus);
                 const idPolicy = JSON.stringify(_id);
-                const idActualizar = idPolicy.slice(1,-1);
-                const policyActualizar = await ExternalPolicyClinetModel.findOne({externalIdPolicy: idActualizar});
+                const idActualizar = idPolicy.slice(1, -1);
+                const policyActualizar = await ExternalPolicyClinetModel.findOne({ externalIdPolicy: idActualizar });
                 await ExternalPolicyClinetModel.findByIdAndUpdate(policyActualizar?._id, UpdateStatus);
               }
               try {
@@ -602,8 +580,8 @@ class ImpulsaController {
                 if (status !== undefined) {
                   await InsurancePoliciesModel.findByIdAndUpdate(_id, UpdateStatus);
                   const idPolicy = JSON.stringify(_id);
-                  const idActualizar = idPolicy.slice(1,-1);
-                  const policyActualizar = await ExternalPolicyClinetModel.findOne({externalIdPolicy: idActualizar});
+                  const idActualizar = idPolicy.slice(1, -1);
+                  const policyActualizar = await ExternalPolicyClinetModel.findOne({ externalIdPolicy: idActualizar });
                   await ExternalPolicyClinetModel.findByIdAndUpdate(policyActualizar?._id, UpdateStatus);
                 }
                 const updatePoliceNow = await InsurancePoliciesModel.findById(_id);
@@ -632,7 +610,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -713,7 +691,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -738,7 +716,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -770,7 +748,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -797,7 +775,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -845,7 +823,7 @@ class ImpulsaController {
       } catch (error) {
         res.status(400).json({
           message: 'Ocurrio un error: ' + error,
-          status:400
+          status: 400
         });
       }
     }
@@ -865,9 +843,9 @@ class ImpulsaController {
           if (firebaseToken !== undefined) {
             console.log(search);
             // token omar: cOqymngbRTyswgSRVOgwQu:APA91bFZYKtqTPNZESfxau0jnI1PS8klEybOhcif2FxON20xuEgGnFitw0uh5OrGa-Ae3LxUWoWtWuQzV67uHKlNVbvIXl-Sh7NOhMpNPT-HLt2BiyVV7Pg7kp9ohaxN0q6dn1HSmFrL
-            var data={
-              "to": `${firebaseToken}`,
-              "notification": {
+            const data = {
+              to: `${firebaseToken}`,
+              notification: {
                 sound: 'default',
                 vibration: true,
                 body: `${notification}`,
@@ -875,14 +853,14 @@ class ImpulsaController {
                 content_available: true,
                 priority: 'high'
               },
-              "android": {
-                "notification": {
+              android: {
+                notification: {
                   sound: 'default',
-                  vibration: true,
+                  vibration: true
                 }
               },
-              "apns": {
-                "payload": {
+              apns: {
+                payload: {
                   sound: 'default'
                 }
               }
@@ -892,7 +870,7 @@ class ImpulsaController {
               baseURL: 'https://fcm.googleapis.com/',
               timeout: 1000,
               headers: {
-                'Authorization': process.env.KEY_FIREBASE || '', 
+                Authorization: process.env.KEY_FIREBASE || '',
                 'Content-Type': 'application/json'
               }
             });
@@ -907,18 +885,18 @@ class ImpulsaController {
             await notificationPush.save();
 
             instance.post('fcm/send', data)
-            .then(function (response) {
-              res.status(200).json({
-                message: `La notificación se ha enviado de manera correcta: ${response.data}`,
-                status: 200
+              .then(function (response) {
+                res.status(200).json({
+                  message: `La notificación se ha enviado de manera correcta: ${response.data}`,
+                  status: 200
+                });
+              })
+              .catch(function (error) {
+                res.status(400).json({
+                  message: 'Ocurrio un error: ' + error,
+                  status: 400
+                });
               });
-            })
-            .catch(function (error) {
-              res.status(400).json({
-                message: 'Ocurrio un error: ' + error,
-                status: 400
-              });
-            });
           } else {
             res.status(400).json({
               message: 'El cliente no tiene el token de firebase',
@@ -930,168 +908,9 @@ class ImpulsaController {
             message: 'No se encuentra el Cliente',
             status: 400
           });
-        }  
-      } catch (error) {
-       res.send({'Ocurrio un error ' : error}) 
-      }
-    }
-
-    // probando subir los pdf a mongo
-    public SavePoliceInMongoDB = async (_req: Request, res : Response) => {
-      res.set('Access-Control-Allow-Origin', '*');
-      // await uploadFilesMiddleware(_req,res)
-      console.log(_req.file);
-      const file = _req.file;
-      
-      //var oMyBlob = new Blob(file as undefined, {type : 'application/pdf'});
-      //console.log(oMyBlob);
-      const status = _req.body.status;
-      const numUse = Status[status];
-      try {
-        if (file?.mimetype === 'application/pdf') {
-          /** search Number phone in the data base */       
-          const isUserExist = await ClientsModel.findOne({ externalId: _req.params.externalIdClient });
-
-          if (isUserExist) {
-            const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: _req.body.externalId });
-
-            if (isPolicyExist) {
-              return res.status(400).json({
-                error: 'El externalId ya se encuentra registrado en la base de datos',
-                status: 400
-              });
-            } else {
-              const isNumberPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: _req.body.policyNumber });
-
-              if (isNumberPolicyExist) {
-                res.status(400).json({
-                  message: 'El número de la poliza debe ser único',
-                  status: 400
-                });
-              } else {
-                // creando el alias del modelo
-
-                const tipe = _req.body.policyType.toUpperCase();
-                const number = _req.body.policyNumber;
-
-                // asignando la aseguradora a la poliza
-                const insuranceId = _req.body.insuranceId;
-
-                const isInsuranceExist = await InsuranceModel.findOne({ externalId: insuranceId });
-
-                if (isInsuranceExist) {
-                  try {
-                    const aseguradora = isInsuranceExist?.name;
-                    // construyendo el alias momentario
-                    const alias = `${aseguradora}-${tipe}-${number}`;
-                    // instantiating the model for save data
-                    const user = new InsurancePoliciesModel({
-                      insuranceId: insuranceId,
-                      policyNumber: number,
-                      policyType: tipe,
-                      alias: alias,
-                      effectiveDate: _req.body.effectiveDate,
-                      expirationDate: _req.body.expirationDate,
-                      status: numUse,
-                      fileUrl: file.originalname,
-                      externalId: _req.body.externalId,
-                      externalIdClient: _req.params.externalIdClient
-                    });
-                    // save data
-                    await user.save();
-                    await user.updateOne({});
-
-                    // send request exit
-                    res.status(200).json({
-                      message: 'Poliza registrada',
-                      UserPolicy: [
-                                    `InsurerName : ${user.insuranceId}`,
-                                    `PolicyNumber : ${user.policyNumber}`,
-                                    `alias : ${user.alias}`,
-                                    `PolicyType : ${user.policyType}`,
-                                    `EffectiveDate : ${user.effectiveDate}`,
-                                    `ExpirationDate : ${user.expirationDate}`,
-                                    `Status : ${user.status}`,
-                                    `FileName : ${user.fileUrl}`,
-                                    `externalId : ${user.externalId}`
-                      ]
-                    });
-                  } catch (error) {
-                    res.status(404).json({
-                      error,
-                      status: 404
-                    });
-                  }
-                } else {
-                  res.status(400).json({
-                    message: 'No se encuentra la aseguradora',
-                    status: 400
-                  });
-                }
-              }
-            }
-          } else {
-            fs.unlinkSync(`${_req.file?.path}`);
-            res.status(400).json({
-              message: 'Cliente no encontrado',
-              status: 400
-            });
-          }
-        } else {
-          fs.unlinkSync(`${_req.file?.path}`);
-          res.status(400).json({
-            message: 'no es un archivo pdf',
-            status: 400
-          });
         }
       } catch (error) {
-        res.status(400).json({
-          message: 'Ocurrio un error: ' + error,
-          status:400
-        });
-      }
-    }
-
-    public ViewPDFonMongoDB = async (_req : Request, res : Response) => {
-      res.set('Access-Control-Allow-Origin', '*');
-
-      const externalId = _req.params.externalId;
-      try {
-        const isPolicyExist = await InsurancePoliciesModel.findOne({ externalId: externalId });
-        if (isPolicyExist) {
-          const name = isPolicyExist?.fileUrl;
-          
-          try {
-            // const database:any = conection;
-            // console.log(name as string);
-
-            await mongoClient.connect();
-            const database = mongoClient.db();
-            const bucket = new GridFSBucket(database, {
-              bucketName: "insurancePolicies",
-            });
-            let downloadStream = bucket.openDownloadStreamByName(name as string);
-            downloadStream.on("data", function (data) {
-              // res.setHeader('Content-Type', 'application/pdf');
-              return res.status(200).write(data);
-            });
-            downloadStream.on("error", function (err) {
-              return res.status(404).send({ message: "Cannot download the Image!" + err });
-            });
-            downloadStream.on("end", () => {
-              return res.end();
-            });
-          } catch (error) {
-            return res.status(500).send({
-              message: 'Ocurrio un error inesperado: ' + error,
-            });
-          }
-        }
-      } catch (error) {
-        res.status(400).json({
-          message: 'Ocurrio un error: ' + error,
-          status:400
-        });
+        res.send({ 'Ocurrio un error ': error });
       }
     }
 }
@@ -1104,6 +923,5 @@ function isObjEmpty (obj:Object) {
 
   return true;
 }
-
 
 export default new ImpulsaController();

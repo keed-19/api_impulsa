@@ -27,8 +27,7 @@ const moment_1 = __importDefault(require("moment"));
 const mongoose_1 = require("mongoose");
 const database_1 = require("../../config/database");
 const mongodb_1 = require("mongodb");
-const mongodb_2 = require("mongodb");
-const mongoClient = new mongodb_2.MongoClient(database_1.conection);
+const mongoClient = new mongodb_1.MongoClient(database_1.conection);
 (0, moment_1.default)().format();
 /** Variable for verification code */
 let cadena = '';
@@ -216,13 +215,13 @@ class UserController {
                 if (!isUserExist) {
                     if (isTelefonoExist) {
                         const removeAccents = (str) => {
-                            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                         };
                         // si ya es cleinte de impulsa, entonces le vamos a dar acceso a hacer el registro de manera correcta
                         // comparamos los datos enviados, con los del cliente que ya esta registrado
                         const fullNameFI = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
-                        let fullNameCA = fullNameFI.toUpperCase();
-                        var fullName = removeAccents(fullNameCA);
+                        const fullNameCA = fullNameFI.toUpperCase();
+                        const fullName = removeAccents(fullNameCA);
                         const fechaN = isTelefonoExist.incorporationOrBirthDate;
                         const fechaString = JSON.stringify(fechaN);
                         const fechaVlidador = fechaString.substring(1, 11);
@@ -398,7 +397,7 @@ class UserController {
                 const externalId = isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.externalId;
                 // guardando la respuesta de las polizas propias
                 // const polizasPropias = await InsurancePoliciesModel.find({ externalIdClient: externalId, status: 'active' });
-                const polizasPropias = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalId, status: { '$in': ['active', 'wasNotPaid'] } });
+                const polizasPropias = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalId, status: { $in: ['active', 'wasNotPaid'] } });
                 polizasPropias.forEach(item => {
                     policyMe.push({
                         _id: item._id
@@ -407,7 +406,7 @@ class UserController {
                 // buscando el numero de telefono de la aseguradora
                 for (let x = 0; x < policyMe.length; x++) {
                     const id = policyMe[x]._id;
-                    const polisa = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id, status: { '$in': ['active', 'wasNotPaid'] } });
+                    const polisa = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id, status: { $in: ['active', 'wasNotPaid'] } });
                     const insurance = polisa === null || polisa === void 0 ? void 0 : polisa.insuranceId;
                     const numberPhone = yield Insurance_1.InsuranceModel.findOne({ externalId: insurance });
                     const polizas = {
@@ -427,7 +426,7 @@ class UserController {
                 };
                 // console.log(misPolizas);
                 // guardando los externalId de las polizas externas
-                const polizasExternas = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: _id, status: { '$in': ['active', 'wasNotPaid'] } });
+                const polizasExternas = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: _id, status: { $in: ['active', 'wasNotPaid'] } });
                 polizasExternas.forEach(item => {
                     policyIdExternal.push({
                         externalIdClient: item.externalIdClient
@@ -447,7 +446,7 @@ class UserController {
                     const id = uniqueArray[j].externalIdClient;
                     // buscar el cliente con el externalId
                     const client = yield Client_1.ClientsModel.findOne({ externalId: id });
-                    const polizasClientsExternal = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: _id, externalIdClient: id, status: { '$in': ['active', 'wasNotPaid'] } });
+                    const polizasClientsExternal = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: _id, externalIdClient: id, status: { $in: ['active', 'wasNotPaid'] } });
                     polizasClientsExternal.forEach(item => {
                         policyExternalClients.push({
                             externalIdPolicy: item.externalIdPolicy,
@@ -457,9 +456,9 @@ class UserController {
                     for (let i = 0; i < policyExternalClients.length; i++) {
                         externalP = {};
                         const idPolicy = policyExternalClients[i].externalIdPolicy;
-                        const polizas = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: idPolicy, status: { '$in': ['active', 'wasNotPaid'] } });
+                        const polizas = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: idPolicy, status: { $in: ['active', 'wasNotPaid'] } });
                         const idInsurance = polizas === null || polizas === void 0 ? void 0 : polizas.insuranceId;
-                        const polizasModeloExternal = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ externalIdPolicy: idPolicy, IdClient: _id, status: { '$in': ['active', 'wasNotPaid'] } });
+                        const polizasModeloExternal = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.findOne({ externalIdPolicy: idPolicy, IdClient: _id, status: { $in: ['active', 'wasNotPaid'] } });
                         const insurance = yield Insurance_1.InsuranceModel.findOne({ externalId: idInsurance });
                         externalP = {
                             _id: polizasModeloExternal === null || polizasModeloExternal === void 0 ? void 0 : polizasModeloExternal._id,
@@ -525,18 +524,18 @@ class UserController {
                         yield mongoClient.connect();
                         const database = mongoClient.db();
                         const bucket = new mongodb_1.GridFSBucket(database, {
-                            bucketName: "insurancePolicies",
+                            bucketName: 'insurancePolicies'
                         });
-                        let downloadStream = bucket.openDownloadStreamByName(name);
-                        downloadStream.on("data", function (data) {
+                        const downloadStream = bucket.openDownloadStreamByName(name);
+                        downloadStream.on('data', function (data) {
                             // res.setHeader('Content-Type', 'application/pdf');
                             // res.setHeader('Content-Type', 'application/pdf');
                             return res.status(200).write(data);
                         });
-                        downloadStream.on("error", function (err) {
-                            return res.status(404).send({ message: "No se puede obtener la póliza!" + err });
+                        downloadStream.on('error', function (err) {
+                            return res.status(404).send({ message: 'No se puede obtener la póliza!' + err });
                         });
-                        downloadStream.on("end", () => {
+                        downloadStream.on('end', () => {
                             return res.end();
                         });
                     }
@@ -558,18 +557,16 @@ class UserController {
                                 yield mongoClient.connect();
                                 const database = mongoClient.db();
                                 const bucket = new mongodb_1.GridFSBucket(database, {
-                                    bucketName: "insurancePolicies",
+                                    bucketName: 'insurancePolicies'
                                 });
-                                let downloadStream = bucket.openDownloadStreamByName(name);
-                                downloadStream.on("data", function (data) {
-                                    // res.setHeader('Content-Type', 'application/pdf');
-                                    // res.setHeader('Content-Type', 'application/pdf');
+                                const downloadStream = bucket.openDownloadStreamByName(name);
+                                downloadStream.on('data', function (data) {
                                     return res.status(200).write(data);
                                 });
-                                downloadStream.on("error", function (err) {
-                                    return res.status(404).send({ message: "No se puede obtener la póliza!" + err });
+                                downloadStream.on('error', function (err) {
+                                    return res.status(404).send({ message: 'No se puede obtener la póliza!' + err });
                                 });
-                                downloadStream.on("end", () => {
+                                downloadStream.on('end', () => {
                                     return res.end();
                                 });
                             }
@@ -660,7 +657,7 @@ class UserController {
             try {
                 const validarClient = yield Client_1.ClientsModel.findOne({ _id: _id });
                 const externalIdClient = yield (validarClient === null || validarClient === void 0 ? void 0 : validarClient.externalId);
-                const validarPolicyProp = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient, policyNumber: policyNumber, status: { '$in': ['active', 'wasNotPaid'] } });
+                const validarPolicyProp = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient, policyNumber: policyNumber, status: { $in: ['active', 'wasNotPaid'] } });
                 if (validarPolicyProp) {
                     res.status(203).json({
                         message: 'No pudes vincular tus propias pólizas',
@@ -668,7 +665,7 @@ class UserController {
                     });
                 }
                 else {
-                    const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber, status: { '$in': ['active', 'wasNotPaid'] } });
+                    const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ policyNumber: policyNumber, status: { $in: ['active', 'wasNotPaid'] } });
                     if (isPolicyExist) {
                         const client = yield Client_1.ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
                         if (client) {
@@ -748,14 +745,14 @@ class UserController {
             const FinalRes = [];
             try {
                 // guardamos las polizas externas del usuario con acceso a las polizas de un cliente
-                const externalIDClientViewer = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: id, externalIdClient: externalIdClient, status: { '$in': ['active', 'wasNotPaid'] } });
+                const externalIDClientViewer = yield ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: id, externalIdClient: externalIdClient, status: { $in: ['active', 'wasNotPaid'] } });
                 externalIDClientViewer.forEach(item => {
                     policySyncS.push({
                         Id: item.externalIdPolicy
                     });
                 });
                 // guardamos las polizas del usuario externo
-                const polizasClienteExterno = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient, status: { '$in': ['active', 'wasNotPaid'] } });
+                const polizasClienteExterno = yield InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: externalIdClient, status: { $in: ['active', 'wasNotPaid'] } });
                 polizasClienteExterno.forEach(item => {
                     policyExternalS.push({
                         Id: JSON.stringify(item._id)
@@ -779,7 +776,7 @@ class UserController {
                 // guardar las polizas que seran devueltas al usuario en la respuesta
                 for (let j = 0; j < policyRes.length; j++) {
                     const id = policyRes[j].Id;
-                    const policy = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id, status: { '$in': ['active', 'wasNotPaid'] } });
+                    const policy = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: id, status: { $in: ['active', 'wasNotPaid'] } });
                     FinalRes.push(policy);
                 }
                 const valRes = yield isObjEmpty(FinalRes);
@@ -823,7 +820,7 @@ class UserController {
                 // eslint-disable-next-line no-var
                 for (var i = 0; i < arrayLenght; i++) {
                     const _id = newArr[i];
-                    const valores = yield InsurancePolicy_1.InsurancePoliciesModel.find({ _id: _id, status: { '$in': ['active', 'wasNotPaid'] } });
+                    const valores = yield InsurancePolicy_1.InsurancePoliciesModel.find({ _id: _id, status: { $in: ['active', 'wasNotPaid'] } });
                     valores.forEach(item => {
                         policyViewSelect.push({
                             id: JSON.stringify(item._id),
@@ -1311,21 +1308,21 @@ function isObjEmpty(obj) {
 }
 function SendNotifications(firebaseToken, externalId, body) {
     try {
-        var data = {
-            "to": `${firebaseToken}`,
-            "notification": {
-                "sound": "default",
-                "body": `${body}`,
-                "title": "Impulsa",
-                "content_available": true,
-                "priority": "high"
+        const data = {
+            to: `${firebaseToken}`,
+            notification: {
+                sound: 'default',
+                body: `${body}`,
+                title: 'Impulsa',
+                content_available: true,
+                priority: 'high'
             }
         };
         const instance = axios_1.default.create({
             baseURL: 'https://fcm.googleapis.com/',
             timeout: 1000,
             headers: {
-                'Authorization': process.env.KEY_FIREBASE || '',
+                Authorization: process.env.KEY_FIREBASE || '',
                 'Content-Type': 'application/json'
             }
         });
@@ -1338,6 +1335,7 @@ function SendNotifications(firebaseToken, externalId, body) {
         });
         notificationPush.save();
         instance.post('fcm/send', data);
+        // eslint-disable-next-line no-return-assign
         return validador = true;
     }
     catch (error) {
@@ -1345,10 +1343,11 @@ function SendNotifications(firebaseToken, externalId, body) {
         const authToken = process.env.TWILIO_AUTH_TOKEN;
         const client = new twilio_1.Twilio(accountSid, authToken);
         client.messages.create({
-            body: `Las Notificaciones no se enviaron`,
+            body: 'Las Notificaciones no se enviaron',
             from: '+18169346014',
-            to: `+529192389847`
+            to: '+529192389847'
         }).then(message => console.log(message.sid));
+        // eslint-disable-next-line no-return-assign
         return validador = false;
     }
 }

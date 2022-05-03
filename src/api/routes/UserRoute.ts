@@ -145,10 +145,4 @@ UserRoute.put('/sync/update/insurances/:externalId', [syncMiddleware.veryfyCrede
 // enviar notificaciones PUSH a un cliente por su externalId
 UserRoute.post('/sync/push/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.sendPush]);
 
-// probando la nueva carga de archivos
-UserRoute.post('/sync/policiesNew/client/:externalIdClient', [uploadFiles.single('file'), ImpulsaController.SavePoliceInMongoDB]);
-
-// probando la vista de los PDF que ya estan en la base de datos
-UserRoute.get('/sync/policiesDB/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.ViewPDFonMongoDB]);
-
 export default UserRoute;

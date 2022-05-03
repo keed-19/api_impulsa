@@ -13,9 +13,9 @@ import axios from 'axios';
 import { NotificationPushModel } from '../models/NotificatiosPush';
 import moment from 'moment';
 import { now } from 'mongoose';
-import {conection} from '../../config/database';
-import { GridFSBucket } from 'mongodb';
-import { MongoClient } from 'mongodb';
+import { conection } from '../../config/database';
+import { GridFSBucket, MongoClient } from 'mongodb';
+
 const mongoClient = new MongoClient(conection);
 moment().format();
 
@@ -211,14 +211,14 @@ class UserController {
 
        if (!isUserExist) {
          if (isTelefonoExist) {
-          const removeAccents = (str: string) => {
-            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-          }
+           const removeAccents = (str: string) => {
+             return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+           };
            // si ya es cleinte de impulsa, entonces le vamos a dar acceso a hacer el registro de manera correcta
            // comparamos los datos enviados, con los del cliente que ya esta registrado
            const fullNameFI = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
-           let fullNameCA = fullNameFI.toUpperCase();
-           var fullName = removeAccents(fullNameCA);
+           const fullNameCA = fullNameFI.toUpperCase();
+           const fullName = removeAccents(fullNameCA);
            const fechaN = isTelefonoExist.incorporationOrBirthDate;
            const fechaString = JSON.stringify(fechaN);
            const fechaVlidador = fechaString.substring(1, 11);
@@ -396,7 +396,7 @@ class UserController {
       const externalId = isClientExist?.externalId;
       // guardando la respuesta de las polizas propias
       // const polizasPropias = await InsurancePoliciesModel.find({ externalIdClient: externalId, status: 'active' });
-      const polizasPropias = await InsurancePoliciesModel.find({ externalIdClient: externalId, status: {'$in': ['active', 'wasNotPaid']}});
+      const polizasPropias = await InsurancePoliciesModel.find({ externalIdClient: externalId, status: { $in: ['active', 'wasNotPaid'] } });
       polizasPropias.forEach(item => {
         policyMe.push(
           {
@@ -408,7 +408,7 @@ class UserController {
       // buscando el numero de telefono de la aseguradora
       for (let x = 0; x < policyMe.length; x++) {
         const id = policyMe[x]._id;
-        const polisa = await InsurancePoliciesModel.findOne({ _id: id, status: {'$in': ['active', 'wasNotPaid']} });
+        const polisa = await InsurancePoliciesModel.findOne({ _id: id, status: { $in: ['active', 'wasNotPaid'] } });
         const insurance = polisa?.insuranceId;
         const numberPhone = await InsuranceModel.findOne({ externalId: insurance });
         const polizas = {
@@ -430,7 +430,7 @@ class UserController {
       // console.log(misPolizas);
 
       // guardando los externalId de las polizas externas
-      const polizasExternas = await ExternalPolicyClinetModel.find({ IdClient: _id, status: {'$in': ['active', 'wasNotPaid']} });
+      const polizasExternas = await ExternalPolicyClinetModel.find({ IdClient: _id, status: { $in: ['active', 'wasNotPaid'] } });
       polizasExternas.forEach(item => {
         policyIdExternal.push(
           {
@@ -454,7 +454,7 @@ class UserController {
         const id = uniqueArray[j].externalIdClient as String;
         // buscar el cliente con el externalId
         const client = await ClientsModel.findOne({ externalId: id });
-        const polizasClientsExternal = await ExternalPolicyClinetModel.find({ IdClient: _id, externalIdClient: id, status: {'$in': ['active', 'wasNotPaid']} });
+        const polizasClientsExternal = await ExternalPolicyClinetModel.find({ IdClient: _id, externalIdClient: id, status: { $in: ['active', 'wasNotPaid'] } });
         polizasClientsExternal.forEach(item => {
           policyExternalClients.push(
             {
@@ -466,9 +466,9 @@ class UserController {
         for (let i = 0; i < policyExternalClients.length; i++) {
           externalP = {};
           const idPolicy = policyExternalClients[i].externalIdPolicy;
-          const polizas = await InsurancePoliciesModel.findOne({ _id: idPolicy, status: {'$in': ['active', 'wasNotPaid']} });
+          const polizas = await InsurancePoliciesModel.findOne({ _id: idPolicy, status: { $in: ['active', 'wasNotPaid'] } });
           const idInsurance = polizas?.insuranceId;
-          const polizasModeloExternal = await ExternalPolicyClinetModel.findOne({ externalIdPolicy: idPolicy, IdClient: _id, status: {'$in': ['active', 'wasNotPaid']} });
+          const polizasModeloExternal = await ExternalPolicyClinetModel.findOne({ externalIdPolicy: idPolicy, IdClient: _id, status: { $in: ['active', 'wasNotPaid'] } });
           const insurance = await InsuranceModel.findOne({ externalId: idInsurance });
           externalP = {
             _id: polizasModeloExternal?._id,
@@ -538,23 +538,22 @@ class UserController {
 
           // // res.contentType("application/pdf");
           // res.send(data);
-          
-          
+
           await mongoClient.connect();
           const database = mongoClient.db();
           const bucket = new GridFSBucket(database, {
-            bucketName: "insurancePolicies",
+            bucketName: 'insurancePolicies'
           });
-          let downloadStream = bucket.openDownloadStreamByName(name as string);
-          downloadStream.on("data", function (data) {
+          const downloadStream = bucket.openDownloadStreamByName(name as string);
+          downloadStream.on('data', function (data) {
             // res.setHeader('Content-Type', 'application/pdf');
             // res.setHeader('Content-Type', 'application/pdf');
             return res.status(200).write(data);
           });
-          downloadStream.on("error", function (err) {
-            return res.status(404).send({ message: "No se puede obtener la póliza!" + err });
+          downloadStream.on('error', function (err) {
+            return res.status(404).send({ message: 'No se puede obtener la póliza!' + err });
           });
-          downloadStream.on("end", () => {
+          downloadStream.on('end', () => {
             return res.end();
           });
         } catch (error) {
@@ -575,20 +574,18 @@ class UserController {
               await mongoClient.connect();
               const database = mongoClient.db();
               const bucket = new GridFSBucket(database, {
-              bucketName: "insurancePolicies",
-            });
-          let downloadStream = bucket.openDownloadStreamByName(name as string);
-          downloadStream.on("data", function (data) {
-            // res.setHeader('Content-Type', 'application/pdf');
-            // res.setHeader('Content-Type', 'application/pdf');
-            return res.status(200).write(data);
-          });
-          downloadStream.on("error", function (err) {
-            return res.status(404).send({ message: "No se puede obtener la póliza!" + err });
-          });
-          downloadStream.on("end", () => {
-            return res.end();
-          });
+                bucketName: 'insurancePolicies'
+              });
+              const downloadStream = bucket.openDownloadStreamByName(name as string);
+              downloadStream.on('data', function (data) {
+                return res.status(200).write(data);
+              });
+              downloadStream.on('error', function (err) {
+                return res.status(404).send({ message: 'No se puede obtener la póliza!' + err });
+              });
+              downloadStream.on('end', () => {
+                return res.end();
+              });
             } catch (error) {
               res.status(400).send({
                 message: 'No se ecuentra la póliza: ' + error,
@@ -671,14 +668,14 @@ class UserController {
     try {
       const validarClient = await ClientsModel.findOne({ _id: _id });
       const externalIdClient = await validarClient?.externalId;
-      const validarPolicyProp = await InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient, policyNumber: policyNumber, status: {'$in': ['active', 'wasNotPaid']} });
+      const validarPolicyProp = await InsurancePoliciesModel.findOne({ externalIdClient: externalIdClient, policyNumber: policyNumber, status: { $in: ['active', 'wasNotPaid'] } });
       if (validarPolicyProp) {
         res.status(203).json({
           message: 'No pudes vincular tus propias pólizas',
           status: 203
         });
       } else {
-        const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber, status: {'$in': ['active', 'wasNotPaid']} });
+        const isPolicyExist = await InsurancePoliciesModel.findOne({ policyNumber: policyNumber, status: { $in: ['active', 'wasNotPaid'] } });
         if (isPolicyExist) {
           const client = await ClientsModel.findOne({ externalId: isPolicyExist.externalIdClient });
 
@@ -759,7 +756,7 @@ class UserController {
 
     try {
       // guardamos las polizas externas del usuario con acceso a las polizas de un cliente
-      const externalIDClientViewer = await ExternalPolicyClinetModel.find({ IdClient: id, externalIdClient: externalIdClient, status: {'$in': ['active', 'wasNotPaid']} });
+      const externalIDClientViewer = await ExternalPolicyClinetModel.find({ IdClient: id, externalIdClient: externalIdClient, status: { $in: ['active', 'wasNotPaid'] } });
       externalIDClientViewer.forEach(item => {
         policySyncS.push(
           {
@@ -769,7 +766,7 @@ class UserController {
       });
 
       // guardamos las polizas del usuario externo
-      const polizasClienteExterno = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient, status: {'$in': ['active', 'wasNotPaid']} });
+      const polizasClienteExterno = await InsurancePoliciesModel.find({ externalIdClient: externalIdClient, status: { $in: ['active', 'wasNotPaid'] } });
       polizasClienteExterno.forEach(item => {
         policyExternalS.push(
           {
@@ -800,7 +797,7 @@ class UserController {
       // guardar las polizas que seran devueltas al usuario en la respuesta
       for (let j = 0; j < policyRes.length; j++) {
         const id = policyRes[j].Id as Object;
-        const policy = await InsurancePoliciesModel.findOne({ _id: id, status: {'$in': ['active', 'wasNotPaid']} });
+        const policy = await InsurancePoliciesModel.findOne({ _id: id, status: { $in: ['active', 'wasNotPaid'] } });
         FinalRes.push(policy);
       }
       const valRes = await isObjEmpty(FinalRes as object);
@@ -844,7 +841,7 @@ class UserController {
       // eslint-disable-next-line no-var
       for (var i = 0; i < arrayLenght; i++) {
         const _id = newArr[i];
-        const valores = await InsurancePoliciesModel.find({ _id: _id, status: {'$in': ['active', 'wasNotPaid']} });
+        const valores = await InsurancePoliciesModel.find({ _id: _id, status: { $in: ['active', 'wasNotPaid'] } });
         valores.forEach(item => {
           policyViewSelect.push(
             {
@@ -1106,11 +1103,11 @@ class UserController {
     let policies:Array<any> = [];
     const fechaMongo = moment.utc().format('YYYY-MM-DD');
     const valorFechaunMes = moment(fechaMongo).add(1, 'months').format('YYYY-MM-DD');
-    const valorFechaQuinceDias = moment(fechaMongo).add({ days:15 }).format('YYYY-MM-DD');
+    const valorFechaQuinceDias = moment(fechaMongo).add({ days: 15 }).format('YYYY-MM-DD');
     const valorFechaHoy = moment(fechaMongo).format('YYYY-MM-DD');
     console.log(valorFechaunMes);
     console.log(valorFechaQuinceDias);
-    const fechasVenciminetoUnMes = await InsurancePoliciesModel.find({expirationDate: valorFechaunMes, status: 'active'});
+    const fechasVenciminetoUnMes = await InsurancePoliciesModel.find({ expirationDate: valorFechaunMes, status: 'active' });
     // console.log(fechasVenciminetoUnMes);
 
     if (fechasVenciminetoUnMes) {
@@ -1150,14 +1147,14 @@ class UserController {
         });
         await notificationPush.save();
       }
-      uniqueArray=[];
-      policies=[]
+      uniqueArray = [];
+      policies = [];
       if (validador) {
-        validador=false;
+        validador = false;
       }
     }
 
-    const fechasVenciminetoQuinceDias = await InsurancePoliciesModel.find({expirationDate: valorFechaQuinceDias, status: 'active'});
+    const fechasVenciminetoQuinceDias = await InsurancePoliciesModel.find({ expirationDate: valorFechaQuinceDias, status: 'active' });
     if (fechasVenciminetoQuinceDias) {
       fechasVenciminetoQuinceDias.forEach(item => {
         policies.push(
@@ -1195,14 +1192,14 @@ class UserController {
         });
         await notificationPush.save();
       }
-      uniqueArray=[];
-      policies=[]
+      uniqueArray = [];
+      policies = [];
       if (validador) {
-        validador=false;
+        validador = false;
       }
     }
 
-    const fechasVenciminetoNow = await InsurancePoliciesModel.find({expirationDate: valorFechaHoy, status: 'active'});
+    const fechasVenciminetoNow = await InsurancePoliciesModel.find({ expirationDate: valorFechaHoy, status: 'active' });
     if (fechasVenciminetoNow) {
       fechasVenciminetoNow.forEach(item => {
         policies.push(
@@ -1240,15 +1237,15 @@ class UserController {
         });
         await notificationPush.save();
       }
-      uniqueArray=[];
-      policies=[]
+      uniqueArray = [];
+      policies = [];
       if (validador) {
-        validador=false;
+        validador = false;
       }
     }
   }
 
-  public ViewPrivacyPolitics = async(_req: Request,res: Response) => {
+  public ViewPrivacyPolitics = async (_req: Request, res: Response) => {
     const data = fs.readFileSync('src/uploads/AvisodePrivacidad.PDF');
     res.setHeader('Content-Type', 'application/pdf');
     res.send(data);
@@ -1376,14 +1373,14 @@ function isObjEmpty (obj:Object) {
 
 function SendNotifications (firebaseToken: String, externalId: Number, body: String) {
   try {
-    var data={
-      "to": `${firebaseToken}`,
-      "notification": {
-        "sound": "default",
-        "body": `${body}`,
-        "title": "Impulsa",
-        "content_available": true,
-        "priority": "high"
+    const data = {
+      to: `${firebaseToken}`,
+      notification: {
+        sound: 'default',
+        body: `${body}`,
+        title: 'Impulsa',
+        content_available: true,
+        priority: 'high'
       }
     };
 
@@ -1391,7 +1388,7 @@ function SendNotifications (firebaseToken: String, externalId: Number, body: Str
       baseURL: 'https://fcm.googleapis.com/',
       timeout: 1000,
       headers: {
-        'Authorization': process.env.KEY_FIREBASE || '', 
+        Authorization: process.env.KEY_FIREBASE || '',
         'Content-Type': 'application/json'
       }
     });
@@ -1407,6 +1404,7 @@ function SendNotifications (firebaseToken: String, externalId: Number, body: Str
 
     instance.post('fcm/send', data);
 
+    // eslint-disable-next-line no-return-assign
     return validador = true;
   } catch (error) {
     const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
@@ -1415,10 +1413,11 @@ function SendNotifications (firebaseToken: String, externalId: Number, body: Str
     const client = new Twilio(accountSid, authToken);
 
     client.messages.create({
-      body: `Las Notificaciones no se enviaron`,
+      body: 'Las Notificaciones no se enviaron',
       from: '+18169346014',
-      to: `+529192389847`
+      to: '+529192389847'
     }).then(message => console.log(message.sid));
+    // eslint-disable-next-line no-return-assign
     return validador = false;
   }
 }
