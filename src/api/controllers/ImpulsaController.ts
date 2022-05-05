@@ -131,7 +131,6 @@ class ImpulsaController {
       }
     }
 
-    // TODOs: este ya esta listo pero falta validar q se elimine el archivo si no es un pdf
     public SavePolice = async (_req: Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       const file = _req.file;
@@ -623,6 +622,7 @@ class ImpulsaController {
     public SaveInsurance = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       const phoneNumber = _req.body.phoneNumber;
+      let valuesMax = 0;
       try {
         if (_req.body.phoneNumber === null) {
           return res.status(400).json({
@@ -641,17 +641,17 @@ class ImpulsaController {
           });
         } else {
           try {
-            const phone = phoneNumber.replace(/\s+/g, '');
-            const isTelefonoExist = await InsuranceModel.findOne({ phoneNumber: phone });
+            // const phone = phoneNumber.replace(/\s+/g, '');
+            // const isTelefonoExist = await InsuranceModel.findOne({ phoneNumber: phone });
             const isExternalIDExist = await InsuranceModel.findOne({ externalId: _req.body.externalId });
+            const valueOrderMax = await InsuranceModel.find().sort({ order: -1 }).limit(1);
+            valueOrderMax.forEach(item => {
+              valuesMax = item.order as number;
+            });
+
             const name = _req.body.name.toUpperCase();
 
-            if (isTelefonoExist) {
-              return res.status(208).json({
-                error: 'El numero telefonico ya se encuentra registrado en la base de datos',
-                status: 208
-              });
-            } else if (isExternalIDExist) {
+            if (isExternalIDExist) {
               return res.status(208).json({
                 error: 'El ExternalId ya se encuentra registrado en la base de datos y es un campo requerido',
                 status: 208
@@ -661,7 +661,8 @@ class ImpulsaController {
               const insurance = new InsuranceModel({
                 externalId: _req.body.externalId,
                 name: name,
-                phoneNumber: phone
+                phoneNumber: phoneNumber,
+                order: valuesMax + 1
               });
 
               try {
@@ -700,14 +701,37 @@ class ImpulsaController {
     public ViewInsurances = async (_req : Request, res : Response) => {
       res.set('Access-Control-Allow-Origin', '*');
       try {
-        const isInsuranceExist = await InsuranceModel.find({});
+        const insurances:Array<any> = [];
+        const resultsCorrect:Array<any> = [];
+        const isInsuranceExist = await InsuranceModel.find({}).sort({ order: 1 });
+        isInsuranceExist.forEach(item => {
+          insurances.push({
+            _id: item._id,
+            numbers: item.phoneNumber
+          });
+        });
 
         if (!isInsuranceExist) {
           res.json({
             message: 'No hay aseguradoras registradas'
           });
         } else if (isInsuranceExist) {
-          res.status(200).json(isInsuranceExist);
+          for (let x = 0; x < insurances.length; x++) {
+            const id = insurances[x]._id;
+            const numeros = insurances[x].numbers;
+            const searchInsurance = await InsuranceModel.findById(id);
+            const resultado = numeros.find((value: { type: string; }) => value.type === 'GENERAL');
+            resultsCorrect.push({
+              _id: searchInsurance?._id,
+              phoneNumber: resultado?.number,
+              name: searchInsurance?.name,
+              externalId: searchInsurance?.externalId,
+              iconCode: searchInsurance?.iconCode,
+              colorCode: searchInsurance?.colorCode,
+              order: searchInsurance?.order
+            });
+          }
+          res.status(200).json(resultsCorrect);
         } else {
           res.json({
             mensaje: 'ocurrio un error'
@@ -728,7 +752,6 @@ class ImpulsaController {
       const externalId = _req.params.externalId;
       try {
         const isClientExist = await InsuranceModel.findOne({ externalId: externalId });
-
         if (!isClientExist) {
           res.status(400).json({
             message: 'No existe la aseguradora',

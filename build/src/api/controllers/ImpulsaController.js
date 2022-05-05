@@ -140,7 +140,6 @@ class ImpulsaController {
                 });
             }
         });
-        // TODOs: este ya esta listo pero falta validar q se elimine el archivo si no es un pdf
         this.SavePolice = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const file = _req.file;
@@ -631,6 +630,7 @@ class ImpulsaController {
         this.SaveInsurance = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             const phoneNumber = _req.body.phoneNumber;
+            let valuesMax = 0;
             try {
                 if (_req.body.phoneNumber === null) {
                     return res.status(400).json({
@@ -652,17 +652,15 @@ class ImpulsaController {
                 }
                 else {
                     try {
-                        const phone = phoneNumber.replace(/\s+/g, '');
-                        const isTelefonoExist = yield Insurance_1.InsuranceModel.findOne({ phoneNumber: phone });
+                        // const phone = phoneNumber.replace(/\s+/g, '');
+                        // const isTelefonoExist = await InsuranceModel.findOne({ phoneNumber: phone });
                         const isExternalIDExist = yield Insurance_1.InsuranceModel.findOne({ externalId: _req.body.externalId });
+                        const valueOrderMax = yield Insurance_1.InsuranceModel.find().sort({ order: -1 }).limit(1);
+                        valueOrderMax.forEach(item => {
+                            valuesMax = item.order;
+                        });
                         const name = _req.body.name.toUpperCase();
-                        if (isTelefonoExist) {
-                            return res.status(208).json({
-                                error: 'El numero telefonico ya se encuentra registrado en la base de datos',
-                                status: 208
-                            });
-                        }
-                        else if (isExternalIDExist) {
+                        if (isExternalIDExist) {
                             return res.status(208).json({
                                 error: 'El ExternalId ya se encuentra registrado en la base de datos y es un campo requerido',
                                 status: 208
@@ -673,7 +671,8 @@ class ImpulsaController {
                             const insurance = new Insurance_1.InsuranceModel({
                                 externalId: _req.body.externalId,
                                 name: name,
-                                phoneNumber: phone
+                                phoneNumber: phoneNumber,
+                                order: valuesMax + 1
                             });
                             try {
                                 // save data
@@ -712,14 +711,37 @@ class ImpulsaController {
         this.ViewInsurances = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
             try {
-                const isInsuranceExist = yield Insurance_1.InsuranceModel.find({});
+                const insurances = [];
+                const resultsCorrect = [];
+                const isInsuranceExist = yield Insurance_1.InsuranceModel.find({}).sort({ order: 1 });
+                isInsuranceExist.forEach(item => {
+                    insurances.push({
+                        _id: item._id,
+                        numbers: item.phoneNumber
+                    });
+                });
                 if (!isInsuranceExist) {
                     res.json({
                         message: 'No hay aseguradoras registradas'
                     });
                 }
                 else if (isInsuranceExist) {
-                    res.status(200).json(isInsuranceExist);
+                    for (let x = 0; x < insurances.length; x++) {
+                        const id = insurances[x]._id;
+                        const numeros = insurances[x].numbers;
+                        const searchInsurance = yield Insurance_1.InsuranceModel.findById(id);
+                        const resultado = numeros.find((value) => value.type === 'GENERAL');
+                        resultsCorrect.push({
+                            _id: searchInsurance === null || searchInsurance === void 0 ? void 0 : searchInsurance._id,
+                            phoneNumber: resultado === null || resultado === void 0 ? void 0 : resultado.number,
+                            name: searchInsurance === null || searchInsurance === void 0 ? void 0 : searchInsurance.name,
+                            externalId: searchInsurance === null || searchInsurance === void 0 ? void 0 : searchInsurance.externalId,
+                            iconCode: searchInsurance === null || searchInsurance === void 0 ? void 0 : searchInsurance.iconCode,
+                            colorCode: searchInsurance === null || searchInsurance === void 0 ? void 0 : searchInsurance.colorCode,
+                            order: searchInsurance === null || searchInsurance === void 0 ? void 0 : searchInsurance.order
+                        });
+                    }
+                    res.status(200).json(resultsCorrect);
                 }
                 else {
                     res.json({

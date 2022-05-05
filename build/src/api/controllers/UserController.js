@@ -48,6 +48,9 @@ class UserController {
             res.set('Access-Control-Allow-Origin', '*');
             const _id = _req.body.id;
             const code = _req.body.Code;
+            const removeAccents = (str) => {
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            };
             /** Search RegisterRequest with id parameter */
             try {
                 const user = yield RegisterRequest_1.RegisterRequestModel.findOne({ _id });
@@ -56,7 +59,8 @@ class UserController {
                 }
                 else if (user && user.tokenTotp === code) {
                     // verificando si ya es cliente de impulsa
-                    const fullName = `${user.firstName} ${user.middleName} ${user.lastName}`;
+                    const fullNameCA = (`${user.firstName} ${user.middleName} ${user.lastName}`).toUpperCase();
+                    const fullName = removeAccents(fullNameCA);
                     const isClientExist = yield Client_1.ClientsModel.findOne({ fullName: fullName });
                     if (isClientExist) {
                         const saveUser = new User_1.UsersModel({
@@ -206,22 +210,20 @@ class UserController {
         */
         this.register = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set('Access-Control-Allow-Origin', '*');
-            console.log(_req.body.tokenSMS);
-            console.log(_req.body);
             /** search Number phone in the data base */
             try {
                 const isTelefonoExist = yield Client_1.ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
                 const isUserExist = yield User_1.UsersModel.findOne({ username: _req.body.phoneNumber });
+                const removeAccents = (str) => {
+                    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                };
+                const fullNameFI = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
+                const fullNameCA = fullNameFI.toUpperCase();
+                const fullName = removeAccents(fullNameCA);
                 if (!isUserExist) {
                     if (isTelefonoExist) {
-                        const removeAccents = (str) => {
-                            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                        };
                         // si ya es cleinte de impulsa, entonces le vamos a dar acceso a hacer el registro de manera correcta
                         // comparamos los datos enviados, con los del cliente que ya esta registrado
-                        const fullNameFI = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
-                        const fullNameCA = fullNameFI.toUpperCase();
-                        const fullName = removeAccents(fullNameCA);
                         const fechaN = isTelefonoExist.incorporationOrBirthDate;
                         const fechaString = JSON.stringify(fechaN);
                         const fechaVlidador = fechaString.substring(1, 11);
@@ -651,8 +653,7 @@ class UserController {
         });
         // listo
         this.PolicyNumberSendSMS = (_req, res) => __awaiter(this, void 0, void 0, function* () {
-            const policyNumber = _req.params.policyNumber;
-            // const NumberPolice = parseInt(policyNumber);
+            const policyNumber = _req.params.policyNumber.toUpperCase();
             const _id = _req.params.clientId;
             try {
                 const validarClient = yield Client_1.ClientsModel.findOne({ _id: _id });
@@ -869,31 +870,47 @@ class UserController {
             const _id = _req.params.id;
             try {
                 const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: _id });
+                const insurances = [];
+                let resultsCorrect = {};
                 if (isPolicyExist) {
                     const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
                     const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
                     // buscando la aseguradora para mostrar los datos
                     const insurance = parseInt(isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.insuranceId);
-                    const isInsuranceExist = yield Insurance_1.InsuranceModel.findOne({ externalId: insurance });
+                    const isInsuranceExist = yield Insurance_1.InsuranceModel.find({ externalId: insurance });
+                    isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.forEach(item => {
+                        insurances.push({
+                            name: item.name,
+                            numbers: item.phoneNumber,
+                            iconCode: item.iconCode
+                        });
+                    });
+                    for (let x = 0; x < insurances.length; x++) {
+                        const numeros = insurances[x].numbers;
+                        const name = insurances[x].name;
+                        const iconCode = insurances[x].iconCode;
+                        // const searchInsurance = await InsuranceModel.findOne({ name: name });
+                        const resultado = numeros.find((value) => value.type === (isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyType));
+                        resultsCorrect = {
+                            _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
+                            fechaUpdate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.updatedAt,
+                            name: name,
+                            iconCode: iconCode,
+                            phoneNumber: resultado.number,
+                            alias: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.alias,
+                            status: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.status,
+                            policyType: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyType,
+                            policyNumber: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyNumber,
+                            effectiveDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.effectiveDate,
+                            expirationDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.expirationDate
+                        };
+                    }
                     // console.log(isInsuranceExist);
                     const cleintedetail = {
                         fullName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.fullName
                     };
-                    const policyDetail = {
-                        _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
-                        fechaUpdate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.updatedAt,
-                        name: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name,
-                        iconCode: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.iconCode,
-                        phoneNumber: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.phoneNumber,
-                        alias: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.alias,
-                        status: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.status,
-                        policyType: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyType,
-                        policyNumber: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyNumber,
-                        effectiveDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.effectiveDate,
-                        expirationDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.expirationDate
-                    };
                     res.status(200).json({
-                        data: policyDetail,
+                        data: resultsCorrect,
                         client: cleintedetail,
                         status: 200
                     });
@@ -905,28 +922,41 @@ class UserController {
                         const isPolicyExist = yield InsurancePolicy_1.InsurancePoliciesModel.findOne({ _id: externalIdPolicy });
                         // buscando los detalles de aseguradora de la poliza
                         const insurance = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.insuranceId;
-                        const isInsuranceExist = yield Insurance_1.InsuranceModel.findOne({ externalId: insurance });
-                        // console.log(isInsuranceExist);
+                        const isInsuranceExist = yield Insurance_1.InsuranceModel.find({ externalId: insurance });
+                        isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.forEach(item => {
+                            insurances.push({
+                                name: item.name,
+                                numbers: item.phoneNumber,
+                                iconCode: item.iconCode
+                            });
+                        });
+                        for (let x = 0; x < insurances.length; x++) {
+                            const numeros = insurances[x].numbers;
+                            const name = insurances[x].name;
+                            const iconCode = insurances[x].iconCode;
+                            // const searchInsurance = await InsuranceModel.findOne({ name: name });
+                            const resultado = numeros.find((value) => value.type === (isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyType));
+                            resultsCorrect = {
+                                _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
+                                fechaUpdate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.updatedAt,
+                                name: name,
+                                iconCode: iconCode,
+                                phoneNumber: resultado.number,
+                                alias: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.alias,
+                                status: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.status,
+                                policyType: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyType,
+                                policyNumber: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyNumber,
+                                effectiveDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.effectiveDate,
+                                expirationDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.expirationDate
+                            };
+                        }
                         const externalIdClient = isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.externalIdClient;
                         const isClientExist = yield Client_1.ClientsModel.findOne({ externalId: externalIdClient });
                         const cleintedetail = {
                             fullName: isClientExist === null || isClientExist === void 0 ? void 0 : isClientExist.fullName
                         };
-                        const policyDetail = {
-                            _id: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist._id,
-                            fechaUpdate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.updatedAt,
-                            name: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.name,
-                            iconCode: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.iconCode,
-                            phoneNumber: isInsuranceExist === null || isInsuranceExist === void 0 ? void 0 : isInsuranceExist.phoneNumber,
-                            alias: isPolicyExternalExist === null || isPolicyExternalExist === void 0 ? void 0 : isPolicyExternalExist.alias,
-                            status: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.status,
-                            policyType: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyType,
-                            policyNumber: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.policyNumber,
-                            effectiveDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.effectiveDate,
-                            expirationDate: isPolicyExist === null || isPolicyExist === void 0 ? void 0 : isPolicyExist.expirationDate
-                        };
                         res.status(200).json({
-                            data: policyDetail,
+                            data: resultsCorrect,
                             client: cleintedetail,
                             status: 200
                         });
@@ -1230,7 +1260,7 @@ function ramdom(phone, tokenSMS) {
     // send code verification
     client.messages.create({
         body: `<#> ${cadena} es tu código de verificación, ${tokenSMS}`,
-        from: '+18169346014',
+        from: process.env.TWILIO_PHONE_NUMBER,
         to: `+52${phone}`
     }).then((message) => console.log(message.sid));
     return (cadena);
@@ -1251,7 +1281,7 @@ function ramdomReenvio(phone) {
     // send code verification
     client.messages.create({
         body: `Tu código de verificación es: ${cadenaReenvio}`,
-        from: '+18169346014',
+        from: process.env.TWILIO_PHONE_NUMBER,
         to: `+52${phone}`
     }).then(message => console.log(message.sid));
     return (cadenaReenvio);
@@ -1272,7 +1302,7 @@ function ramdomReenvioClinet(phone) {
     // send code verification
     client.messages.create({
         body: `Tu código de verificación es: ${cadenaReenvio}`,
-        from: '+18169346014',
+        from: process.env.TWILIO_PHONE_NUMBER,
         to: `+52${phone}`
     }).then(message => console.log(message.sid));
     return (cadenaReenvio);
@@ -1293,7 +1323,7 @@ function sendSMSClientPolicy(phone) {
     // send code verification
     client.messages.create({
         body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
-        from: '+18169346014',
+        from: process.env.TWILIO_PHONE_NUMBER,
         to: `+52${phone}`
     }).then(message => console.log(message.sid));
     return (CodeValidator);

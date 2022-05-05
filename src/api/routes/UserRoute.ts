@@ -4,8 +4,6 @@ import UserController from '../controllers/UserController';
 import UserMiddleware from '../middlewares/middleware';
 import syncMiddleware from '../middlewares/syncMiddleware';
 import { uploadFiles } from '../middlewares/upload';
-// import syncMiddleware from '../middlewares/syncMiddleware';
-import { Upload } from '../services/saveFile';
 const UserRoute: Router = Router();
 
 UserRoute.post('/users', UserController.register);
@@ -54,7 +52,6 @@ UserRoute.post('/app/verificar', UserController.VerifyClient);
 // probando la validacion de ver las polizas pero si ta hay asociada alguna esa no se vera en la res
 UserRoute.get('/app/policies/external/:id/:externalIdClient', UserController.ViewPoliciesExternal);
 
-
 // restablecer contraseña
 UserRoute.get('/app/restorepassSMS/:phoneNumber/:token', UserController.restorePassSendSMS);
 
@@ -73,7 +70,6 @@ UserRoute.get('/app/notifications/:externalId', UserController.ViewNotifications
 UserRoute.get('/app/sendNotifications', UserController.SendNotificationPushClient);
 
 UserRoute.get('/app/privacyPolicies', UserController.ViewPrivacyPolitics);
-
 
 /**
  * CRUD DE POLIZAS

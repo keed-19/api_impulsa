@@ -38,6 +38,9 @@ class UserController {
     res.set('Access-Control-Allow-Origin', '*');
     const _id = _req.body.id;
     const code = _req.body.Code;
+    const removeAccents = (str: string) => {
+      return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    };
 
     /** Search RegisterRequest with id parameter */
     try {
@@ -46,7 +49,8 @@ class UserController {
         res.status(400).json({ message: 'Usuario no encontrado', status: 400 });
       } else if (user && user.tokenTotp === code) {
         // verificando si ya es cliente de impulsa
-        const fullName = `${user.firstName} ${user.middleName} ${user.lastName}`;
+        const fullNameCA = (`${user.firstName} ${user.middleName} ${user.lastName}`).toUpperCase();
+        const fullName = removeAccents(fullNameCA);
         const isClientExist = await ClientsModel.findOne({ fullName: fullName });
         if (isClientExist) {
           const saveUser = new UsersModel({
@@ -201,24 +205,23 @@ class UserController {
   */
    public register = async (_req: Request, res: Response) => {
      res.set('Access-Control-Allow-Origin', '*');
-     console.log(_req.body.tokenSMS as String);
-     console.log(_req.body);
      /** search Number phone in the data base */
      try {
        const isTelefonoExist = await ClientsModel.findOne({ phoneNumber: _req.body.phoneNumber });
 
        const isUserExist = await UsersModel.findOne({ username: _req.body.phoneNumber });
+       const removeAccents = (str: string) => {
+         return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+       };
+
+       const fullNameFI = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
+       const fullNameCA = fullNameFI.toUpperCase();
+       const fullName = removeAccents(fullNameCA);
 
        if (!isUserExist) {
          if (isTelefonoExist) {
-           const removeAccents = (str: string) => {
-             return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-           };
            // si ya es cleinte de impulsa, entonces le vamos a dar acceso a hacer el registro de manera correcta
            // comparamos los datos enviados, con los del cliente que ya esta registrado
-           const fullNameFI = `${_req.body.firstName} ${_req.body.middleName} ${_req.body.lastName}`;
-           const fullNameCA = fullNameFI.toUpperCase();
-           const fullName = removeAccents(fullNameCA);
            const fechaN = isTelefonoExist.incorporationOrBirthDate;
            const fechaString = JSON.stringify(fechaN);
            const fechaVlidador = fechaString.substring(1, 11);
@@ -662,8 +665,7 @@ class UserController {
 
   // listo
   public PolicyNumberSendSMS = async (_req:Request, res:Response) => {
-    const policyNumber = _req.params.policyNumber;
-    // const NumberPolice = parseInt(policyNumber);
+    const policyNumber = _req.params.policyNumber.toUpperCase();
     const _id = _req.params.clientId as Object;
     try {
       const validarClient = await ClientsModel.findOne({ _id: _id });
@@ -894,31 +896,46 @@ class UserController {
     const _id = _req.params.id;
     try {
       const isPolicyExist = await InsurancePoliciesModel.findOne({ _id: _id });
+      const insurances:Array<any> = []; let resultsCorrect = {};
       if (isPolicyExist) {
         const externalIdClient = isPolicyExist?.externalIdClient;
         const isClientExist = await ClientsModel.findOne({ externalId: externalIdClient });
         // buscando la aseguradora para mostrar los datos
         const insurance = parseInt(isPolicyExist?.insuranceId);
-        const isInsuranceExist = await InsuranceModel.findOne({ externalId: insurance });
+        const isInsuranceExist = await InsuranceModel.find({ externalId: insurance });
+        isInsuranceExist?.forEach(item => {
+          insurances.push({
+            name: item.name,
+            numbers: item.phoneNumber,
+            iconCode: item.iconCode
+          });
+        });
+        for (let x = 0; x < insurances.length; x++) {
+          const numeros = insurances[x].numbers;
+          const name = insurances[x].name;
+          const iconCode = insurances[x].iconCode;
+          // const searchInsurance = await InsuranceModel.findOne({ name: name });
+          const resultado = numeros.find((value: { type: string; }) => value.type === isPolicyExist?.policyType);
+          resultsCorrect = {
+            _id: isPolicyExist?._id,
+            fechaUpdate: isPolicyExist?.updatedAt,
+            name: name, // nombre de la aseguradora
+            iconCode: iconCode, // logo de la  aseguradora
+            phoneNumber: resultado.number, // numero de telefono de la  aseguradora
+            alias: isPolicyExist?.alias,
+            status: isPolicyExist?.status,
+            policyType: isPolicyExist?.policyType,
+            policyNumber: isPolicyExist?.policyNumber,
+            effectiveDate: isPolicyExist?.effectiveDate,
+            expirationDate: isPolicyExist?.expirationDate
+          };
+        }
         // console.log(isInsuranceExist);
         const cleintedetail = {
           fullName: isClientExist?.fullName
         };
-        const policyDetail = {
-          _id: isPolicyExist?._id,
-          fechaUpdate: isPolicyExist?.updatedAt,
-          name: isInsuranceExist?.name, // nombre de la aseguradora
-          iconCode: isInsuranceExist?.iconCode, // logo de la  aseguradora
-          phoneNumber: isInsuranceExist?.phoneNumber, // numero de telefono de la  aseguradora
-          alias: isPolicyExist?.alias,
-          status: isPolicyExist?.status,
-          policyType: isPolicyExist?.policyType,
-          policyNumber: isPolicyExist?.policyNumber,
-          effectiveDate: isPolicyExist?.effectiveDate,
-          expirationDate: isPolicyExist?.expirationDate
-        };
         res.status(200).json({
-          data: policyDetail,
+          data: resultsCorrect,
           client: cleintedetail,
           status: 200
         });
@@ -931,8 +948,35 @@ class UserController {
 
           // buscando los detalles de aseguradora de la poliza
           const insurance = isPolicyExist?.insuranceId;
-          const isInsuranceExist = await InsuranceModel.findOne({ externalId: insurance });
-          // console.log(isInsuranceExist);
+          const isInsuranceExist = await InsuranceModel.find({ externalId: insurance });
+          isInsuranceExist?.forEach(item => {
+            insurances.push({
+              name: item.name,
+              numbers: item.phoneNumber,
+              iconCode: item.iconCode
+            });
+          });
+
+          for (let x = 0; x < insurances.length; x++) {
+            const numeros = insurances[x].numbers;
+            const name = insurances[x].name;
+            const iconCode = insurances[x].iconCode;
+            // const searchInsurance = await InsuranceModel.findOne({ name: name });
+            const resultado = numeros.find((value: { type: string; }) => value.type === isPolicyExist?.policyType);
+            resultsCorrect = {
+              _id: isPolicyExist?._id,
+              fechaUpdate: isPolicyExist?.updatedAt,
+              name: name, // nombre de la aseguradora
+              iconCode: iconCode, // logo de la  aseguradora
+              phoneNumber: resultado.number, // numero de telefono de la  aseguradora
+              alias: isPolicyExist?.alias,
+              status: isPolicyExist?.status,
+              policyType: isPolicyExist?.policyType,
+              policyNumber: isPolicyExist?.policyNumber,
+              effectiveDate: isPolicyExist?.effectiveDate,
+              expirationDate: isPolicyExist?.expirationDate
+            };
+          }
 
           const externalIdClient = isPolicyExist?.externalIdClient;
           const isClientExist = await ClientsModel.findOne({ externalId: externalIdClient });
@@ -940,22 +984,8 @@ class UserController {
             fullName: isClientExist?.fullName
           };
 
-          const policyDetail = {
-            _id: isPolicyExist?._id,
-            fechaUpdate: isPolicyExist?.updatedAt,
-            name: isInsuranceExist?.name,
-            iconCode: isInsuranceExist?.iconCode,
-            phoneNumber: isInsuranceExist?.phoneNumber,
-            alias: isPolicyExternalExist?.alias,
-            status: isPolicyExist?.status,
-            policyType: isPolicyExist?.policyType,
-            policyNumber: isPolicyExist?.policyNumber,
-            effectiveDate: isPolicyExist?.effectiveDate,
-            expirationDate: isPolicyExist?.expirationDate
-          };
-
           res.status(200).json({
-            data: policyDetail,
+            data: resultsCorrect,
             client: cleintedetail,
             status: 200
           });
@@ -1277,7 +1307,7 @@ function ramdom (phone:Number, tokenSMS?: String) {
   // send code verification
   client.messages.create({
     body: `<#> ${cadena} es tu código de verificación, ${tokenSMS}`,
-    from: '+18169346014',
+    from: process.env.TWILIO_PHONE_NUMBER,
     to: `+52${phone}`
   }).then((message: { sid: any; }) => console.log(message.sid));
 
@@ -1304,7 +1334,7 @@ function ramdomReenvio (phone:Number) {
   // send code verification
   client.messages.create({
     body: `Tu código de verificación es: ${cadenaReenvio}`,
-    from: '+18169346014',
+    from: process.env.TWILIO_PHONE_NUMBER,
     to: `+52${phone}`
   }).then(message => console.log(message.sid));
   return (cadenaReenvio);
@@ -1330,7 +1360,7 @@ function ramdomReenvioClinet (phone:String) {
   // send code verification
   client.messages.create({
     body: `Tu código de verificación es: ${cadenaReenvio}`,
-    from: '+18169346014',
+    from: process.env.TWILIO_PHONE_NUMBER,
     to: `+52${phone}`
   }).then(message => console.log(message.sid));
   return (cadenaReenvio);
@@ -1356,7 +1386,7 @@ function sendSMSClientPolicy (phone: String) {
   // send code verification
   client.messages.create({
     body: `Tu código de verificación para compartir tus pólizas es: ${CodeValidator}`,
-    from: '+18169346014',
+    from: process.env.TWILIO_PHONE_NUMBER,
     to: `+52${phone}`
   }).then(message => console.log(message.sid));
   return (CodeValidator);
