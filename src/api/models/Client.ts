@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+// eslint-disable-next-line camelcase
 import mongoose_delete from 'mongoose-delete';
 
 // create an interface representing a document in MongoDB
@@ -17,9 +18,9 @@ const shema = new Schema<Clients>({
   externalId: { type: Number, required: false },
   verificationCode: { type: Number, required: false }
 },
-{timestamps: true});
+{ timestamps: true });
 
-shema.plugin(mongoose_delete, { deletedAt : true, overrideMethods: 'all', indexFields: ['deletedAt'] });
+shema.plugin(mongoose_delete, { deletedAt: true, overrideMethods: 'all', indexFields: ['deletedAt'] });
 
 const ClientsModel = model<Clients>('Clients', shema);
 

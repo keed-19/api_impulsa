@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InsurancePoliciesModel = void 0;
 const mongoose_1 = require("mongoose");
+// eslint-disable-next-line camelcase
 const mongoose_delete_1 = __importDefault(require("mongoose-delete"));
 const shema = new mongoose_1.Schema({
     insuranceId: { type: String, required: true },
