@@ -12,7 +12,6 @@ import { InsuranceModel } from '../models/Insurance';
 import axios from 'axios';
 import { NotificationPushModel } from '../models/NotificatiosPush';
 import moment from 'moment';
-import { now } from 'mongoose';
 import { conection } from '../../config/database';
 import { GridFSBucket, MongoClient } from 'mongodb';
 
@@ -257,7 +256,7 @@ class UserController {
              }
            } else {
              return res.status(203).json({
-               message: 'Los datos proporcionados no coinciden con los datos del cliente',
+               message: 'los datos que nos proporcionas (Fecha Nac., Teléfono) no coinciden con los datos que ya tenemos en nuestro sistema, por favor contactanos al 800 902 3456',
                status: 203
              });
            }
@@ -316,12 +315,12 @@ class UserController {
   */
   public login = async (_req: Request, res: Response) => {
     res.set('Access-Control-Allow-Origin', '*');
+    console.log(_req.body);
     const pass = _req.body.password;
     const numuser = _req.body.phoneNumber;
     // search user
     try {
       const tokenFirebase = _req.body.tokenFirebase?.slice(1, -1);
-      console.log(tokenFirebase);
       if (tokenFirebase !== undefined || tokenFirebase === undefined) {
         const user = await UsersModel.findOne({ username: numuser });
         if (!user) {
@@ -1114,16 +1113,10 @@ class UserController {
       if (isNotificationExist) {
         res.status(200).json(isNotificationExist);
       } else {
-        res.status(204).json({
-          message: 'No hay notificaciones',
-          status: 204
-        });
+        res.status(200).json([]);
       }
     } catch (error) {
-      res.status(400).json({
-        message: 'Ocurrio un error: ' + error,
-        status: 400
-      });
+      res.status(200).json([]);
     }
   }
 
@@ -1168,14 +1161,6 @@ class UserController {
         const user = await UsersModel.findOne({ clientId: search });
         const firebaseToken = user?.firebaseToken;
         SendNotifications(firebaseToken as String, externalId, `Su póliza: ${alias}, está a un mes de vencer`);
-        const notificationPush = new NotificationPushModel({
-          type: 'APP',
-          title: 'Impulsa',
-          notification: `Su póliza: ${alias}, está a un mes de vencer`,
-          date: now(),
-          externalIdClient: externalId
-        });
-        await notificationPush.save();
       }
       uniqueArray = [];
       policies = [];
@@ -1213,14 +1198,6 @@ class UserController {
         const user = await UsersModel.findOne({ clientId: search });
         const firebaseToken = user?.firebaseToken;
         SendNotifications(firebaseToken as String, externalId, `Su póliza: ${alias}, esta a 15 días de vencer`);
-        const notificationPush = new NotificationPushModel({
-          type: 'APP',
-          title: 'Impulsa',
-          notification: `Su póliza: ${alias}, esta a 15 días de vencer`,
-          date: now(),
-          externalIdClient: externalId
-        });
-        await notificationPush.save();
       }
       uniqueArray = [];
       policies = [];
@@ -1258,14 +1235,6 @@ class UserController {
         const user = await UsersModel.findOne({ clientId: search });
         const firebaseToken = user?.firebaseToken;
         SendNotifications(firebaseToken as String, externalId, `Su póliza: ${alias}, vence el día de hoy`);
-        const notificationPush = new NotificationPushModel({
-          type: 'APP',
-          title: 'Impulsa',
-          notification: `Su póliza: ${alias}, vence el día de hoy`,
-          date: now(),
-          externalIdClient: externalId
-        });
-        await notificationPush.save();
       }
       uniqueArray = [];
       policies = [];
@@ -1408,7 +1377,7 @@ function SendNotifications (firebaseToken: String, externalId: Number, body: Str
       notification: {
         sound: 'default',
         body: `${body}`,
-        title: 'Impulsa',
+        title: 'Impulsa To Go',
         content_available: true,
         priority: 'high'
       }
@@ -1425,9 +1394,8 @@ function SendNotifications (firebaseToken: String, externalId: Number, body: Str
 
     const notificationPush = new NotificationPushModel({
       type: 'APP',
-      title: 'impulsa',
+      title: 'Impulsa To Go',
       notification: body,
-      date: now(),
       externalIdClient: externalId
     });
     notificationPush.save();

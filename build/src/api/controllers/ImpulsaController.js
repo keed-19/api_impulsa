@@ -19,11 +19,11 @@ const Client_1 = require("../models/Client");
 const User_1 = require("../models/User");
 const axios_1 = __importDefault(require("axios"));
 const NotificatiosPush_1 = require("../models/NotificatiosPush");
-const mongoose_1 = require("mongoose");
 const const_1 = require("../constants/const");
 const ExternalPolicyClinet_1 = require("../models/ExternalPolicyClinet");
 const database_1 = require("../../config/database");
 const mongodb_1 = require("mongodb");
+const moment_1 = __importDefault(require("moment"));
 // import { GridFsStorage } from 'multer-gridfs-storage';
 const mongoClient = new mongodb_1.MongoClient(database_1.conection);
 /** My class of Impulsa controller */
@@ -348,6 +348,7 @@ class ImpulsaController {
             const fullNameFI = _req.body.fullName;
             const fullNameCA = fullNameFI.toUpperCase();
             const fullName = removeAccents(fullNameCA);
+            const birthday = _req.body.incorporationOrBirthDate;
             const phone = phoneNumber.replace(/\s+/g, '');
             try {
                 if (_req.body.phoneNumber === null) {
@@ -366,10 +367,25 @@ class ImpulsaController {
                     const isfullNameExist = yield Client_1.ClientsModel.findOne({ fullName: fullName });
                     const isEzternalIDExist = yield Client_1.ClientsModel.findOne({ externalId: _req.body.externalId });
                     if (isfullNameExist) {
-                        return res.status(208).json({
-                            error: 'El nombre del cliente ya se encuentra registrado en la base de datos',
-                            status: 208
-                        });
+                        const validarBirthday = yield Client_1.ClientsModel.findOne({ _id: isfullNameExist._id, incorporationOrBirthDate: birthday });
+                        const _id = isfullNameExist._id;
+                        if (validarBirthday) {
+                            const update = {
+                                externalId: _req.body.externalId
+                            };
+                            yield Client_1.ClientsModel.findByIdAndUpdate(_id, update);
+                            const actualizacion = yield Client_1.ClientsModel.findById(_id);
+                            res.status(200).json({
+                                message: 'Cliente registrado',
+                                Client: actualizacion
+                            });
+                        }
+                        else {
+                            return res.status(208).json({
+                                error: 'El cliente existe en la BD, pero sus datos no coinsiden',
+                                status: 208
+                            });
+                        }
                     }
                     else if (isEzternalIDExist) {
                         return res.status(208).json({
@@ -381,7 +397,7 @@ class ImpulsaController {
                         // instantiating the model for save data
                         const client = new Client_1.ClientsModel({
                             fullName: fullName,
-                            incorporationOrBirthDate: _req.body.incorporationOrBirthDate,
+                            incorporationOrBirthDate: birthday,
                             phoneNumber: phone,
                             externalId: _req.body.externalId
                         });
@@ -865,7 +881,6 @@ class ImpulsaController {
         });
         // notificaciones push
         this.sendPush = (_req, res) => __awaiter(this, void 0, void 0, function* () {
-            const title = _req.body.title;
             const notification = _req.body.notification;
             const externalId = _req.params.externalId;
             try {
@@ -884,7 +899,7 @@ class ImpulsaController {
                                 sound: 'default',
                                 vibration: true,
                                 body: `${notification}`,
-                                title: `${title}`,
+                                title: 'Impulsa To Go',
                                 content_available: true,
                                 priority: 'high'
                             },
@@ -910,9 +925,8 @@ class ImpulsaController {
                         });
                         const notificationPush = new NotificatiosPush_1.NotificationPushModel({
                             type: 'APP',
-                            title: title,
+                            title: 'Impulsa To Go',
                             notification: notification,
-                            date: (0, mongoose_1.now)(),
                             externalIdClient: externalId
                         });
                         yield notificationPush.save();
@@ -946,6 +960,41 @@ class ImpulsaController {
             }
             catch (error) {
                 res.send({ 'Ocurrio un error ': error });
+            }
+        });
+        // busqueda por fecha
+        this.SearchDate = (_req, res) => __awaiter(this, void 0, void 0, function* () {
+            let { startDate, endDate } = _req.query;
+            endDate += 'T21:59:59.999+00:00';
+            const polizasClient = [];
+            try {
+                if (!(0, moment_1.default)(startDate).isValid || !(0, moment_1.default)(endDate).isValid) {
+                    throw new Error('Invalid dates');
+                }
+                // buscando el cliente
+                const clients = yield Client_1.ClientsModel.find({ createdAt: { $gte: startDate, $lte: endDate } });
+                for (const client of clients) {
+                    const id = client.externalId;
+                    const [polizasPropias, polizasExternas] = yield Promise.all([
+                        InsurancePolicy_1.InsurancePoliciesModel.find({ externalIdClient: id }, { _id: 0, __v: 0, deleted: 0 }),
+                        ExternalPolicyClinet_1.ExternalPolicyClinetModel.find({ IdClient: client._id }, { _id: 0, __v: 0, deleted: 0 })
+                    ]);
+                    const polizasP = {
+                        clientName: client.fullName,
+                        ownPolicies: polizasPropias,
+                        externalPolicies: polizasExternas
+                    };
+                    // eslint-disable-next-line no-unused-vars
+                    polizasClient.push(polizasP);
+                }
+                res.status(200).json({
+                    data: polizasClient
+                });
+            }
+            catch (error) {
+                res.status(400).json({
+                    message: 'Los parametros opcionales "endDate" y/o "startDate" estan malformados'
+                });
             }
         });
     }

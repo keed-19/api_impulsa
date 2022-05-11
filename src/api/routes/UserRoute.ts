@@ -105,6 +105,9 @@ UserRoute.put('/sync/policies/:externalId', uploadFiles.single('myFile'), [syncM
 // UserRoute.get('/sync/clients', ImpulsaController.ViewClients);
 UserRoute.get('/sync/clients', [syncMiddleware.veryfyCredential, ImpulsaController.ViewClients]);
 
+// busqueda por rango de fechas
+UserRoute.get('/sync/clients/policies', [syncMiddleware.veryfyCredential, ImpulsaController.SearchDate]);
+
 // vizualisar cliente por numero de telefono
 
 UserRoute.get('/sync/clients/:externalId', [syncMiddleware.veryfyCredential, ImpulsaController.ViewClient]);

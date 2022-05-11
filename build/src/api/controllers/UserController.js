@@ -24,7 +24,6 @@ const Insurance_1 = require("../models/Insurance");
 const axios_1 = __importDefault(require("axios"));
 const NotificatiosPush_1 = require("../models/NotificatiosPush");
 const moment_1 = __importDefault(require("moment"));
-const mongoose_1 = require("mongoose");
 const database_1 = require("../../config/database");
 const mongodb_1 = require("mongodb");
 const mongoClient = new mongodb_1.MongoClient(database_1.conection);
@@ -259,7 +258,7 @@ class UserController {
                         }
                         else {
                             return res.status(203).json({
-                                message: 'Los datos proporcionados no coinciden con los datos del cliente',
+                                message: 'los datos que nos proporcionas (Fecha Nac., Teléfono) no coinciden con los datos que ya tenemos en nuestro sistema, por favor contactanos al 800 902 3456',
                                 status: 203
                             });
                         }
@@ -319,12 +318,12 @@ class UserController {
         this.login = (_req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a;
             res.set('Access-Control-Allow-Origin', '*');
+            console.log(_req.body);
             const pass = _req.body.password;
             const numuser = _req.body.phoneNumber;
             // search user
             try {
                 const tokenFirebase = (_a = _req.body.tokenFirebase) === null || _a === void 0 ? void 0 : _a.slice(1, -1);
-                console.log(tokenFirebase);
                 if (tokenFirebase !== undefined || tokenFirebase === undefined) {
                     const user = yield User_1.UsersModel.findOne({ username: numuser });
                     if (!user) {
@@ -1090,17 +1089,11 @@ class UserController {
                     res.status(200).json(isNotificationExist);
                 }
                 else {
-                    res.status(204).json({
-                        message: 'No hay notificaciones',
-                        status: 204
-                    });
+                    res.status(200).json([]);
                 }
             }
             catch (error) {
-                res.status(400).json({
-                    message: 'Ocurrio un error: ' + error,
-                    status: 400
-                });
+                res.status(200).json([]);
             }
         });
         // enviar notificaciones por fechas de polizas
@@ -1138,14 +1131,6 @@ class UserController {
                     const user = yield User_1.UsersModel.findOne({ clientId: search });
                     const firebaseToken = user === null || user === void 0 ? void 0 : user.firebaseToken;
                     SendNotifications(firebaseToken, externalId, `Su póliza: ${alias}, está a un mes de vencer`);
-                    const notificationPush = new NotificatiosPush_1.NotificationPushModel({
-                        type: 'APP',
-                        title: 'Impulsa',
-                        notification: `Su póliza: ${alias}, está a un mes de vencer`,
-                        date: (0, mongoose_1.now)(),
-                        externalIdClient: externalId
-                    });
-                    yield notificationPush.save();
                 }
                 uniqueArray = [];
                 policies = [];
@@ -1177,14 +1162,6 @@ class UserController {
                     const user = yield User_1.UsersModel.findOne({ clientId: search });
                     const firebaseToken = user === null || user === void 0 ? void 0 : user.firebaseToken;
                     SendNotifications(firebaseToken, externalId, `Su póliza: ${alias}, esta a 15 días de vencer`);
-                    const notificationPush = new NotificatiosPush_1.NotificationPushModel({
-                        type: 'APP',
-                        title: 'Impulsa',
-                        notification: `Su póliza: ${alias}, esta a 15 días de vencer`,
-                        date: (0, mongoose_1.now)(),
-                        externalIdClient: externalId
-                    });
-                    yield notificationPush.save();
                 }
                 uniqueArray = [];
                 policies = [];
@@ -1216,14 +1193,6 @@ class UserController {
                     const user = yield User_1.UsersModel.findOne({ clientId: search });
                     const firebaseToken = user === null || user === void 0 ? void 0 : user.firebaseToken;
                     SendNotifications(firebaseToken, externalId, `Su póliza: ${alias}, vence el día de hoy`);
-                    const notificationPush = new NotificatiosPush_1.NotificationPushModel({
-                        type: 'APP',
-                        title: 'Impulsa',
-                        notification: `Su póliza: ${alias}, vence el día de hoy`,
-                        date: (0, mongoose_1.now)(),
-                        externalIdClient: externalId
-                    });
-                    yield notificationPush.save();
                 }
                 uniqueArray = [];
                 policies = [];
@@ -1343,7 +1312,7 @@ function SendNotifications(firebaseToken, externalId, body) {
             notification: {
                 sound: 'default',
                 body: `${body}`,
-                title: 'Impulsa',
+                title: 'Impulsa To Go',
                 content_available: true,
                 priority: 'high'
             }
@@ -1358,9 +1327,8 @@ function SendNotifications(firebaseToken, externalId, body) {
         });
         const notificationPush = new NotificatiosPush_1.NotificationPushModel({
             type: 'APP',
-            title: 'impulsa',
+            title: 'Impulsa To Go',
             notification: body,
-            date: (0, mongoose_1.now)(),
             externalIdClient: externalId
         });
         notificationPush.save();
